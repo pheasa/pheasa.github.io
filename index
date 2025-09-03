@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Test WebView</title>
+   <style>
+       body {
+           margin: 0;
+           padding: 20px;
+           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: #f0f0f0;
+           min-height: 100vh;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+       }
+       
+       .content {
+           background: white;
+           padding: 40px;
+           border-radius: 12px;
+           box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+           text-align: center;
+           max-width: 400px;
+           width: 100%;
+       }
+       
+       h1 {
+           color: #333;
+           margin-bottom: 10px;
+       }
+       
+       p {
+           color: #666;
+           margin-bottom: 30px;
+           line-height: 1.5;
+       }
+       
+       #back-button {
+           background: #007AFF;
+           color: white;
+           border: none;
+           padding: 12px 24px;
+           font-size: 16px;
+           font-weight: 600;
+           border-radius: 8px;
+           cursor: pointer;
+           transition: all 0.2s ease;
+       }
+       
+       #back-button:hover {
+           background: #0056CC;
+       }
+       
+       #back-button:active {
+           transform: scale(0.98);
+       }
+   </style>
+</head>
+<body>
+   <div class="content">
+       <h1>WebView Test</h1>
+       <p>This is a test page for iOS WebView. Tap the back button below to dismiss this screen.</p>
+       <button id="back-button">← Back</button>
+   </div>
+</body>
+</html>
