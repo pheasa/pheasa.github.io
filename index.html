@@ -63,14 +63,18 @@
    <div class="content">
        <h1>WebView Test</h1>
        <p>This is a test page for iOS WebView. Tap the back button below to dismiss this screen.</p>
-       <button id="back-button">← Back</button>
+       <button onclick="forBack()">← Back</button>
    </div>
       <script>
-      var backButton = document.getElementById('back-button');
-      backButton.addEventListener('click', function() {
-         window.webkit.messageHandlers.backButton.postMessage('dismiss');
-         // alert("hello wrold")
-      })
+      // var backButton = document.getElementById('back-button');
+      // backButton.addEventListener('click', function() {
+      //    window.webkit.messageHandlers.backButton.postMessage('dismiss');
+      //    // alert("hello wrold")
+      // })
+         function forBack(){
+            alert("hello world")
+         }
+            
    </script>
 </body>
 </html>
