@@ -68,8 +68,8 @@
       <script>
       var backButton = document.getElementById('back-button');
       backButton.addEventListener('click', function() {
-         // window.webkit.messageHandlers.backButton.postMessage('dismiss');
-         alert("hello wrold")
+         window.webkit.messageHandlers.backButton.postMessage('dismiss');
+         // alert("hello wrold")
       })
    </script>
 </body>
