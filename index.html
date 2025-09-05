@@ -64,6 +64,7 @@
        <h1>WebView Test</h1>
        <p>This is a test page for iOS WebView. Tap the back button below to dismiss this screen.</p>
        <button onclick="forBack()" id="back-button">← Back</button>
+       <button onclick="toPay()" id="back-button">← pay</button>
    </div>
       <script>
       // var backButton = document.getElementById('back-button');
@@ -73,6 +74,10 @@
       // })
          function forBack(){
             window.webkit.messageHandlers.backButton.postMessage('dismiss');
+         }
+
+         function toPay(){
+          window.webkit.messageHandlers.hatthaPayEvent.postMessage('https://www.google.com/');
          }
             
    </script>
