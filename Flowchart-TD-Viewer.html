@@ -179,14 +179,12 @@
         
         <div class="input-section">
             <h3>Paste your flowchart TD code:</h3>
-            <textarea id="flowchartInput" placeholder="flowchart TD
+            <textarea id="flowchartInput" onchange="renderFlowchart()" placeholder="flowchart TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Action 1]
     B -->|No| D[Action 2]
     C --> E[End]
     D --> E"></textarea>
-            <button onclick="renderFlowchart()">Preview Flowchart</button>
-            
             <div class="example">
                 <div class="example-title">Example:</div>
                 <div class="example-code">flowchart TD<br>
@@ -208,6 +206,120 @@
 
     <script>
         mermaid.initialize({ startOnLoad: false });
+        
+        let selectedRating = 0;
+        
+        // Star rating functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    updateStars();
+                });
+            });
+        });
+        
+        function updateStars() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < selectedRating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        async function submitFeedback() {
+            const feedbackText = document.getElementById('feedbackText').value.trim();
+            const statusDiv = document.getElementById('feedback-status');
+            
+            if (!feedbackText && selectedRating === 0) {
+                statusDiv.innerHTML = '<div class="feedback-error">Please provide a rating or feedback message</div>';
+                return;
+            }
+            
+            // Get current repository info from GitHub Pages URL or set manually
+            const currentUrl = window.location.href;
+            let owner, repo;
+            
+            // Auto-detect from GitHub Pages URL (username.github.io/repo-name)
+            if (currentUrl.includes('.github.io')) {
+                const urlParts = currentUrl.split('/');
+                owner = urlParts[2].split('.')[0]; // Extract username from subdomain
+                repo = urlParts[3] || owner; // Repo name or default to username
+            } else {
+                // Manual configuration - replace these
+                owner = 'your-username';
+                repo = 'your-repo-name';
+            }
+            
+            // Initialize Octokit without token (for same repo, uses current user's permissions)
+            const octokit = new Octokit();
+            
+            // Create issue data
+            const issueTitle = `Feedback ${new Date().toISOString().split('T')[0]} - ${selectedRating ? selectedRating + '/5 ⭐' : 'General'}`;
+            const issueBody = `
+## User Feedback
+
+**Rating:** ${selectedRating}/5 ${selectedRating ? '⭐'.repeat(selectedRating) : 'No rating'}
+
+**Message:**
+${feedbackText}
+
+---
+**Tool:** Flowchart TD Viewer  
+**Timestamp:** ${new Date().toLocaleString()}  
+**Browser:** ${navigator.userAgent.split(' ').pop()}  
+**URL:** ${window.location.href}
+            `.trim();
+            
+            statusDiv.innerHTML = '<div class="feedback-status">📤 Submitting feedback...</div>';
+            
+            try {
+                // Create issue using Octokit
+                const response = await octokit.request('POST /repos/{owner}/{repo}/issues', {
+                    owner: owner,
+                    repo: repo,
+                    title: issueTitle,
+                    body: issueBody,
+                    labels: ['feedback', 
+                            selectedRating >= 4 ? 'positive' : 
+                            selectedRating <= 2 ? 'needs-improvement' : 
+                            'neutral'],
+                    headers: {
+                        'X-GitHub-Api-Version': '2022-11-28'
+                    }
+                });
+                
+                statusDiv.innerHTML = `<div class="feedback-success">✅ Feedback submitted successfully! 
+                    <br><a href="${response.data.html_url}" target="_blank" style="color: #4caf50; text-decoration: underline;">
+                    📋 View Issue #${response.data.number}</a></div>`;
+                    
+                // Clear form
+                document.getElementById('feedbackText').value = '';
+                selectedRating = 0;
+                updateStars();
+                
+                // Auto-hide success message after 5 seconds
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+                
+            } catch (error) {
+                console.error('Error creating issue:', error);
+                
+                // Fallback: Direct GitHub issue creation URL
+                const title = encodeURIComponent(issueTitle);
+                const body = encodeURIComponent(issueBody);
+                const labels = selectedRating >= 4 ? 'positive' : selectedRating <= 2 ? 'needs-improvement' : 'neutral';
+                const url = `https://github.com/${owner}/${repo}/issues/new?title=${title}&body=${body}&labels=feedback,${labels}`;
+                
+                window.open(url, '_blank');
+                statusDiv.innerHTML = '<div class="feedback-success">🌐 GitHub opened - please submit your feedback manually!<br><small>Note: You need to be logged in to GitHub</small></div>';
+            }
+        }
         
         function renderFlowchart() {
             const input = document.getElementById('flowchartInput').value.trim();
