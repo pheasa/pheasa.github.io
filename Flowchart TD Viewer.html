@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart TD Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .input-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .input-section h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.4), inset 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #ff5252, #26a69a);
+        }
+        button:active {
+            transform: translateY(-1px);
+        }
+        .preview-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            min-height: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .preview-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .example {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .example-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+            font-size: 14px;
+        }
+        .example-code {
+            font-family: 'Fira Code', Consolas, monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #mermaid-preview {
+            text-align: center;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        /* Animations */
+        .input-section, .preview-section {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            .input-section, .preview-section {
+                padding: 20px;
+            }
+            textarea {
+                height: 200px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flowchart TD Viewer</h1>
+        
+        <div class="input-section">
+            <h3>Paste your flowchart TD code:</h3>
+            <textarea id="flowchartInput" placeholder="flowchart TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E"></textarea>
+            <button onclick="renderFlowchart()">Preview Flowchart</button>
+            
+            <div class="example">
+                <div class="example-title">Example:</div>
+                <div class="example-code">flowchart TD<br>
+    A[Start] --> B{Decision}<br>
+    B -->|Yes| C[Action 1]<br>
+    B -->|No| D[Action 2]<br>
+    C --> E[End]<br>
+    D --> E</div>
+            </div>
+            
+            <div id="error-message"></div>
+        </div>
+        
+        <div class="preview-section">
+            <h3>Preview:</h3>
+            <div id="mermaid-preview"></div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: false });
+        
+        function renderFlowchart() {
+            const input = document.getElementById('flowchartInput').value.trim();
+            const errorDiv = document.getElementById('error-message');
+            const previewDiv = document.getElementById('mermaid-preview');
+            
+            // Clear previous content
+            errorDiv.innerHTML = '';
+            previewDiv.innerHTML = '';
+            
+            if (!input) {
+                errorDiv.innerHTML = '<div class="error">Please enter flowchart code</div>';
+                return;
+            }
+            
+            try {
+                // Create unique ID for the diagram
+                const diagramId = 'mermaid-' + Date.now();
+                
+                // Render the mermaid diagram
+                mermaid.render(diagramId, input).then(({svg}) => {
+                    previewDiv.innerHTML = svg;
+                }).catch(error => {
+                    errorDiv.innerHTML = '<div class="error">Error rendering flowchart: ' + error.message + '</div>';
+                });
+                
+            } catch (error) {
+                errorDiv.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-render on page load if there's default content
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('flowchartInput');
+            if (input.value.trim()) {
+                renderFlowchart();
+            }
+        });
+        
+        // Allow Enter+Ctrl to render
+        document.getElementById('flowchartInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                renderFlowchart();
+            }
+        });
+    </script>
+</body>
+</html>
