@@ -197,6 +197,11 @@
             
             $overlay.removeClass('hidden').addClass('flex');
             
+            // Attach zoom button handlers after modal is shown
+            $('#zoom-in-btn').off('click').on('click', zoomIn);
+            $('#zoom-out-btn').off('click').on('click', zoomOut);
+            $('#reset-zoom-btn').off('click').on('click', resetZoom);
+            
             // Trigger reflow and animate
             setTimeout(() => {
                 $overlay.removeClass('opacity-0');
@@ -205,6 +210,7 @@
             
             $('body').css('overflow', 'hidden');
             currentZoom = 1;
+            updateZoom();
         }
         
         function closeMaximize() {
@@ -239,7 +245,7 @@
         function updateZoom() {
             $('#maximized-preview').css('transform', `scale(${currentZoom})`);
             // Update zoom display
-            $('.bg-gray-500').text(`${Math.round(currentZoom * 100)}%`);
+            $('#reset-zoom-btn').text(`${Math.round(currentZoom * 100)}%`);
         }
         
         function clearPreview() {
