@@ -76,6 +76,7 @@
         // })
 
         function forBack(){
+            alert("hello wrold");
             window.webkit.messageHandlers.backButton.postMessage('dismiss');
         }
 
@@ -87,23 +88,13 @@
                         window.hatthaPayEvent.postMessage('https://www.google.com/');
         }
  
-        // // Listen for messages from Native
-        // window.addEventListener("message", function (event) {
-        //     console.log("Message from Native:", event.data);
+        // Listen for messages from Native
+        window.addEventListener("message", function (event) {
+            console.log("Message from Native:", event);
+            console.log("Data from Native:", event.data);
 
-        //     // You can add conditions if needed
-        //     if (event.data.type === "deeplink") {
-        //         alert("Got deeplink: " + event.data.value);
-        //     }
-        // });
-
-        window.onNativeMessage = function (data) {
-        console.log("Message from Native:", data);
-
-        if (data.type === "deeplink") {
-            alert("Got deeplink: " + data.value);
-        }
-    };
+            alert("Message from Native:" + event.data);
+        });
 
    </script>
 </body>
