@@ -66,7 +66,7 @@
             </div>
             
             <!-- Right: Preview Section -->
-            <div class="bg-white/15 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-slide-in relative min-h-96">
+            <div class="bg-white/15 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-slide-in relative h-fit min-h-96">
                 <div class="flex items-center justify-between mb-5">
                     <div class="flex items-center gap-3">
                         <h3 class="text-white text-xl font-semibold">Live Preview:</h3>
@@ -76,18 +76,30 @@
                     </div>
                     <div class="flex gap-3">
                         <button 
-                            onclick="maximizePreview()" 
-                            title="Maximize"
+                            id="maximize-btn"
+                            title="Maximize Preview"
                             class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
                         >⛶</button>
                         <button 
-                            onclick="clearPreview()" 
-                            title="Clear"
+                            id="download-btn"
+                            title="Download as PNG"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
+                        >📥</button>
+                        <button 
+                            id="copy-btn"
+                            title="Copy SVG Code"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
+                        >📋</button>
+                        <button 
+                            id="clear-btn"
+                            title="Clear Preview"
                             class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
                         >🗑️</button>
                     </div>
                 </div>
-                <div id="mermaid-preview" class="text-center mt-5 bg-white/95 p-8 rounded-2xl shadow-xl"></div>
+                <div id="mermaid-preview" class="text-center mt-5 bg-white/95 p-8 rounded-2xl shadow-xl min-h-32">
+                    <div class="text-gray-500 italic">Enter flowchart code to see live preview</div>
+                </div>
             </div>
         </div>
         
@@ -122,13 +134,53 @@
     </div>
     
     <!-- Maximize Overlay -->
-    <div id="maximize-overlay" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden items-center justify-center p-5">
-        <div class="bg-white rounded-2xl p-5 max-w-[95vw] max-h-[95vh] overflow-auto relative">
+    <div id="maximize-overlay" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden items-center justify-center p-5 transition-all duration-300 opacity-0">
+        <div class="bg-white rounded-2xl p-8 max-w-[95vw] max-h-[95vh] overflow-auto relative shadow-2xl transform scale-95 transition-all duration-300">
             <button 
-                onclick="closeMaximize()" 
-                class="absolute top-3 right-4 bg-red-500 text-white border-none w-8 h-8 rounded-full cursor-pointer text-base font-bold hover:bg-red-600 transition-colors"
+                id="close-maximize-btn"
+                class="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-lg font-bold transition-all duration-200 hover:scale-110 z-10 shadow-lg"
+                title="Close (ESC)"
             >×</button>
-            <div id="maximized-preview"></div>
+            
+            <!-- Zoom Controls -->
+            <div class="absolute top-4 left-4 flex gap-2 z-10">
+                <button 
+                    id="zoom-in-btn"
+                    class="bg-blue-500 hover:bg-blue-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-lg transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Zoom In (+)"
+                >+</button>
+                <button 
+                    id="zoom-out-btn"
+                    class="bg-blue-500 hover:bg-blue-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-lg transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Zoom Out (-)"
+                >-</button>
+                <button 
+                    id="reset-zoom-btn"
+                    class="bg-gray-500 hover:bg-gray-600 text-white border-none px-3 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Reset Zoom (0)"
+                >100%</button>
+                <button 
+                    id="fullscreen-btn"
+                    class="bg-green-500 hover:bg-green-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Toggle Fullscreen (F)"
+                >⛶</button>
+            </div>
+            
+            <!-- Download Controls -->
+            <div class="absolute top-4 right-16 flex gap-2 z-10">
+                <button 
+                    id="download-png-btn"
+                    class="bg-purple-500 hover:bg-purple-600 text-white border-none px-3 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Download PNG"
+                >PNG</button>
+                <button 
+                    id="download-svg-btn"
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white border-none px-3 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Download SVG"
+                >SVG</button>
+            </div>
+            
+            <div id="maximized-preview" class="mt-16 transition-transform duration-200 transform-origin-center"></div>
         </div>
     </div>
 
@@ -137,6 +189,7 @@
         
         let selectedRating = 0;
         let renderTimeout;
+        let currentZoom = 1;
         
         $(document).ready(function() {
             // Star rating functionality
@@ -156,10 +209,62 @@
                 }, 500);
             });
             
+            // Button handlers
+            $('#maximize-btn').click(maximizePreview);
+            $('#clear-btn').click(clearPreview);
+            $('#copy-btn').click(copySVG);
+            $('#download-btn').click(downloadPNG);
+            
             // Initial render if there's content
             if ($('#flowchartInput').val().trim()) {
                 renderFlowchart();
             }
+            
+            // Keyboard shortcuts
+            $(document).keydown(function(e) {
+                // Global shortcuts
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.which) {
+                        case 83: // Ctrl+S - Download
+                            e.preventDefault();
+                            downloadPNG();
+                            break;
+                        case 67: // Ctrl+C - Copy (when preview focused)
+                            if ($('#mermaid-preview').is(':focus-within')) {
+                                e.preventDefault();
+                                copySVG();
+                            }
+                            break;
+                    }
+                }
+                
+                // Maximized view shortcuts
+                if ($('#maximize-overlay').hasClass('flex')) {
+                    switch(e.which) {
+                        case 27: // ESC
+                            closeMaximize();
+                            break;
+                        case 187: // +
+                        case 61:  // + (Firefox)
+                            e.preventDefault();
+                            zoomIn();
+                            break;
+                        case 189: // -
+                        case 173: // - (Firefox)
+                            e.preventDefault();
+                            zoomOut();
+                            break;
+                        case 48: // 0
+                            e.preventDefault();
+                            resetZoom();
+                            break;
+                        case 70: // F - Fullscreen
+                            e.preventDefault();
+                            toggleFullscreen();
+                            break;
+                    }
+                }
+            });
         });
         
         function updateRenderStatus(type, message) {
@@ -197,10 +302,14 @@
             
             $overlay.removeClass('hidden').addClass('flex');
             
-            // Attach zoom button handlers after modal is shown
+            // Attach modal button handlers
+            $('#close-maximize-btn').off('click').on('click', closeMaximize);
             $('#zoom-in-btn').off('click').on('click', zoomIn);
             $('#zoom-out-btn').off('click').on('click', zoomOut);
             $('#reset-zoom-btn').off('click').on('click', resetZoom);
+            $('#fullscreen-btn').off('click').on('click', toggleFullscreen);
+            $('#download-png-btn').off('click').on('click', downloadPNG);
+            $('#download-svg-btn').off('click').on('click', downloadSVG);
             
             // Trigger reflow and animate
             setTimeout(() => {
@@ -227,6 +336,81 @@
             }, 300);
         }
         
+        function clearPreview() {
+            $('#mermaid-preview').html('<div class="text-gray-500 italic">Enter flowchart code to see live preview</div>');
+            $('#flowchartInput').val('');
+            updateRenderStatus('idle', 'Ready');
+        }
+        
+        function copySVG() {
+            const svgElement = $('#mermaid-preview svg');
+            if (svgElement.length > 0) {
+                const svgString = svgElement.prop('outerHTML');
+                navigator.clipboard.writeText(svgString).then(() => {
+                    showNotification('✅ SVG copied to clipboard!', 'success');
+                }).catch(() => {
+                    showNotification('❌ Failed to copy SVG', 'error');
+                });
+            } else {
+                showNotification('⚠️ No diagram to copy', 'warning');
+            }
+        }
+        
+        function downloadPNG() {
+            const svgElement = $('#mermaid-preview svg')[0];
+            if (!svgElement) {
+                showNotification('⚠️ No diagram to download', 'warning');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            // Get SVG dimensions
+            const svgRect = svgElement.getBoundingClientRect();
+            canvas.width = svgRect.width * 2; // High resolution
+            canvas.height = svgRect.height * 2;
+            
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgString], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = 'flowchart-' + new Date().getTime() + '.png';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    URL.revokeObjectURL(url);
+                    showNotification('📥 PNG downloaded!', 'success');
+                });
+            };
+            
+            img.src = url;
+        }
+        
+        function downloadSVG() {
+            const svgElement = $('#mermaid-preview svg');
+            if (svgElement.length > 0) {
+                const svgString = svgElement.prop('outerHTML');
+                const blob = new Blob([svgString], {type: 'image/svg+xml'});
+                const link = document.createElement('a');
+                link.download = 'flowchart-' + new Date().getTime() + '.svg';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showNotification('📥 SVG downloaded!', 'success');
+            } else {
+                showNotification('⚠️ No diagram to download', 'warning');
+            }
+        }
+        
         function zoomIn() {
             currentZoom = Math.min(currentZoom + 0.25, 3);
             updateZoom();
@@ -244,14 +428,46 @@
         
         function updateZoom() {
             $('#maximized-preview').css('transform', `scale(${currentZoom})`);
-            // Update zoom display
             $('#reset-zoom-btn').text(`${Math.round(currentZoom * 100)}%`);
         }
         
-        function clearPreview() {
-            $('#mermaid-preview').html('');
-            $('#flowchartInput').val('');
-            updateRenderStatus('idle', 'Ready');
+        function toggleFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            $('.notification').remove();
+            
+            const colors = {
+                success: 'bg-green-500/90 text-white border-green-400',
+                error: 'bg-red-500/90 text-white border-red-400',
+                warning: 'bg-yellow-500/90 text-black border-yellow-400',
+                info: 'bg-blue-500/90 text-white border-blue-400'
+            };
+            
+            const notification = $(`
+                <div class="notification fixed top-5 right-5 z-50 px-4 py-3 rounded-lg shadow-lg border backdrop-blur-md transform translate-x-full transition-transform duration-300 ${colors[type]}">
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.removeClass('translate-x-full');
+            }, 10);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.addClass('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
         
         async function renderFlowchart() {
@@ -263,7 +479,7 @@
             $errorDiv.html('');
             
             if (!input) {
-                $previewDiv.html('<div class="text-center text-white/60 p-10">Enter flowchart code to see live preview</div>');
+                $previewDiv.html('<div class="text-gray-500 italic">Enter flowchart code to see live preview</div>');
                 updateRenderStatus('idle', 'Ready');
                 return;
             }
