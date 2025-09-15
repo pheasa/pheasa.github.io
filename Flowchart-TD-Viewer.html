@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
     <script src="https://cdn.skypack.dev/octokit"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -34,7 +35,7 @@
         </h1>
         
         <!-- Main Content Grid -->
-        <div class="grid lg:grid-cols-2 gap-8">
+        <div class="grid lg:grid-cols-2 gap-8 items-start">
             <!-- Left: Input Section -->
             <div class="bg-white/15 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-slide-in">
                 <h3 class="text-white text-xl font-semibold mb-4">Paste your flowchart TD code:</h3>
@@ -137,19 +138,15 @@
         let selectedRating = 0;
         let renderTimeout;
         
-        // Star rating functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const stars = document.querySelectorAll('.star');
-            stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    selectedRating = parseInt(this.dataset.rating);
-                    updateStars();
-                });
+        $(document).ready(function() {
+            // Star rating functionality
+            $('.star').click(function() {
+                selectedRating = parseInt($(this).data('rating'));
+                updateStars();
             });
             
             // Auto-render on textarea change
-            const textarea = document.getElementById('flowchartInput');
-            textarea.addEventListener('input', function() {
+            $('#flowchartInput').on('input', function() {
                 clearTimeout(renderTimeout);
                 updateRenderStatus('rendering', '⏳ Rendering...');
                 
@@ -160,73 +157,64 @@
             });
             
             // Initial render if there's content
-            if (textarea.value.trim()) {
+            if ($('#flowchartInput').val().trim()) {
                 renderFlowchart();
             }
         });
         
         function updateRenderStatus(type, message) {
-            const statusEl = document.getElementById('render-status');
-            statusEl.className = 'px-3 py-1 text-sm font-medium rounded-full border';
+            const $statusEl = $('#render-status');
+            $statusEl.removeClass().addClass('px-3 py-1 text-sm font-medium rounded-full border');
             
             if (type === 'rendering') {
-                statusEl.className += ' bg-yellow-400/20 text-yellow-400 border-yellow-400/30 animate-pulse-custom';
+                $statusEl.addClass('bg-yellow-400/20 text-yellow-400 border-yellow-400/30 animate-pulse-custom');
             } else if (type === 'success') {
-                statusEl.className += ' bg-green-400/20 text-green-400 border-green-400/30';
+                $statusEl.addClass('bg-green-400/20 text-green-400 border-green-400/30');
             } else {
-                statusEl.className += ' bg-gray-500/20 text-gray-400 border-gray-500/30';
+                $statusEl.addClass('bg-gray-500/20 text-gray-400 border-gray-500/30');
             }
             
-            statusEl.textContent = message;
+            $statusEl.text(message);
         }
         
         function updateStars() {
-            const stars = document.querySelectorAll('.star');
-            stars.forEach((star, index) => {
+            $('.star').each(function(index) {
                 if (index < selectedRating) {
-                    star.classList.remove('grayscale');
-                    star.classList.add('scale-125');
+                    $(this).removeClass('grayscale').addClass('scale-125');
                 } else {
-                    star.classList.add('grayscale');
-                    star.classList.remove('scale-125');
+                    $(this).addClass('grayscale').removeClass('scale-125');
                 }
             });
         }
         
         function maximizePreview() {
-            const preview = document.getElementById('mermaid-preview');
-            const maximized = document.getElementById('maximized-preview');
-            const overlay = document.getElementById('maximize-overlay');
-            
-            maximized.innerHTML = preview.innerHTML;
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            document.body.style.overflow = 'hidden';
+            const previewContent = $('#mermaid-preview').html();
+            $('#maximized-preview').html(previewContent);
+            $('#maximize-overlay').removeClass('hidden').addClass('flex');
+            $('body').css('overflow', 'hidden');
         }
         
         function closeMaximize() {
-            const overlay = document.getElementById('maximize-overlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
-            document.body.style.overflow = 'auto';
+            $('#maximize-overlay').addClass('hidden').removeClass('flex');
+            $('body').css('overflow', 'auto');
         }
         
         function clearPreview() {
-            document.getElementById('mermaid-preview').innerHTML = '';
-            document.getElementById('flowchartInput').value = '';
+            $('#mermaid-preview').html('');
+            $('#flowchartInput').val('');
             updateRenderStatus('idle', 'Ready');
         }
         
         async function renderFlowchart() {
-            const input = document.getElementById('flowchartInput').value.trim();
-            const errorDiv = document.getElementById('error-message');
-            const previewDiv = document.getElementById('mermaid-preview');
+            const input = $('#flowchartInput').val().trim();
+            const $errorDiv = $('#error-message');
+            const $previewDiv = $('#mermaid-preview');
             
             // Clear previous content
-            if (errorDiv) errorDiv.innerHTML = '';
+            $errorDiv.html('');
             
             if (!input) {
-                previewDiv.innerHTML = '<div class="text-center text-white/60 p-10">Enter flowchart code to see live preview</div>';
+                $previewDiv.html('<div class="text-center text-white/60 p-10">Enter flowchart code to see live preview</div>');
                 updateRenderStatus('idle', 'Ready');
                 return;
             }
@@ -237,7 +225,7 @@
                 
                 // Render the mermaid diagram
                 const {svg} = await mermaid.render(diagramId, input);
-                previewDiv.innerHTML = svg;
+                $previewDiv.html(svg);
                 updateRenderStatus('success', '✅ Rendered');
                 
                 // Auto-hide success status after 2 seconds
@@ -247,20 +235,20 @@
                 
             } catch (error) {
                 console.error('Render error:', error);
-                previewDiv.innerHTML = `<div class="text-red-400 p-5 text-center border border-red-400/30 rounded-lg bg-red-400/10">
+                $previewDiv.html(`<div class="text-red-400 p-5 text-center border border-red-400/30 rounded-lg bg-red-400/10">
                     <strong>Syntax Error:</strong><br>
                     ${error.message || 'Invalid flowchart syntax'}
-                </div>`;
+                </div>`);
                 updateRenderStatus('idle', '❌ Error');
             }
         }
         
         async function submitFeedback() {
-            const feedbackText = document.getElementById('feedbackText').value.trim();
-            const statusDiv = document.getElementById('feedback-status');
+            const feedbackText = $('#feedbackText').val().trim();
+            const $statusDiv = $('#feedback-status');
             
             if (!feedbackText && selectedRating === 0) {
-                statusDiv.innerHTML = '<div class="p-3 bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">Please provide a rating or feedback message</div>';
+                $statusDiv.html('<div class="p-3 bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">Please provide a rating or feedback message</div>');
                 return;
             }
             
@@ -299,7 +287,7 @@ ${feedbackText}
 **URL:** ${window.location.href}
             `.trim();
             
-            statusDiv.innerHTML = '<div class="p-3 bg-blue-400/20 text-blue-400 border border-blue-400/30 rounded-lg">📤 Submitting feedback...</div>';
+            $statusDiv.html('<div class="p-3 bg-blue-400/20 text-blue-400 border border-blue-400/30 rounded-lg">📤 Submitting feedback...</div>');
             
             try {
                 // Create issue using Octokit
@@ -317,18 +305,18 @@ ${feedbackText}
                     }
                 });
                 
-                statusDiv.innerHTML = `<div class="p-3 bg-green-400/20 text-green-400 border border-green-400/30 rounded-lg">✅ Feedback submitted successfully! 
+                $statusDiv.html(`<div class="p-3 bg-green-400/20 text-green-400 border border-green-400/30 rounded-lg">✅ Feedback submitted successfully! 
                     <br><a href="${response.data.html_url}" target="_blank" class="text-green-400 underline">
-                    📋 View Issue #${response.data.number}</a></div>`;
+                    📋 View Issue #${response.data.number}</a></div>`);
                     
                 // Clear form
-                document.getElementById('feedbackText').value = '';
+                $('#feedbackText').val('');
                 selectedRating = 0;
                 updateStars();
                 
                 // Auto-hide success message after 5 seconds
                 setTimeout(() => {
-                    statusDiv.innerHTML = '';
+                    $statusDiv.html('');
                 }, 5000);
                 
             } catch (error) {
@@ -341,7 +329,7 @@ ${feedbackText}
                 const url = `https://github.com/${owner}/${repo}/issues/new?title=${title}&body=${body}&labels=feedback,${labels}`;
                 
                 window.open(url, '_blank');
-                statusDiv.innerHTML = '<div class="p-3 bg-green-400/20 text-green-400 border border-green-400/30 rounded-lg">🌐 GitHub opened - please submit your feedback manually!<br><small>Note: You need to be logged in to GitHub</small></div>';
+                $statusDiv.html('<div class="p-3 bg-green-400/20 text-green-400 border border-green-400/30 rounded-lg">🌐 GitHub opened - please submit your feedback manually!<br><small>Note: You need to be logged in to GitHub</small></div>');
             }
         }
     </script>
