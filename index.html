@@ -83,6 +83,16 @@
  function toPayA(){
                   window.hatthaPayEvent.postMessage('https://www.google.com/');
  }
+ 
+        // Listen for messages from Native
+        window.addEventListener("message", function (event) {
+            console.log("Message from Native:", event.data);
+
+            // You can add conditions if needed
+            if (event.data.type === "deeplink") {
+                alert("Got deeplink: " + event.data.value);
+            }
+        });
    </script>
 </body>
 </html>
