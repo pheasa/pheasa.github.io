@@ -190,13 +190,56 @@
         function maximizePreview() {
             const previewContent = $('#mermaid-preview').html();
             $('#maximized-preview').html(previewContent);
-            $('#maximize-overlay').removeClass('hidden').addClass('flex');
+            
+            // Animate opening
+            const $overlay = $('#maximize-overlay');
+            const $content = $overlay.find('.bg-white');
+            
+            $overlay.removeClass('hidden').addClass('flex');
+            
+            // Trigger reflow and animate
+            setTimeout(() => {
+                $overlay.removeClass('opacity-0');
+                $content.removeClass('scale-95').addClass('scale-100');
+            }, 10);
+            
             $('body').css('overflow', 'hidden');
+            currentZoom = 1;
         }
         
         function closeMaximize() {
-            $('#maximize-overlay').addClass('hidden').removeClass('flex');
-            $('body').css('overflow', 'auto');
+            const $overlay = $('#maximize-overlay');
+            const $content = $overlay.find('.bg-white');
+            
+            // Animate closing
+            $overlay.addClass('opacity-0');
+            $content.removeClass('scale-100').addClass('scale-95');
+            
+            setTimeout(() => {
+                $overlay.addClass('hidden').removeClass('flex');
+                $('body').css('overflow', 'auto');
+            }, 300);
+        }
+        
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + 0.25, 3);
+            updateZoom();
+        }
+        
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - 0.25, 0.25);
+            updateZoom();
+        }
+        
+        function resetZoom() {
+            currentZoom = 1;
+            updateZoom();
+        }
+        
+        function updateZoom() {
+            $('#maximized-preview').css('transform', `scale(${currentZoom})`);
+            // Update zoom display
+            $('.bg-gray-500').text(`${Math.round(currentZoom * 100)}%`);
         }
         
         function clearPreview() {
