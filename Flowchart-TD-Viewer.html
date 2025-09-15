@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flowchart TD Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
-    <script src="https://cdn.skypack.dev/octokit"></script>
+    <!-- Replace your current Octokit script -->
+    <script src="https://cdn.jsdelivr.net/npm/@octokit/core@4.5.0/dist/octokit-core.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
@@ -533,7 +534,7 @@
             }
             
             // Initialize Octokit without token (for same repo, uses current user's permissions)
-            const octokit = new Octokit();
+            const octokit = new Octokit.Octokit(); 
             
             // Create issue data
             const issueTitle = `Feedback ${new Date().toISOString().split('T')[0]} - ${selectedRating ? selectedRating + '/5 ⭐' : 'General'}`;
