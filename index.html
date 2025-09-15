@@ -61,7 +61,7 @@
 </head>
 <body>
    <div class="content">
-       <h1>WebView Test</h1>
+       <h1 id="lableChange">WebView Test</h1>
        <p>This is a test page for iOS WebView. Tap the back button below to dismiss this screen.</p>
        <button onclick="forBack()" id="back-button">← Back</button>
        <button onclick="toPay()" id="back-button">Pay for IOS</button>
@@ -90,8 +90,9 @@
  
         // Listen for messages from Native
         window.addEventListener("message", function (event) {
-            console.log("Message from Native:", event);
+            // console.log("Message from Native:", event);
             console.log("Data from Native:", event.data);
+            document.getElementById("lableChange").innerText = "Hello World";
 
             alert("Message from Native:" + event.data);
         });
