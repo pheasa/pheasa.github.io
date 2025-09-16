@@ -87,7 +87,7 @@
         <p id="onScanStatus"></p>
        </div>
 
-      <button onclick="" id="back-button">Scan Here 💘</button>
+      <button onclick="onScanIOS()" id="back-button">Scan Here 💘</button>
    </div>
       <script>
         var onCloseStatus = document.getElementById('onCloseStatus');
@@ -107,20 +107,20 @@
             onCloseStatus.innerText = "✅ Press onClose";
             onCloseStatus.style.color = "green";
         }
-        window.addEventListener("onClose", function (event) {
-            onCloseStatus.innerText = "✅ Press onClose";
-            onCloseStatus.style.color = "green";
-        });
+        // window.addEventListener("onClose", function (event) {
+        //     onCloseStatus.innerText = "✅ Press onClose";
+        //     onCloseStatus.style.color = "green";
+        // });
 
         //listen for onBack event from Native
         function onBack(){
             onBackStatus.innerText = "✅ Press onBack";
             onBackStatus.style.color = "green";
         }
-        window.addEventListener("onBack", function (event) {
-            onBackStatus.innerText = "✅ Press onBack";
-            onBackStatus.style.color = "green";
-        });
+        // window.addEventListener("onBack", function (event) {
+        //     onBackStatus.innerText = "✅ Press onBack";
+        //     onBackStatus.style.color = "green";
+        // });
 
         //listen for onScan event from Native
         function onScan(event){
@@ -132,15 +132,15 @@
                 onScanStatus.style.color = "green";
             }
         }
-        window.addEventListener("scanQR", function (event) {
-            if(event.data.isError){
-                onScanStatus.innerText = "😭 Error : " + event.data.errorMessage;
-                onScanStatus.style.color = "red";
-            }else{
-                onScanStatus.innerText = "😘 Success : " + event.data.qrCode;
-                onScanStatus.style.color = "green";
-            }
-        });
+        // window.addEventListener("scanQR", function (event) {
+        //     if(event.data.isError){
+        //         onScanStatus.innerText = "😭 Error : " + event.data.errorMessage;
+        //         onScanStatus.style.color = "red";
+        //     }else{
+        //         onScanStatus.innerText = "😘 Success : " + event.data.qrCode;
+        //         onScanStatus.style.color = "green";
+        //     }
+        // });
 
         // click on Scan QR Code
         function onScanIOS(){
