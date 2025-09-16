@@ -68,9 +68,9 @@
    <div class="content">
        <h1 id="lableChange">WebView Test</h1>
        <p>This is a test page for iOS WebView. Tap the back button below to dismiss this screen.</p>
-       <!-- <button onclick="forBack()" id="back-button">← Back</button>
+       <!-- <button onclick="forBack()" id="back-button">← Back</button> -->
        <button onclick="toPay()" id="back-button">Pay for IOS</button>
-      <button onclick="toPayA()" id="back-button">Py for Android</button> -->
+      <!-- <button onclick="toPayA()" id="back-button">Py for Android</button> -->
       <!-- Implementation testing for PGI insurance -->
        <div id="lbStatus">
         <p>onClose ❌ listen : </p>
@@ -145,6 +145,12 @@
         // click on Scan QR Code
         function onScanIOS(){
             window.webkit.messageHandlers.scanQrEvent.postMessage('scan');
+            // if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.scanQrEvent) {
+            //     window.webkit.messageHandlers.scanQrEvent.postMessage('scan');
+            //     console.log("Scan QR Code Clicked");
+            // } else {
+            //     console.log("Scan QR Code Clicked (not in iOS WebView)");
+            // }
         }
         function onScanAndroid(){
             window.scanQrEvent.postMessage('scan');
@@ -161,9 +167,9 @@
         //     window.webkit.messageHandlers.backButton.postMessage('dismiss');
         // }
 
-        // function toPay(){
-        //   window.webkit.messageHandlers.hatthaPayEvent.postMessage('https://www.google.com/');
-        // }
+        function toPay(){
+          window.webkit.messageHandlers.hatthaPayEvent.postMessage('https://www.google.com/');
+        }
         
         // function toPayA(){
         //                 window.hatthaPayEvent.postMessage('https://www.google.com/');
