@@ -100,7 +100,7 @@
         onBackStatus.innerText = "Not Yet Press (Back)";
         onBackStatus.style.color = "red";
         onScanStatus.innerText = "Not Yet Scan (QR Code)";
-        onScanStatus.style.color = "yellow";
+        onScanStatus.style.color = "purple";
 
         //listen for onClose event from Native
         function onClose(){
@@ -123,14 +123,20 @@
         // });
 
         //listen for onScan event from Native
-        function onScan(event){
-            if(event.data.isError){
-                onScanStatus.innerText = "😭 Error : " + event.data.errorMessage;
+        function onScan(data, callBack){
+            let isError = data == "error" ? true : false;
+            if(isError){
+                onScanStatus.innerText = "😭 Scan Error";
                 onScanStatus.style.color = "red";
             }else{
-                onScanStatus.innerText = "😘 Success : " + event.data.qrCode;
+                onScanStatus.innerText = "😘 Scan Success";
                 onScanStatus.style.color = "green";
             }
+            if (typeof callBack === "function") {
+                console.log("Received callback from Mobile");
+            }
+
+            // onScan("my_qr_data", function() {})
         }
         // window.addEventListener("scanQR", function (event) {
         //     if(event.data.isError){
