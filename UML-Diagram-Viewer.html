@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UML Diagram Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-pulse-custom { animation: pulse 1.5s infinite; }
+        .animate-slide-in { animation: slideIn 0.6s ease-out; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-400 via-blue-500 to-purple-700 p-5 bg-fixed">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <h1 class="text-center text-white text-4xl md:text-5xl font-bold mb-10 bg-gradient-to-r from-pink-400 to-teal-400 bg-clip-text text-transparent drop-shadow-lg">
+            UML Diagram Viewer
+        </h1>
+        
+        <!-- Main Content Grid -->
+        <div class="grid lg:grid-cols-2 gap-8 items-start">
+            <!-- Left: Input Section -->
+            <div class="bg-white/15 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-slide-in">
+                <h3 class="text-white text-xl font-semibold mb-4">Paste your UML code:</h3>
+                <div class="mb-4">
+                    <select id="diagramType" class="w-full p-3 border-none rounded-xl bg-white/90 backdrop-blur-md shadow-inner">
+                        <option value="classDiagram">Class Diagram</option>
+                        <option value="sequenceDiagram">Sequence Diagram</option>
+                        <option value="erDiagram">Entity Relationship</option>
+                        <option value="stateDiagram-v2">State Diagram</option>
+                        <option value="gitgraph">Git Graph</option>
+                        <option value="journey">User Journey</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="gantt">Gantt Chart</option>
+                    </select>
+                </div>
+                <textarea 
+                    id="umlInput" 
+                    class="w-full h-64 p-5 border-none rounded-2xl font-mono text-sm resize-none bg-white/90 backdrop-blur-md shadow-inner transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400/40 focus:scale-[1.02]"
+                    placeholder="classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +bark()
+    }
+    Animal <|-- Dog"
+                ></textarea>
+                
+                <div class="mt-5 p-5 bg-teal-400/10 border border-teal-400/30 rounded-2xl backdrop-blur-md">
+                    <div class="font-bold mb-3 text-teal-300 text-sm">Example:</div>
+                    <div id="example-code" class="font-mono bg-white/10 p-3 rounded-lg text-white/90 border border-white/10 text-xs">
+                        classDiagram<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;class Animal {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+String name<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+int age<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+makeSound()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;class Dog {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+bark()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;Animal <|-- Dog
+                    </div>
+                </div>
+                
+                <div id="error-message"></div>
+            </div>
+            
+            <!-- Right: Preview Section -->
+            <div class="bg-white/15 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-slide-in relative h-fit min-h-96">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-white text-xl font-semibold">Live Preview:</h3>
+                        <span id="render-status" class="px-3 py-1 text-sm font-medium rounded-full bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                            Ready
+                        </span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button 
+                            id="maximize-btn"
+                            title="Maximize Preview"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
+                        >⛶</button>
+                        <button 
+                            id="download-btn"
+                            title="Download as PNG"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
+                        >📥</button>
+                        <button 
+                            id="copy-btn"
+                            title="Copy SVG Code"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
+                        >📋</button>
+                        <button 
+                            id="clear-btn"
+                            title="Clear Preview"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 border-none text-white rounded-full cursor-pointer text-lg transition-all duration-300 hover:scale-110 backdrop-blur-md"
+                        >🗑️</button>
+                    </div>
+                </div>
+                <div id="mermaid-preview" class="text-center mt-5 bg-white/95 p-8 rounded-2xl shadow-xl min-h-32">
+                    <div class="text-gray-500 italic">Select diagram type and enter UML code to see live preview</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback Section -->
+        <div class="mt-8 bg-white/15 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-slide-in">
+            <h3 class="text-white text-xl font-semibold mb-5">📝 Feedback</h3>
+            <div class="feedback-form">
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-white font-medium">Rate this tool:</span>
+                    <div class="flex gap-1">
+                        <span class="text-2xl cursor-pointer transition-all duration-300 grayscale hover:grayscale-0 hover:scale-125 star" data-rating="1">⭐</span>
+                        <span class="text-2xl cursor-pointer transition-all duration-300 grayscale hover:grayscale-0 hover:scale-125 star" data-rating="2">⭐</span>
+                        <span class="text-2xl cursor-pointer transition-all duration-300 grayscale hover:grayscale-0 hover:scale-125 star" data-rating="3">⭐</span>
+                        <span class="text-2xl cursor-pointer transition-all duration-300 grayscale hover:grayscale-0 hover:scale-125 star" data-rating="4">⭐</span>
+                        <span class="text-2xl cursor-pointer transition-all duration-300 grayscale hover:grayscale-0 hover:scale-125 star" data-rating="5">⭐</span>
+                    </div>
+                </div>
+                <textarea 
+                    id="feedbackText" 
+                    class="w-full h-32 p-4 border-none rounded-2xl font-mono text-sm resize-none bg-white/90 backdrop-blur-md shadow-inner mb-4"
+                    placeholder="Share your thoughts, suggestions, or report issues..."
+                ></textarea>
+                <button 
+                    onclick="submitFeedback()" 
+                    class="bg-gradient-to-r from-teal-400 to-green-500 hover:from-teal-500 hover:to-green-600 text-white border-none px-8 py-4 rounded-full cursor-pointer text-base font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:-translate-y-0.5 shadow-lg"
+                >
+                    Send Feedback
+                </button>
+                <div id="feedback-status" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Maximize Overlay -->
+    <div id="maximize-overlay" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden items-center justify-center p-5 transition-all duration-300 opacity-0">
+        <div class="bg-white rounded-2xl p-8 max-w-[95vw] max-h-[95vh] overflow-auto relative shadow-2xl transform scale-95 transition-all duration-300">
+            <button 
+                id="close-maximize-btn"
+                class="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-lg font-bold transition-all duration-200 hover:scale-110 z-10 shadow-lg"
+                title="Close (ESC)"
+            >×</button>
+            
+            <!-- Zoom Controls -->
+            <div class="absolute top-4 left-4 flex gap-2 z-10">
+                <button 
+                    id="zoom-in-btn"
+                    class="bg-blue-500 hover:bg-blue-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-lg transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Zoom In (+)"
+                >+</button>
+                <button 
+                    id="zoom-out-btn"
+                    class="bg-blue-500 hover:bg-blue-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-lg transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Zoom Out (-)"
+                >-</button>
+                <button 
+                    id="reset-zoom-btn"
+                    class="bg-gray-500 hover:bg-gray-600 text-white border-none px-3 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Reset Zoom (0)"
+                >100%</button>
+                <button 
+                    id="fullscreen-btn"
+                    class="bg-green-500 hover:bg-green-600 text-white border-none w-10 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Toggle Fullscreen (F)"
+                >⛶</button>
+            </div>
+            
+            <!-- Download Controls -->
+            <div class="absolute top-4 right-16 flex gap-2 z-10">
+                <button 
+                    id="download-png-btn"
+                    class="bg-purple-500 hover:bg-purple-600 text-white border-none px-3 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Download PNG"
+                >PNG</button>
+                <button 
+                    id="download-svg-btn"
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white border-none px-3 h-10 rounded-full cursor-pointer text-sm transition-all duration-200 hover:scale-110 shadow-lg"
+                    title="Download SVG"
+                >SVG</button>
+            </div>
+            
+            <div id="maximized-preview" class="mt-16 transition-transform duration-200 transform-origin-center"></div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: false });
+        
+        let selectedRating = 0;
+        let renderTimeout;
+        let currentZoom = 1;
+        
+        const diagramExamples = {
+            'classDiagram': `classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +bark()
+    }
+    Animal <|-- Dog`,
+            'sequenceDiagram': `sequenceDiagram
+    participant A as Alice
+    participant B as Bob
+    A->>B: Hello Bob, how are you?
+    B-->>A: Great!`,
+            'erDiagram': `erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER {
+        string name
+        string email
+    }`,
+            'stateDiagram-v2': `stateDiagram-v2
+    [*] --> Still
+    Still --> [*]
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]`,
+            'gitgraph': `gitgraph
+    commit
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop`,
+            'journey': `journey
+    title My working day
+    section Go to work
+      Make tea: 5: Me
+      Go upstairs: 3: Me
+      Do work: 1: Me, Cat
+    section Go home
+      Go downstairs: 5: Me
+      Sit down: 5: Me`,
+            'pie': `pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15`,
+            'gantt': `gantt
+    title A Gantt Diagram
+    dateFormat  YYYY-MM-DD
+    section Section
+    A task           :a1, 2014-01-01, 30d
+    Another task     :after a1  , 20d`
+        };
+        
+        $(document).ready(function() {
+            // Load saved content on page load
+            const savedContent = localStorage.getItem('uml-input');
+            const savedType = localStorage.getItem('uml-type') || 'classDiagram';
+            
+            $('#diagramType').val(savedType);
+            updateExample();
+            
+            if (savedContent) {
+                $('#umlInput').val(savedContent);
+                if (savedContent.trim()) {
+                    renderDiagram();
+                }
+            }
+
+            // Star rating functionality
+            $('.star').click(function() {
+                selectedRating = parseInt($(this).data('rating'));
+                updateStars();
+            });
+            
+            // Diagram type change handler
+            $('#diagramType').change(function() {
+                updateExample();
+                const input = $('#umlInput').val().trim();
+                if (!input) {
+                    $('#umlInput').val(diagramExamples[$(this).val()]);
+                }
+                renderDiagram();
+            });
+            
+            // Auto-render on textarea change
+            $('#umlInput').on('input', function() {
+                clearTimeout(renderTimeout);
+                updateRenderStatus('rendering', '⏳ Rendering...');
+                
+                renderTimeout = setTimeout(() => {
+                    renderDiagram();
+                }, 500);
+            });
+            
+            // Button handlers
+            $('#maximize-btn').click(maximizePreview);
+            $('#clear-btn').click(clearPreview);
+            $('#copy-btn').click(copySVG);
+            $('#download-btn').click(downloadPNG);
+            
+            // Initial render if there's content
+            if ($('#umlInput').val().trim()) {
+                renderDiagram();
+            }
+            
+            // Keyboard shortcuts
+            $(document).keydown(function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.which) {
+                        case 83: // Ctrl+S - Download
+                            e.preventDefault();
+                            downloadPNG();
+                            break;
+                        case 67: // Ctrl+C - Copy
+                            if ($('#mermaid-preview').is(':focus-within')) {
+                                e.preventDefault();
+                                copySVG();
+                            }
+                            break;
+                    }
+                }
+                
+                if ($('#maximize-overlay').hasClass('flex')) {
+                    switch(e.which) {
+                        case 27: // ESC
+                            closeMaximize();
+                            break;
+                        case 187: case 61:
+                            e.preventDefault();
+                            zoomIn();
+                            break;
+                        case 189: case 173:
+                            e.preventDefault();
+                            zoomOut();
+                            break;
+                        case 48:
+                            e.preventDefault();
+                            resetZoom();
+                            break;
+                        case 70:
+                            e.preventDefault();
+                            toggleFullscreen();
+                            break;
+                    }
+                }
+            });
+        });
+        
+        function updateExample() {
+            const selectedType = $('#diagramType').val();
+            const example = diagramExamples[selectedType];
+            $('#example-code').html(example.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;'));
+        }
+        
+        function updateRenderStatus(type, message) {
+            const $statusEl = $('#render-status');
+            $statusEl.removeClass().addClass('px-3 py-1 text-sm font-medium rounded-full border');
+            
+            if (type === 'rendering') {
+                $statusEl.addClass('bg-yellow-400/20 text-yellow-400 border-yellow-400/30 animate-pulse-custom');
+            } else if (type === 'success') {
+                $statusEl.addClass('bg-green-400/20 text-green-400 border-green-400/30');
+            } else {
+                $statusEl.addClass('bg-gray-500/20 text-gray-400 border-gray-500/30');
+            }
+            
+            $statusEl.text(message);
+        }
+        
+        function updateStars() {
+            $('.star').each(function(index) {
+                if (index < selectedRating) {
+                    $(this).removeClass('grayscale').addClass('scale-125');
+                } else {
+                    $(this).addClass('grayscale').removeClass('scale-125');
+                }
+            });
+        }
+        
+        function maximizePreview() {
+            const previewContent = $('#mermaid-preview').html();
+            $('#maximized-preview').html(previewContent);
+            
+            const $overlay = $('#maximize-overlay');
+            const $content = $overlay.find('.bg-white');
+            
+            $overlay.removeClass('hidden').addClass('flex');
+            
+            $('#close-maximize-btn').off('click').on('click', closeMaximize);
+            $('#zoom-in-btn').off('click').on('click', zoomIn);
+            $('#zoom-out-btn').off('click').on('click', zoomOut);
+            $('#reset-zoom-btn').off('click').on('click', resetZoom);
+            $('#fullscreen-btn').off('click').on('click', toggleFullscreen);
+            $('#download-png-btn').off('click').on('click', downloadPNG);
+            $('#download-svg-btn').off('click').on('click', downloadSVG);
+            
+            setTimeout(() => {
+                $overlay.removeClass('opacity-0');
+                $content.removeClass('scale-95').addClass('scale-100');
+            }, 10);
+            
+            $('body').css('overflow', 'hidden');
+            currentZoom = 1;
+            updateZoom();
+        }
+        
+        function closeMaximize() {
+            const $overlay = $('#maximize-overlay');
+            const $content = $overlay.find('.bg-white');
+            
+            $overlay.addClass('opacity-0');
+            $content.removeClass('scale-100').addClass('scale-95');
+            
+            setTimeout(() => {
+                $overlay.addClass('hidden').removeClass('flex');
+                $('body').css('overflow', 'auto');
+            }, 300);
+        }
+        
+        function clearPreview() {
+            $('#mermaid-preview').html('<div class="text-gray-500 italic">Select diagram type and enter UML code to see live preview</div>');
+            $('#umlInput').val('');
+            updateRenderStatus('idle', 'Ready');
+            localStorage.removeItem('uml-input');
+            localStorage.removeItem('uml-type');
+        }
+        
+        function copySVG() {
+            const svgElement = $('#mermaid-preview svg');
+            if (svgElement.length > 0) {
+                const svgString = svgElement.prop('outerHTML');
+                navigator.clipboard.writeText(svgString).then(() => {
+                    showNotification('✅ SVG copied to clipboard!', 'success');
+                }).catch(() => {
+                    showNotification('❌ Failed to copy SVG', 'error');
+                });
+            } else {
+                showNotification('⚠️ No diagram to copy', 'warning');
+            }
+        }
+        
+        function downloadPNG() {
+            const svgElement = $('#mermaid-preview svg')[0];
+            if (!svgElement) {
+                showNotification('⚠️ No diagram to download', 'warning');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            const svgRect = svgElement.getBoundingClientRect();
+            canvas.width = svgRect.width * 2;
+            canvas.height = svgRect.height * 2;
+            
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgString], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = 'uml-diagram-' + new Date().getTime() + '.png';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    URL.revokeObjectURL(url);
+                    showNotification('📥 PNG downloaded!', 'success');
+                });
+            };
+            
+            img.src = url;
+        }
+        
+        function downloadSVG() {
+            const svgElement = $('#mermaid-preview svg');
+            if (svgElement.length > 0) {
+                const svgString = svgElement.prop('outerHTML');
+                const blob = new Blob([svgString], {type: 'image/svg+xml'});
+                const link = document.createElement('a');
+                link.download = 'uml-diagram-' + new Date().getTime() + '.svg';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showNotification('📥 SVG downloaded!', 'success');
+            } else {
+                showNotification('⚠️ No diagram to download', 'warning');
+            }
+        }
+        
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + 0.25, 3);
+            updateZoom();
+        }
+        
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - 0.25, 0.25);
+            updateZoom();
+        }
+        
+        function resetZoom() {
+            currentZoom = 1;
+            updateZoom();
+        }
+        
+        function updateZoom() {
+            $('#maximized-preview').css('transform', `scale(${currentZoom})`);
+            $('#reset-zoom-btn').text(`${Math.round(currentZoom * 100)}%`);
+        }
+        
+        function toggleFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            $('.notification').remove();
+            
+            const colors = {
+                success: 'bg-green-500/90 text-white border-green-400',
+                error: 'bg-red-500/90 text-white border-red-400',
+                warning: 'bg-yellow-500/90 text-black border-yellow-400',
+                info: 'bg-blue-500/90 text-white border-blue-400'
+            };
+            
+            const notification = $(`
+                <div class="notification fixed top-5 right-5 z-50 px-4 py-3 rounded-lg shadow-lg border backdrop-blur-md transform translate-x-full transition-transform duration-300 ${colors[type]}">
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            setTimeout(() => {
+                notification.removeClass('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.addClass('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        async function renderDiagram() {
+            const input = $('#umlInput').val().trim();
+            const diagramType = $('#diagramType').val();
+            const $errorDiv = $('#error-message');
+            const $previewDiv = $('#mermaid-preview');
+            
+            $errorDiv.html('');
+            
+            if (!input) {
+                $previewDiv.html('<div class="text-gray-500 italic">Select diagram type and enter UML code to see live preview</div>');
+                updateRenderStatus('idle', 'Ready');
+                return;
+            }
+            
+            try {
+                const diagramId = 'mermaid-' + Date.now();
+                const {svg} = await mermaid.render(diagramId, input);
+                $previewDiv.html(svg);
+                updateRenderStatus('success', '✅ Rendered');
+                
+                setTimeout(() => {
+                    updateRenderStatus('idle', 'Ready');
+                    localStorage.setItem('uml-input', input);
+                    localStorage.setItem('uml-type', diagramType);
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Render error:', error);
+                $previewDiv.html(`<div class="text-red-400 p-5 text-center border border-red-400/30 rounded-lg bg-red-400/10">
+                    <strong>Syntax Error:</strong><br>
+                    ${error.message || 'Invalid UML syntax'}
+                </div>`);
+                updateRenderStatus('idle', '❌ Error');
+            }
+        }
+        
+        function submitFeedback() {
+            const feedbackText = $('#feedbackText').val().trim();
+            const $statusDiv = $('#feedback-status');
+
+            if (!feedbackText && selectedRating === 0) {
+                $statusDiv.html('<div class="p-3 bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">Please provide a rating or feedback message</div>');
+                return;
+            }
+
+            const owner = 'pheasa';
+            const repo = 'pheasa.github.io';
+
+            const issueTitle = `Feedback ${new Date().toISOString().split('T')[0]} - ${selectedRating ? selectedRating + '/5 ⭐' : 'General'}`;
+            const issueBody = `
+## User Feedback
+
+**Rating:** ${selectedRating ? selectedRating + '/5 ⭐'.repeat(selectedRating) : 'No rating'}
+
+**Message:**
+${feedbackText}
+
+---
+**Tool:** UML Diagram Viewer  
+**Timestamp:** ${new Date().toLocaleString()}  
+**Browser:** ${navigator.userAgent}  
+**URL:** ${window.location.href}
+            `.trim();
+
+            const labels = selectedRating >= 4 ? 'positive' : selectedRating <= 2 ? 'needs-improvement' : 'neutral';
+            const url = `https://github.com/${owner}/${repo}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=feedback,${labels}`;
+
+            window.open(url, '_blank');
+
+            $statusDiv.html('<div class="p-3 bg-green-400/20 text-green-400 border border-green-400/30 rounded-lg">🌐 GitHub opened - please submit your feedback manually!<br><small>Note: You need to be logged in to GitHub</small></div>');
+
+            $('#feedbackText').val('');
+            selectedRating = 0;
+            updateStars();
+        }
+    </script>
+</body>
+</html>
