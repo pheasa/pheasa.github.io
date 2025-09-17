@@ -191,6 +191,17 @@
         let currentZoom = 1;
         
         $(document).ready(function() {
+
+            // Load saved content on page load
+            const savedContent = localStorage.getItem('flowchart-input');
+            if (savedContent) {
+                $('#flowchartInput').val(savedContent);
+                // Trigger render if content exists
+                if (savedContent.trim()) {
+                    renderFlowchart();
+                }
+            }
+
             // Star rating functionality
             $('.star').click(function() {
                 selectedRating = parseInt($(this).data('rating'));
@@ -339,6 +350,7 @@
             $('#mermaid-preview').html('<div class="text-gray-500 italic">Enter flowchart code to see live preview</div>');
             $('#flowchartInput').val('');
             updateRenderStatus('idle', 'Ready');
+            localStorage.removeItem('flowchart-input');
         }
         
         function copySVG() {
@@ -495,6 +507,7 @@
                 // Auto-hide success status after 2 seconds
                 setTimeout(() => {
                     updateRenderStatus('idle', 'Ready');
+                    localStorage.setItem('flowchart-input', $(this).val());
                 }, 2000);
                 
             } catch (error) {
