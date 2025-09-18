@@ -165,10 +165,10 @@
             window.scanQrEvent.postMessage('scan');
         }
         function onCloseWebOnIOS(){
-            window.webkit.messageHandlers.closeEvent.postMessage('close');
+            window.webkit.messageHandlers.closeWebEvent.postMessage('close');
         }
         function onCloseWebOnAndroid(){
-            window.closeEvent.postMessage('close');
+            window.closeWebEvent.postMessage('close');
         }
 
         // var backButton = document.getElementById('back-button');
