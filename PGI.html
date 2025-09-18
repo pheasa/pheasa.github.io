@@ -87,7 +87,10 @@
         <p id="onScanStatus"></p>
        </div>
 
-      <button onclick="onScanIOS()" id="back-button">Scan Here 💘</button>
+       <div id="lbStatus">
+           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web 🙏</button>
+           <button onclick="onScanIOS()" id="back-button">Scan Here 💘</button>
+       </div>
    </div>
       <script>
         var onCloseStatus = document.getElementById('onCloseStatus');
@@ -160,6 +163,12 @@
         }
         function onScanAndroid(){
             window.scanQrEvent.postMessage('scan');
+        }
+        function onCloseWebOnIOS(){
+            window.webkit.messageHandlers.closeEvent.postMessage('close');
+        }
+        function onCloseWebOnAndroid(){
+            window.closeEvent.postMessage('close');
         }
 
         // var backButton = document.getElementById('back-button');
