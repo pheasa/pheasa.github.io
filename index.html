@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <!-- Header -->
@@ -15,7 +16,7 @@
                 <p class="text-gray-600">Full-stack developer passionate about creating useful tools</p>
             </div>
             <div class="text-right">
-                <button class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-lg font-medium text-gray-800 transition-colors">
+                <button id="coffee-btn" class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-lg font-medium text-gray-800 transition-colors">
                     ☕ Buy me a coffee (KHQR)
                 </button>
             </div>
@@ -39,36 +40,74 @@
         </div>
     </footer>
 
-    <script>
-        const tools = [
-            { name: "Password Generator", category: "Security", path: "/tools/password-generator" },
-            { name: "JSON Formatter", category: "Development", path: "/tools/json-formatter" },
-            { name: "Base64 Encoder", category: "Utilities", path: "/tools/base64-encoder" },
-            { name: "Color Picker", category: "Design", path: "/tools/color-picker" },
-            { name: "QR Generator", category: "Utilities", path: "/tools/qr-generator" },
-            { name: "Hash Calculator", category: "Security", path: "/tools/hash-calculator" }
-        ];
+    <!-- QR Code Modal -->
+    <div id="qr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md mx-4 relative">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                ×
+            </button>
+            <div class="text-center">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Support My Work</h3>
+                <div class="mb-4">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f0f0f0'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%23666'%3EKHQR Code%3C/text%3E%3C/svg%3E" 
+                         alt="KHQR Code" 
+                         class="mx-auto border rounded-lg">
+                </div>
+                <p class="text-gray-600 mb-2">Scan to buy me a coffee</p>
+                <p class="text-sm text-gray-500">Thank you for your support! ☕</p>
+            </div>
+        </div>
+    </div>
 
-        const container = document.getElementById('tools-container');
-        
-        tools.forEach(tool => {
-            const toolCard = document.createElement('div');
-            toolCard.className = "bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer";
-            toolCard.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <h2 class="text-xl font-semibold text-gray-800">${tool.name}</h2>
-                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${tool.category}</span>
-                </div>
-                <div class="text-blue-600 font-medium">
-                    Open Tool →
-                </div>
-            `;
-            
-            toolCard.addEventListener('click', () => {
-                window.location.href = tool.path;
+    <script>
+        $(document).ready(function() {
+            // QR Modal functionality
+            $('#coffee-btn').click(function() {
+                $('#qr-modal').removeClass('hidden');
             });
+
+            $('#close-modal').click(function() {
+                $('#qr-modal').addClass('hidden');
+            });
+
+            // Close modal when clicking outside
+            $('#qr-modal').click(function(e) {
+                if (e.target === this) {
+                    $(this).addClass('hidden');
+                }
+            });
+
+            // Tools data
+            const tools = [
+                { name: "Password Generator", category: "Security", path: "/tools/password-generator" },
+                { name: "JSON Formatter", category: "Development", path: "/tools/json-formatter" },
+                { name: "Base64 Encoder", category: "Utilities", path: "/tools/base64-encoder" },
+                { name: "Color Picker", category: "Design", path: "/tools/color-picker" },
+                { name: "QR Generator", category: "Utilities", path: "/tools/qr-generator" },
+                { name: "Hash Calculator", category: "Security", path: "/tools/hash-calculator" }
+            ];
+
+            const container = $('#tools-container');
             
-            container.appendChild(toolCard);
+            tools.forEach(function(tool) {
+                const toolCard = $(`
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer">
+                        <div class="flex justify-between items-start mb-3">
+                            <h2 class="text-xl font-semibold text-gray-800">${tool.name}</h2>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${tool.category}</span>
+                        </div>
+                        <div class="text-blue-600 font-medium">
+                            Open Tool →
+                        </div>
+                    </div>
+                `);
+                
+                toolCard.click(function() {
+                    window.location.href = tool.path;
+                });
+                
+                container.append(toolCard);
+            });
         });
     </script>
 </body>
