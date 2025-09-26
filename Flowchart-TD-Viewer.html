@@ -370,15 +370,20 @@
 
         function downloadPNG() {
   const svgElement = document.querySelector("svg");
-  const svgData = new XMLSerializer().serializeToString(svgElement);
-
-  // Get tight bounding box
   const bbox = svgElement.getBBox();
   const width = Math.ceil(bbox.width);
   const height = Math.ceil(bbox.height);
+  const scale = 3; // sharpness
 
-  // Scale factor for sharpness
-  const scale = 3;
+  // Clone SVG so we can safely modify
+  const clone = svgElement.cloneNode(true);
+  clone.setAttribute("width", width);
+  clone.setAttribute("height", height);
+  clone.setAttribute("viewBox", `${bbox.x} ${bbox.y} ${width} ${height}`);
+
+  // Convert cloned SVG to string
+  const svgData = new XMLSerializer().serializeToString(clone);
+  const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
 
   const canvas = document.createElement("canvas");
   canvas.width = width * scale;
@@ -387,23 +392,18 @@
 
   const img = new Image();
   img.onload = function () {
-    ctx.setTransform(scale, 0, 0, scale, -bbox.x * scale, -bbox.y * scale);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.drawImage(img, 0, 0);
 
     const png = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.download = "flowchart.png";
     link.href = png;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
-  // Inline SVG and force exact bbox size
-  const svgWithSize = svgData.replace(
-    /<svg([^>]+)>/,
-    `<svg$1 width="${width}" height="${height}" viewBox="${bbox.x} ${bbox.y} ${width} ${height}">`
-  );
-
-  const svgBase64 = btoa(unescape(encodeURIComponent(svgWithSize)));
   img.src = "data:image/svg+xml;base64," + svgBase64;
 }
         
