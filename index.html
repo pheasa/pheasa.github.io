@@ -6,7 +6,7 @@
     <title>Developer Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen flex flex-col">
     <!-- Header -->
     <header class="bg-white shadow-sm">
         <div class="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
@@ -23,15 +23,15 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-8 py-8">
+    <main class="max-w-6xl mx-auto px-8 py-8 flex-grow">
         <div id="tools-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Tools will be rendered here -->
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t mt-16">
-        <div class="max-w-6xl mx-auto px-8 py-6">
+    <footer class="bg-white border-t">
+        <div class="max-w-6xl mx-auto px-8 py-8">
             <div class="text-center text-gray-600">
                 <p>&copy; 2025 Developer Tools. Made with ❤️ by a passionate developer.</p>
                 <p class="text-sm mt-2">Building useful tools for the community</p>
