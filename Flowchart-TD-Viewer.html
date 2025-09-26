@@ -367,24 +367,15 @@
             }
         }
         
+
         function downloadPNG() {
   const svgElement = document.querySelector("svg");
   const svgData = new XMLSerializer().serializeToString(svgElement);
 
-  // Read size from SVG attributes
-  let width = svgElement.viewBox.baseVal.width || svgElement.getAttribute("width");
-  let height = svgElement.viewBox.baseVal.height || svgElement.getAttribute("height");
-
-  // Fallback if no size found
-  if (!width || !height) {
-    const bbox = svgElement.getBBox();
-    width = bbox.width;
-    height = bbox.height;
-  }
-
-  // Convert to number
-  width = parseFloat(width);
-  height = parseFloat(height);
+  // Get tight bounding box
+  const bbox = svgElement.getBBox();
+  const width = Math.ceil(bbox.width);
+  const height = Math.ceil(bbox.height);
 
   // Scale factor for sharpness
   const scale = 3;
@@ -396,7 +387,7 @@
 
   const img = new Image();
   img.onload = function () {
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.setTransform(scale, 0, 0, scale, -bbox.x * scale, -bbox.y * scale);
     ctx.drawImage(img, 0, 0);
 
     const png = canvas.toDataURL("image/png");
@@ -406,9 +397,16 @@
     link.click();
   };
 
-  const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+  // Inline SVG and force exact bbox size
+  const svgWithSize = svgData.replace(
+    /<svg([^>]+)>/,
+    `<svg$1 width="${width}" height="${height}" viewBox="${bbox.x} ${bbox.y} ${width} ${height}">`
+  );
+
+  const svgBase64 = btoa(unescape(encodeURIComponent(svgWithSize)));
   img.src = "data:image/svg+xml;base64," + svgBase64;
 }
+        
         
         function downloadSVG() {
             const svgElement = $('#mermaid-preview svg');
