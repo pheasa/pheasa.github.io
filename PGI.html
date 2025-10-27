@@ -153,7 +153,7 @@
 
         // click on Scan QR Code
         function onScanIOS(){
-            window.webkit.messageHandlers.scanQrEvent.postMessage('scan');
+            window.webkit.messageHandlers.HMA_openCameraEvent.postMessage('scan');
             // if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.scanQrEvent) {
             //     window.webkit.messageHandlers.scanQrEvent.postMessage('scan');
             //     console.log("Scan QR Code Clicked");
@@ -165,7 +165,7 @@
             window.scanQrEvent.postMessage('scan');
         }
         function onCloseWebOnIOS(){
-            window.webkit.messageHandlers.closeWebEvent.postMessage('close');
+            window.webkit.messageHandlers.onClosed.postMessage('close');
         }
         function onCloseWebOnAndroid(){
             window.closeWebEvent.postMessage('close');
