@@ -88,8 +88,13 @@
        </div>
 
        <div id="lbStatus">
-           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web 🙏</button>
-           <button onclick="onScanIOS()" id="back-button">Scan Here 💘</button>
+           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web (IOS) 🙏</button>
+           <button onclick="onScanIOS()" id="back-button">Scan Here (IOS) 💘</button>
+       </div>
+       <br>
+       <div id="lbStatus">
+           <button onclick="onCloseWebOnAndroid()" id="back-button">Close Web (Andr)</button>
+           <button onclick="onScanAndroid()" id="back-button">Scan Here (Andr)</button>
        </div>
    </div>
       <script>
@@ -154,7 +159,6 @@
         // click on Scan QR Code
         function onScanIOS(){
             window.webkit.messageHandlers.HMA_openCameraEvent.postMessage();
-            window.HMA_openCameraEvent.postMessage();
             // if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.scanQrEvent) {
             //     window.webkit.messageHandlers.scanQrEvent.postMessage('scan');
             //     console.log("Scan QR Code Clicked");
@@ -167,7 +171,6 @@
         }
         function onCloseWebOnIOS(){
             window.webkit.messageHandlers.onClosed.postMessage();
-            window.onClosed.postMessage();
         }
         function onCloseWebOnAndroid(){
             window.onClosed.postMessage();
