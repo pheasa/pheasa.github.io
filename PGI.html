@@ -158,7 +158,7 @@
 
         // click on Scan QR Code
         function onScanIOS(){
-            window.webkit.messageHandlers.HMA_openCameraEvent.postMessage('');
+            window.webkit.messageHandlers.HMA_openCameraEvent.postMessage('scan');
         }
         function onScanAndroid(){
             window.HMA_openCameraEvent.postMessage();
