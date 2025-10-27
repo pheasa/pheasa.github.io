@@ -167,7 +167,7 @@
             // }
         }
         function onScanAndroid(){
-            window.HMA_openCameraEvent.scanQR();
+            window.HMA_openCameraEvent.postMessage();
         }
         function onCloseWebOnIOS(){
             window.webkit.messageHandlers.onClosed.postMessage();
