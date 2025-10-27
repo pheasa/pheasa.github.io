@@ -88,7 +88,7 @@
        </div>
 
        <div id="lbStatus">
-           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web (IOS)</button>
+           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web1 (IOS)</button>
            <button onclick="onScanIOS()" id="back-button">Scan Here (IOS)</button>
        </div>
        <br>
@@ -164,7 +164,7 @@
             window.HMA_openCameraEvent.postMessage();
         }
         function onCloseWebOnIOS(){
-            window.webkit.messageHandlers.onClosed.postMessage('close');
+            window.webkit.messageHandlers.onClosed.postMessage();
         }
         function onCloseWebOnAndroid(){
             window.onClosed.postMessage();
