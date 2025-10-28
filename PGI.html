@@ -93,8 +93,8 @@
        </div>
        <br>
        <div id="lbStatus">
-           <button onclick="onCloseWebOnAndroid()" id="back-button">Close Web (Andr)</button>
-           <button onclick="onScanAndroid()" id="back-button">Scan Here (Andr)</button>
+           <button onclick="onCloseWebOnAndroid()" id="back-button">Close Web1 (Andr)</button>
+           <button onclick="onScanAndroid()" id="back-button">Scan Here1 (Andr)</button>
        </div>
    </div>
       <script>
@@ -161,13 +161,13 @@
             window.webkit.messageHandlers.HMA_openCameraEvent.postMessage('');
         }
         function onScanAndroid(){
-            window.HMA_openCameraEvent.postMessage();
+            window.HMA_openCameraEvent.postMessage('');
         }
         function onCloseWebOnIOS(){
             window.webkit.messageHandlers.onClosed.postMessage('');
         }
         function onCloseWebOnAndroid(){
-            window.onClosed.postMessage();
+            window.onClosed.postMessage('');
         }
 
         // var backButton = document.getElementById('back-button');
