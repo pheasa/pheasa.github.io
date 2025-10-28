@@ -88,14 +88,14 @@
        </div>
 
        <div id="lbStatus">
-           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web7 (IOS)</button>
-           <button onclick="onScanIOS()" id="back-button">Scan Here7 (IOS)</button>
+           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web8 (IOS)</button>
+           <button onclick="onScanIOS()" id="back-button">Scan Here8 (IOS)</button>
        </div>
-       <!-- <br>
+       <br>
        <div id="lbStatus">
            <button onclick="onCloseWebOnAndroid()" id="back-button">Close Web (Andr)</button>
            <button onclick="onScanAndroid()" id="back-button">Scan Here (Andr)</button>
-       </div> -->
+       </div>
    </div>
       <script>
         var onCloseStatus = document.getElementById('onCloseStatus');
@@ -143,7 +143,6 @@
             if (typeof callBack === "function") {
                 console.log("Received callback from Mobile");
             }
-
             // onScan("my_qr_data", function() {})
         }
         // window.addEventListener("scanQR", function (event) {
@@ -158,13 +157,13 @@
 
         // click on Scan QR Code
         function onScanIOS(){
-            window.webkit.messageHandlers.HMA_openCameraEvent.postMessage('scan');
+            window.webkit.messageHandlers.HMA_openCameraEvent.postMessage();
         }
         function onScanAndroid(){
             window.HMA_openCameraEvent.postMessage();
         }
         function onCloseWebOnIOS(){
-            window.webkit.messageHandlers.onClosed.postMessage('close');
+            window.webkit.messageHandlers.onClosed.postMessage();
         }
         function onCloseWebOnAndroid(){
             window.onClosed.postMessage();
