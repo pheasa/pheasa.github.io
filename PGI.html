@@ -88,8 +88,8 @@
        </div>
 
        <div id="lbStatus">
-           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web8 (IOS)</button>
-           <button onclick="onScanIOS()" id="back-button">Scan Here8 (IOS)</button>
+           <button onclick="onCloseWebOnIOS()" id="back-button">Close Web9 (IOS)</button>
+           <button onclick="onScanIOS()" id="back-button">Scan Here9 (IOS)</button>
        </div>
        <br>
        <div id="lbStatus">
@@ -131,13 +131,14 @@
         // });
 
         //listen for onScan event from Native
-        function onScan(data, callBack){
-            let isError = data == "error" ? true : false;
+        function scanQR(data, callBack){
+            let isError = data == "" ? true : false;
+            console.log("isError : ", isError)
             if(isError){
                 onScanStatus.innerText = "😭 Scan Error";
                 onScanStatus.style.color = "red";
             }else{
-                onScanStatus.innerText = "😘 Scan Success";
+                onScanStatus.innerText = data;
                 onScanStatus.style.color = "green";
             }
             if (typeof callBack === "function") {
