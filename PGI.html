@@ -178,10 +178,10 @@
 
         // click on Scan QR Code
         function onScanIOS(){
-            window.webkit.messageHandlers.scanQR.postMessage('');
+            window.webkit.messageHandlers.scanQR.postMessage("");
         }
         function onScanAndroid(){
-            window.scanQR.postMessage('');
+            window.scanQR.postMessage("");
         }
         function onCloseWebOnIOS(){
             window.webkit.messageHandlers.onClosed.postMessage('');
