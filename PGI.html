@@ -91,6 +91,11 @@
         <p>Scan 📷 listen : </p>
         <p id="onScanStatus" class="status-value"></p>
        </div>
+       
+       <div id="lbStatus">
+        <p>Success 🎊 listen : </p>
+        <p id="onSuccess" class="status-value"></p>
+       </div>
 
        <div id="lbStatus">
            <button onclick="onCloseWebOnIOS()" id="back-button">Close(IOS)</button>
@@ -106,6 +111,7 @@
         var onCloseStatus = document.getElementById('onCloseStatus');
         var onBackStatus = document.getElementById('onBackStatus');
         var onScanStatus = document.getElementById('onScanStatus');
+        var onSuccessStatus = document.getElementById('onSuccess');
 
         // Set default status text
         onCloseStatus.innerText = "Not Yet Press (Close)";
@@ -114,6 +120,8 @@
         onBackStatus.style.color = "red";
         onScanStatus.innerText = "Not Yet Scan (QR Code)";
         onScanStatus.style.color = "purple";
+        onSuccessStatus.innerText = "Not Yet Success";
+        onSuccessStatus.style.color = "red";
 
         //listen for onClose event from Native
         function onClose(){
@@ -129,6 +137,13 @@
         function onBack(){
             onBackStatus.innerText = "✅ Press onBack";
             onBackStatus.style.color = "green";
+        }
+        
+        //listen for onBack event from Native
+        function onSuccess(data, callBack){
+            console.log("data: ", data)
+            onSuccessStatus.innerText = JSON.stringify(data);
+            onSuccessStatus.style.color = "green";
         }
         // window.addEventListener("onBack", function (event) {
         //     onBackStatus.innerText = "✅ Press onBack";
@@ -163,10 +178,10 @@
 
         // click on Scan QR Code
         function onScanIOS(){
-            window.webkit.messageHandlers.HMA_openCameraEvent.postMessage('');
+            window.webkit.messageHandlers.scanQR.postMessage('')
         }
         function onScanAndroid(){
-            window.HMA_openCameraEvent.postMessage('');
+            window.scanQR('');
         }
         function onCloseWebOnIOS(){
             window.webkit.messageHandlers.onClosed.postMessage('');
