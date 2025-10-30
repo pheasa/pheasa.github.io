@@ -180,8 +180,12 @@
         function onScanIOS(){
             window.webkit.messageHandlers.scanQR.postMessage('');
         }
-        function onScanAndroid(){
-            window.scanQR1.postMessage('');
+        function onScanAndroid() {
+            if (window.scanQR && typeof window.scanQR.postMessage === 'function') {
+                window.scanQR.postMessage(''); // ✅ calls Android only
+            } else {
+                console.warn("Android interface not available.");
+            }
         }
         function onCloseWebOnIOS(){
             window.webkit.messageHandlers.onClosed.postMessage('');
