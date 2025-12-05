@@ -403,14 +403,14 @@
       }
 
       function sharePDF() {
-        sharePDFFromURL(
-          "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-        );
         // universalShare({
         //   fileUrl:
         //     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
         //   fileName: "sample.pdf",
         // });
+        sharePDFOptimized(
+          "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+        );
       }
 
       // Handle file selection
@@ -449,24 +449,23 @@
         });
       }
 
-      async function sharePDFFromURL(pdfUrl) {
-        try {
-          // Fetch the PDF
-          const response = await fetch(pdfUrl);
-          const blob = await response.blob();
+      async function sharePDFOptimized(pdfUrl) {
+        const fileName = getFileNameFromUrl(pdfUrl);
 
-          // Convert to base64
-          const base64 = await blobToBase64(blob);
-
-          // Share
-          universalShare({
-            base64: base64,
-            fileName: getFileNameFromUrl(pdfUrl),
-            mimeType: "application/pdf",
+        if (isAndroid && window.shareHandler) {
+          // Let Android download and share directly
+          shareHandler.shareFileFromURL(pdfUrl, fileName);
+        } else if (
+          isIOS &&
+          window.webkit &&
+          window.webkit.messageHandlers.shareHandler
+        ) {
+          // Let iOS download and share directly
+          window.webkit.messageHandlers.shareHandler.postMessage({
+            type: "fileUrl",
+            url: pdfUrl,
+            fileName: fileName,
           });
-        } catch (error) {
-          console.error("Error loading PDF:", error);
-          alert("Failed to load PDF from URL");
         }
       }
 
