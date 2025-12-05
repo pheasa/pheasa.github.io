@@ -1,227 +1,487 @@
 <!DOCTYPE html>
 <html>
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Test WebView</title>
-   <style>
-       body {
-           margin: 0;
-           padding: 20px;
-           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-           background: #f0f0f0;
-           min-height: 100vh;
-           display: flex;
-           flex-direction: column;
-           align-items: center;
-           justify-content: center;
-       }
-       
-       .content {
-           background: white;
-           padding: 40px;
-           border-radius: 12px;
-           box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-           text-align: center;
-           max-width: 400px;
-           width: 100%;
-       }
-       
-       h1 {
-           color: #333;
-           margin-bottom: 10px;
-       }
-       
-       p {
-           color: #666;
-           margin-bottom: 30px;
-           line-height: 1.5;
-       }
-       
-       #back-button {
-           background: #007AFF;
-           color: white;
-           border: none;
-           padding: 12px 24px;
-           font-size: 16px;
-           font-weight: 600;
-           border-radius: 8px;
-           cursor: pointer;
-           transition: all 0.2s ease;
-       }
-       
-       #back-button:hover {
-           background: #0056CC;
-       }
-       
-       #back-button:active {
-           transform: scale(0.98);
-       }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test WebView</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #f0f0f0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
 
-       #lbStatus {
-            display: flex; 
-            justify-content: space-between;
-       }
-       .status-value {
-            width: 60%;
-            text-align: right;
-            overflow-wrap: anywhere;
-       }
-   </style>
-</head>
-<body>
-   <div class="content">
-       <h1 id="lableChange">WebView Test</h1>
-       <p>This is a test page for iOS WebView. Tap the back button below to dismiss this screen.</p>
-       <!-- <button onclick="forBack()" id="back-button">← Back</button> -->
-       <!-- <button onclick="toPay()" id="back-button">Pay for IOS</button> -->
-      <!-- <button onclick="toPayA()" id="back-button">Py for Android</button> -->
-      <!-- Implementation testing for PGI insurance -->
-       <div id="lbStatus">
-        <p>onClose ❌ listen : </p>
+      .content {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+
+      #back-button {
+        background: #007aff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 48%;
+      }
+
+      #back-button:hover {
+        background: #0056cc;
+      }
+
+      #back-button:active {
+        transform: scale(0.98);
+      }
+
+      #lbStatus {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .status-value {
+        width: 60%;
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+
+      .share-section {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+      }
+
+      .share-section h2 {
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1 id="lableChange">WebView Test</h1>
+      <p>
+        This is a test page for iOS WebView. Tap the back button below to
+        dismiss this screen.
+      </p>
+
+      <div id="lbStatus">
+        <p>onClose ❌ listen :</p>
         <p id="onCloseStatus"></p>
-       </div>
+      </div>
 
-       <div id="lbStatus">
-        <p>onBack ⬅ listen : </p>
+      <div id="lbStatus">
+        <p>onBack ⬅ listen :</p>
         <p id="onBackStatus"></p>
-       </div>
+      </div>
 
-       <div id="lbStatus">
-        <p>Scan 📷 listen : </p>
+      <div id="lbStatus">
+        <p>Scan 📷 listen :</p>
         <p id="onScanStatus" class="status-value"></p>
-       </div>
-       
-       <div id="lbStatus">
-        <p>Success 🎊 listen : </p>
+      </div>
+
+      <div id="lbStatus">
+        <p>Success 🎊 listen :</p>
         <p id="onSuccess" class="status-value"></p>
-       </div>
+      </div>
 
-       <div id="lbStatus">
-           <button onclick="onCloseWebOnIOS()" id="back-button">Close(IOS)</button>
-           <button onclick="onScanIOS()" id="back-button">Scan(IOS)</button>
-       </div>
-       <br>
-       <div id="lbStatus">
-           <button onclick="onCloseWebOnAndroid()" id="back-button">Close(Andr)</button>
-           <button onclick="onScanAndroid()" id="back-button">Scan(Andr)</button>
-       </div>
-   </div>
-      <script>
-        var onCloseStatus = document.getElementById('onCloseStatus');
-        var onBackStatus = document.getElementById('onBackStatus');
-        var onScanStatus = document.getElementById('onScanStatus');
-        var onSuccessStatus = document.getElementById('onSuccess');
+      <div id="lbStatus">
+        <button onclick="onCloseWebOnIOS()" id="back-button">Close(IOS)</button>
+        <button onclick="onScanIOS()" id="back-button">Scan(IOS)</button>
+      </div>
+      <br />
+      <div id="lbStatus">
+        <button onclick="onCloseWebOnAndroid()" id="back-button">
+          Close(Andr)
+        </button>
+        <button onclick="onScanAndroid()" id="back-button">Scan(Andr)</button>
+      </div>
 
-        // Set default status text
-        onCloseStatus.innerText = "Not Yet Press (Close)";
-        onCloseStatus.style.color = "red";
-        onBackStatus.innerText = "Not Yet Press (Back)";
-        onBackStatus.style.color = "red";
-        onScanStatus.innerText = "Not Yet Scan (QR Code)";
-        onScanStatus.style.color = "purple";
-        onSuccessStatus.innerText = "Not Yet Success";
-        onSuccessStatus.style.color = "red";
+      <!-- Share Section -->
+      <div class="share-section">
+        <h2>📤 Share Functions</h2>
 
-        //listen for onClose event from Native
-        function onClose(){
-            onCloseStatus.innerText = "✅ Press onClose";
-            onCloseStatus.style.color = "green";
+        <div id="lbStatus">
+          <button onclick="shareURL()" id="back-button">Share URL</button>
+          <button onclick="shareText()" id="back-button">Share Text</button>
+        </div>
+        <br />
+        <div id="lbStatus">
+          <button onclick="shareImage()" id="back-button">Share Image</button>
+          <button onclick="sharePDF()" id="back-button">Share PDF</button>
+        </div>
+        <br />
+        <div id="lbStatus">
+          <button
+            onclick="shareGeneratedPDF()"
+            id="back-button"
+            style="width: 100%"
+          >
+            Generate & Share PDF
+          </button>
+        </div>
+        <!-- Add file input to HTML -->
+        <input
+          type="file"
+          id="fileInput"
+          accept=".pdf,image/*"
+          style="display: none"
+        />
+        <button
+          onclick="document.getElementById('fileInput').click()"
+          id="back-button"
+          style="width: 100%"
+        >
+          📁 Select & Share File
+        </button>
+      </div>
+    </div>
+
+    <script>
+      var onCloseStatus = document.getElementById("onCloseStatus");
+      var onBackStatus = document.getElementById("onBackStatus");
+      var onScanStatus = document.getElementById("onScanStatus");
+      var onSuccessStatus = document.getElementById("onSuccess");
+
+      // Set default status text
+      onCloseStatus.innerText = "Not Yet Press (Close)";
+      onCloseStatus.style.color = "red";
+      onBackStatus.innerText = "Not Yet Press (Back)";
+      onBackStatus.style.color = "red";
+      onScanStatus.innerText = "Not Yet Scan (QR Code)";
+      onScanStatus.style.color = "purple";
+      onSuccessStatus.innerText = "Not Yet Success";
+      onSuccessStatus.style.color = "red";
+
+      //listen for onClose event from Native
+      function onClose() {
+        onCloseStatus.innerText = "✅ Press onClose";
+        onCloseStatus.style.color = "green";
+      }
+
+      //listen for onBack event from Native
+      function onBack() {
+        onBackStatus.innerText = "✅ Press onBack";
+        onBackStatus.style.color = "green";
+      }
+
+      //listen for onBack event from Native
+      function onSuccess(data, callBack) {
+        console.log("data: ", data);
+        onSuccessStatus.innerText = JSON.stringify(data);
+        onSuccessStatus.style.color = "green";
+      }
+
+      //listen for onScan event from Native
+      function scanQR(data, callBack) {
+        let isError = data == "" ? true : false;
+        console.log("isError : ", isError);
+        if (isError) {
+          onScanStatus.innerText = "😭 Scan Error";
+          onScanStatus.style.color = "red";
+        } else {
+          onScanStatus.innerText = data;
+          onScanStatus.style.color = "green";
         }
-        // window.addEventListener("onClose", function (event) {
-        //     onCloseStatus.innerText = "✅ Press onClose";
-        //     onCloseStatus.style.color = "green";
-        // });
-
-        //listen for onBack event from Native
-        function onBack(){
-            onBackStatus.innerText = "✅ Press onBack";
-            onBackStatus.style.color = "green";
+        if (typeof callBack === "function") {
+          console.log("Received callback from Mobile");
         }
-        
-        //listen for onBack event from Native
-        function onSuccess(data, callBack){
-            console.log("data: ", data)
-            onSuccessStatus.innerText = JSON.stringify(data);
-            onSuccessStatus.style.color = "green";
+      }
+
+      // click on Scan QR Code
+      function onScanIOS() {
+        window.webkit.messageHandlers.onScanQR.postMessage("");
+      }
+      function onScanAndroid() {
+        window.onScanQR.postMessage("");
+      }
+      function onCloseWebOnIOS() {
+        window.webkit.messageHandlers.onClosed.postMessage("");
+      }
+      function onCloseWebOnAndroid() {
+        window.onClosed.postMessage("");
+      }
+
+      function toPay() {
+        window.webkit.messageHandlers.hatthaPayEvent.postMessage(
+          "https://www.google.com/"
+        );
+      }
+
+      // ============================================
+      // UNIVERSAL SHARE FUNCTIONS
+      // ============================================
+
+      // Helper: Detect platform
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+
+      // Universal share function
+      async function universalShare(options) {
+        try {
+          // Determine share type
+          if (options.url && !options.file) {
+            shareTextOrURL(options);
+          } else if (
+            options.file ||
+            options.fileUrl ||
+            options.base64 ||
+            options.blob
+          ) {
+            await shareFile(options);
+          }
+        } catch (error) {
+          console.error("Share error:", error);
+          alert("Share failed: " + error.message);
         }
-        // window.addEventListener("onBack", function (event) {
-        //     onBackStatus.innerText = "✅ Press onBack";
-        //     onBackStatus.style.color = "green";
-        // });
+      }
 
-        //listen for onScan event from Native
-        function scanQR(data, callBack){
-            let isError = data == "" ? true : false;
-            console.log("isError : ", isError)
-            if(isError){
-                onScanStatus.innerText = "😭 Scan Error";
-                onScanStatus.style.color = "red";
-            }else{
-                onScanStatus.innerText = data;
-                onScanStatus.style.color = "green";
-            }
-            if (typeof callBack === "function") {
-                console.log("Received callback from Mobile");
-            }
-            // onScan("my_qr_data", function() {})
+      // Share text or URL
+      function shareTextOrURL(options) {
+        const data = {
+          type: "text",
+          text: options.text || "",
+          url: options.url || "",
+          title: options.title || "Share",
+        };
+
+        if (isAndroid && window.onShared) {
+          onShared.shareText(data.text || data.url, data.title);
+        } else if (
+          isIOS &&
+          window.webkit &&
+          window.webkit.messageHandlers.onShared
+        ) {
+          window.webkit.messageHandlers.onShared.postMessage(data);
+        } else {
+          // Fallback for testing in browser
+          alert("Share: " + (data.text || data.url));
         }
-        // window.addEventListener("scanQR", function (event) {
-        //     if(event.data.isError){
-        //         onScanStatus.innerText = "😭 Error : " + event.data.errorMessage;
-        //         onScanStatus.style.color = "red";
-        //     }else{
-        //         onScanStatus.innerText = "😘 Success : " + event.data.qrCode;
-        //         onScanStatus.style.color = "green";
-        //     }
-        // });
+      }
 
-        // click on Scan QR Code
-        function onScanIOS(){
-            window.webkit.messageHandlers.onScanQR.postMessage('');
+      // Share file (any type)
+      async function shareFile(options) {
+        let base64Data;
+        let fileName = options.fileName || "file";
+        let mimeType = options.mimeType || "application/octet-stream";
+
+        // If base64 provided directly
+        if (options.base64) {
+          base64Data = options.base64;
         }
-        function onScanAndroid(){
-            window.onScanQR.postMessage('');
+        // If file URL provided
+        else if (options.fileUrl) {
+          base64Data = await urlToBase64(options.fileUrl);
+          if (!options.mimeType) {
+            mimeType = getMimeTypeFromUrl(options.fileUrl);
+          }
+          if (!options.fileName) {
+            fileName = getFileNameFromUrl(options.fileUrl);
+          }
         }
-        function onCloseWebOnIOS(){
-            window.webkit.messageHandlers.onClosed.postMessage('');
+        // If blob provided
+        else if (options.blob) {
+          base64Data = await blobToBase64(options.blob);
+          mimeType = options.blob.type || mimeType;
         }
-        function onCloseWebOnAndroid(){
-            window.onClosed.postMessage('');
+
+        const data = {
+          type: "file",
+          data: base64Data,
+          fileName: fileName,
+          mimeType: mimeType,
+        };
+
+        if (isAndroid && window.onShared) {
+          onShared.shareFile(base64Data, fileName, mimeType);
+        } else if (
+          isIOS &&
+          window.webkit &&
+          window.webkit.messageHandlers.onShared
+        ) {
+          window.webkit.messageHandlers.onShared.postMessage(data);
+        } else {
+          // Fallback: download file
+          const link = document.createElement("a");
+          link.href = "data:" + mimeType + ";base64," + base64Data;
+          link.download = fileName;
+          link.click();
         }
+      }
 
-        // var backButton = document.getElementById('back-button');
-        // backButton.addEventListener('click', function() {
-        //    window.webkit.messageHandlers.backButton.postMessage('dismiss');
-        //    // alert("hello wrold")
-        // })
+      // Helper functions
+      async function urlToBase64(url) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return await blobToBase64(blob);
+      }
 
-        // function forBack(){
-        //     alert("hello wrold");
-        //     window.webkit.messageHandlers.backButton.postMessage('dismiss');
-        // }
+      function blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(",")[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
 
-        function toPay(){
-          window.webkit.messageHandlers.hatthaPayEvent.postMessage('https://www.google.com/');
+      function getMimeTypeFromUrl(url) {
+        const extension = url.split(".").pop().toLowerCase().split("?")[0];
+        const mimeTypes = {
+          pdf: "application/pdf",
+          jpg: "image/jpeg",
+          jpeg: "image/jpeg",
+          png: "image/png",
+          gif: "image/gif",
+          mp4: "video/mp4",
+          mp3: "audio/mpeg",
+          zip: "application/zip",
+          doc: "application/msword",
+          docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        };
+        return mimeTypes[extension] || "application/octet-stream";
+      }
+
+      function getFileNameFromUrl(url) {
+        return url.split("/").pop().split("?")[0] || "file";
+      }
+
+      // ============================================
+      // SHARE EXAMPLES (Button Handlers)
+      // ============================================
+
+      function shareURL() {
+        universalShare({
+          url: "https://flutter.dev",
+          title: "Check out Flutter!",
+        });
+      }
+
+      function shareText() {
+        universalShare({
+          text: "Hello! This is a shared message from my WebView app.",
+          title: "My Message",
+        });
+      }
+
+      function shareImage() {
+        universalShare({
+          fileUrl: "https://picsum.photos/800/600",
+          fileName: "random-photo.jpg",
+        });
+      }
+
+      function sharePDF() {
+        universalShare({
+          fileUrl:
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "sample.pdf",
+        });
+      }
+
+      // Handle file selection
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", async function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          try {
+            // Convert file to base64
+            const base64 = await fileToBase64(file);
+
+            // Share the file
+            universalShare({
+              base64: base64,
+              fileName: file.name,
+              mimeType: file.type,
+            });
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to load file");
+          }
+        });
+
+      // Helper: Convert File object to base64
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(",")[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function sharePDFFromURL(pdfUrl) {
+        try {
+          // Fetch the PDF
+          const response = await fetch(pdfUrl);
+          const blob = await response.blob();
+
+          // Convert to base64
+          const base64 = await blobToBase64(blob);
+
+          // Share
+          universalShare({
+            base64: base64,
+            fileName: getFileNameFromUrl(pdfUrl),
+            mimeType: "application/pdf",
+          });
+        } catch (error) {
+          console.error("Error loading PDF:", error);
+          alert("Failed to load PDF from URL");
         }
-        
-        // function toPayA(){
-        //                 window.hatthaPayEvent.postMessage('https://www.google.com/');
-        // }
- 
-        // // Listen for messages from Native
-        // window.addEventListener("message", function (event) {
-        //     // console.log("Message from Native:", event);
-        //     console.log("Data from Native:", event.data);
-        //     document.getElementById("lableChange").innerText = "Hello World";
+      }
 
-        //     alert("Message from Native:" + event.data);
-        // });
+      function shareGeneratedPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-        // function onClose(){
-        //     document.getElementById("lableChange").innerText = "Hello World";
-        // }
+        doc.text("Generated PDF", 20, 20);
 
-   </script>
-</body>
+        // For small generated PDFs, base64 is OK
+        const pdfBase64 = doc.output("datauristring").split(",")[1];
+
+        universalShare({
+          base64: pdfBase64,
+          fileName: "generated.pdf",
+          mimeType: "application/pdf",
+        });
+      }
+    </script>
+  </body>
 </html>
