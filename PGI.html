@@ -514,12 +514,12 @@
         };
 
         // Send to native platform
-        if (isAndroid && window.onDownload) {
+        if (isAndroid && window.onDownloaded) {
           // Android handler
-          onDownload.downloadBase64(base64Data, fileName, mimeType);
+          onDownloaded.downloadBase64(base64Data, fileName, mimeType);
         } else {
           // iOS handler
-          window.webkit.messageHandlers.onDownload.postMessage(data);
+          window.webkit.messageHandlers.onDownloaded.postMessage(data);
         }
       }
 
@@ -535,12 +535,12 @@
         };
 
         // Send to native platform
-        if (isAndroid && window.onDownload) {
+        if (isAndroid && window.onDownloaded) {
           // Android handler - let native code download from URL
-          onDownload.downloadFromUrl(fileUrl, fileName);
+          onDownloaded.downloadFromUrl(fileUrl, fileName);
         } else {
           // iOS handler - let native code download from URL
-          window.webkit.messageHandlers.onDownload.postMessage(data);
+          window.webkit.messageHandlers.onDownloaded.postMessage(data);
         }
       }
     </script>
