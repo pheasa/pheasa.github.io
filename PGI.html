@@ -248,7 +248,7 @@
       async function universalShare(options) {
         try {
           // Determine share type
-          if (options.url && !options.file) {
+          if ((options.url || options.text) && !options.file) {
             shareTextOrURL(options);
           } else if (
             options.file ||
@@ -403,11 +403,14 @@
       }
 
       function sharePDF() {
-        universalShare({
-          fileUrl:
-            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-          fileName: "sample.pdf",
-        });
+        sharePDFFromURL(
+          "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+        );
+        // universalShare({
+        //   fileUrl:
+        //     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+        //   fileName: "sample.pdf",
+        // });
       }
 
       // Handle file selection
