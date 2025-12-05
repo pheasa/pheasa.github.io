@@ -148,7 +148,16 @@
             Generate & Share PDF
           </button>
         </div>
-        <!-- Add file input to HTML -->
+        <br />
+        <div id="lbStatus">
+          <button onclick="downloadBase64()" id="back-button">
+            Download Base64
+          </button>
+          <button onclick="downloadFileUrl()" id="back-button">
+            Download FileUrl
+          </button>
+        </div>
+        <!-- Add file input to HTML
         <input
           type="file"
           id="fileInput"
@@ -161,7 +170,7 @@
           style="width: 100%"
         >
           📁 Select & Share File
-        </button>
+        </button> -->
       </div>
     </div>
 
@@ -452,16 +461,16 @@
       async function sharePDFOptimized(pdfUrl) {
         const fileName = getFileNameFromUrl(pdfUrl);
 
-        if (isAndroid && window.shareHandler) {
+        if (isAndroid && window.onShared) {
           // Let Android download and share directly
-          shareHandler.shareFileFromURL(pdfUrl, fileName);
+          onShared.shareFileFromURL(pdfUrl, fileName);
         } else if (
           isIOS &&
           window.webkit &&
-          window.webkit.messageHandlers.shareHandler
+          window.webkit.messageHandlers.onShared
         ) {
           // Let iOS download and share directly
-          window.webkit.messageHandlers.shareHandler.postMessage({
+          window.webkit.messageHandlers.onShared.postMessage({
             type: "fileUrl",
             url: pdfUrl,
             fileName: fileName,
@@ -483,6 +492,56 @@
           fileName: "generated.pdf",
           mimeType: "application/pdf",
         });
+      }
+      // ============================================
+      // DOWNLOAD FUNCTIONS
+      // ============================================
+
+      function downloadBase64() {
+        // Example: Create a simple text file as base64
+        const content =
+          "This is a downloaded file from Base64!\nCreated at: " +
+          new Date().toLocaleString();
+        const base64Data = btoa(content);
+        const fileName = "download-base64.txt";
+        const mimeType = "text/plain";
+
+        const data = {
+          type: "downloadBase64",
+          data: base64Data,
+          fileName: fileName,
+          mimeType: mimeType,
+        };
+
+        // Send to native platform
+        if (isAndroid && window.onDownload) {
+          // Android handler
+          onDownload.downloadBase64(base64Data, fileName, mimeType);
+        } else {
+          // iOS handler
+          window.webkit.messageHandlers.onDownload.postMessage(data);
+        }
+      }
+
+      async function downloadFileUrl() {
+        const fileUrl =
+          "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+        const fileName = "downloaded.pdf";
+
+        const data = {
+          type: "downloadFileUrl",
+          url: fileUrl,
+          fileName: fileName,
+        };
+
+        // Send to native platform
+        if (isAndroid && window.onDownload) {
+          // Android handler - let native code download from URL
+          onDownload.downloadFromUrl(fileUrl, fileName);
+        } else {
+          // iOS handler - let native code download from URL
+          window.webkit.messageHandlers.onDownload.postMessage(data);
+        }
       }
     </script>
   </body>
