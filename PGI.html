@@ -283,7 +283,7 @@
         };
 
         if (isAndroid && window.onShared) {
-          onShared.shareText(data.text || data.url, data.title);
+          window.onShared.postMessage(data);
         } else if (
           isIOS &&
           window.webkit &&
@@ -330,7 +330,7 @@
         };
 
         if (isAndroid && window.onShared) {
-          onShared.shareFile(base64Data, fileName, mimeType);
+          window.onShared.postMessage(data);
         } else if (
           isIOS &&
           window.webkit &&
@@ -463,7 +463,7 @@
 
         if (isAndroid && window.onShared) {
           // Let Android download and share directly
-          onShared.shareFileFromURL(pdfUrl, fileName);
+          window.onShared.postMessage(pdfUrl, fileName);
         } else if (
           isIOS &&
           window.webkit &&
@@ -516,7 +516,7 @@
         // Send to native platform
         if (isAndroid && window.onDownloaded) {
           // Android handler
-          onDownloaded.downloadBase64(base64Data, fileName, mimeType);
+          window.onDownloaded.postMessage(base64Data, fileName, mimeType);
         } else {
           // iOS handler
           window.webkit.messageHandlers.onDownloaded.postMessage(data);
@@ -537,7 +537,7 @@
         // Send to native platform
         if (isAndroid && window.onDownloaded) {
           // Android handler - let native code download from URL
-          onDownloaded.downloadFromUrl(fileUrl, fileName);
+          window.onDownloaded.postMessage(fileUrl, fileName);
         } else {
           // iOS handler - let native code download from URL
           window.webkit.messageHandlers.onDownloaded.postMessage(data);
