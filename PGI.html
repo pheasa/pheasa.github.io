@@ -145,7 +145,7 @@
             id="back-button"
             style="width: 100%"
           >
-            Generate & Share PDF
+            Generate & Share PDF (Base64)
           </button>
         </div>
         <br />
@@ -323,7 +323,7 @@
         }
 
         const data = {
-          type: "file",
+          type: "fileBase64",
           data: base64Data,
           fileName: fileName,
           mimeType: mimeType,
