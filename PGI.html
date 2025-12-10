@@ -277,8 +277,7 @@
       function shareTextOrURL(options) {
         const data = {
           type: "text",
-          text: options.text || "",
-          url: options.url || "",
+          data: (options.text ?? "") + (options.url ?? ""),
           title: options.title || "Share",
         };
 
@@ -472,7 +471,7 @@
           // Let iOS download and share directly
           window.webkit.messageHandlers.onShared.postMessage({
             type: "fileUrl",
-            url: pdfUrl,
+            data: pdfUrl,
             fileName: fileName,
           });
         }
