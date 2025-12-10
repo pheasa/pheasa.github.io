@@ -275,20 +275,29 @@
 
       // Share text or URL
       function shareTextOrURL(options) {
+        let contentValue = "";
+        if (options.text) {
+          contentValue = options.text;
+        } else if (options.url) {
+          contentValue = options.url;
+        }
+
         const data = {
           type: "text",
-          data: (options.text ?? "") + (options.url ?? ""),
+          data: contentValue,
           title: options.title || "Share",
         };
 
+        const jsonString = JSON.stringify(data);
+
         if (isAndroid && window.onShared) {
-          window.onShared.postMessage(data);
+          window.onShared.postMessage(jsonString);
         } else if (
           isIOS &&
           window.webkit &&
           window.webkit.messageHandlers.onShared
         ) {
-          window.webkit.messageHandlers.onShared.postMessage(data);
+          window.webkit.messageHandlers.onShared.postMessage(jsonString);
         } else {
           // Fallback for testing in browser
           alert("Share: " + (data.text || data.url));
@@ -327,15 +336,16 @@
           fileName: fileName,
           mimeType: mimeType,
         };
+        const jsonString = JSON.stringify(data);
 
         if (isAndroid && window.onShared) {
-          window.onShared.postMessage(data);
+          window.onShared.postMessage(jsonString);
         } else if (
           isIOS &&
           window.webkit &&
           window.webkit.messageHandlers.onShared
         ) {
-          window.webkit.messageHandlers.onShared.postMessage(data);
+          window.webkit.messageHandlers.onShared.postMessage(jsonString);
         } else {
           // Fallback: download file
           const link = document.createElement("a");
@@ -460,20 +470,24 @@
       async function sharePDFOptimized(pdfUrl) {
         const fileName = getFileNameFromUrl(pdfUrl);
 
+        const data = {
+          type: "fileUrl",
+          data: pdfUrl,
+          fileName: fileName,
+        };
+
+        const jsonString = JSON.stringify(data);
+
         if (isAndroid && window.onShared) {
           // Let Android download and share directly
-          window.onShared.postMessage(pdfUrl, fileName);
+          window.onShared.postMessage(jsonString);
         } else if (
           isIOS &&
           window.webkit &&
           window.webkit.messageHandlers.onShared
         ) {
           // Let iOS download and share directly
-          window.webkit.messageHandlers.onShared.postMessage({
-            type: "fileUrl",
-            data: pdfUrl,
-            fileName: fileName,
-          });
+          window.webkit.messageHandlers.onShared.postMessage(jsonString);
         }
       }
 
@@ -512,13 +526,15 @@
           mimeType: mimeType,
         };
 
+        const jsonString = JSON.stringify(data);
+
         // Send to native platform
         if (isAndroid && window.onDownloaded) {
           // Android handler
-          window.onDownloaded.postMessage(base64Data, fileName, mimeType);
+          window.onDownloaded.postMessage(jsonString);
         } else {
           // iOS handler
-          window.webkit.messageHandlers.onDownloaded.postMessage(data);
+          window.webkit.messageHandlers.onDownloaded.postMessage(jsonString);
         }
       }
 
@@ -533,13 +549,15 @@
           fileName: fileName,
         };
 
+        const jsonString = JSON.stringify(data);
+
         // Send to native platform
         if (isAndroid && window.onDownloaded) {
           // Android handler - let native code download from URL
-          window.onDownloaded.postMessage(fileUrl, fileName);
+          window.onDownloaded.postMessage(jsonString);
         } else {
           // iOS handler - let native code download from URL
-          window.webkit.messageHandlers.onDownloaded.postMessage(data);
+          window.webkit.messageHandlers.onDownloaded.postMessage(jsonString);
         }
       }
     </script>
