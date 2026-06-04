@@ -59,10 +59,10 @@
   </style>
 </head>
 
-<body class="bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen">
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
   <!-- Header -->
-  <header class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+  <header class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center transition-colors duration-300">
 
     <div class="flex items-start gap-3">
 
@@ -110,7 +110,7 @@
       <!-- One Button Language Switch -->
       <button
         id="btnToggleLanguage"
-        class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+        class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
       >
         🇺🇸 English
       </button>
@@ -118,52 +118,66 @@
       <!-- One Button Theme Switch -->
       <button
         id="btnToggleTheme"
-        class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+        class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
       >
         🌙 Dark
       </button>
 
-      <button id="btnClass"
+      <button
+        id="btnClass"
         data-i18n="classUML"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+      >
         Class UML
       </button>
 
-      <button id="btnSequence"
+      <button
+        id="btnSequence"
         data-i18n="sequenceUML"
-        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+      >
         Sequence UML
       </button>
 
-      <button id="btnFlowchart"
+      <button
+        id="btnFlowchart"
         data-i18n="flowchart"
-        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+      >
         Flowchart
       </button>
 
-      <button id="btnSaveProject"
+      <button
+        id="btnSaveProject"
         data-i18n="saveProject"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+      >
         រក្សាទុក Project
       </button>
 
-      <button id="btnExportProjects"
+      <button
+        id="btnExportProjects"
         data-i18n="exportProject"
-        class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+        class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+      >
         Export Project
       </button>
 
-      <button id="btnImportProjects"
+      <button
+        id="btnImportProjects"
         data-i18n="importProject"
-        class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+        class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
+      >
         Import Project
       </button>
 
       <input id="importFileInput" type="file" accept="application/json,.json" class="hidden" />
 
-      <button id="btnRender"
+      <button
+        id="btnRender"
         data-i18n="render"
-        class="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-black dark:hover:bg-gray-600">
+        class="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-black dark:hover:bg-gray-600 transition"
+      >
         បង្ហាញលទ្ធផល
       </button>
     </div>
@@ -171,7 +185,7 @@
 
   <!-- Project List -->
   <section class="px-6 pt-6">
-    <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-4 transition-colors duration-300">
       <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center mb-3">
         <div>
           <h2 data-i18n="projectList" class="font-semibold text-gray-800 dark:text-white">
@@ -183,9 +197,11 @@
           </p>
         </div>
 
-        <button id="btnClearCurrent"
+        <button
+          id="btnClearCurrent"
           data-i18n="clearCurrent"
-          class="px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
+          class="px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
           សម្អាត Code បច្ចុប្បន្ន
         </button>
       </div>
@@ -198,7 +214,7 @@
   <main class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6">
 
     <!-- Editor -->
-    <section class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
+    <section class="bg-white dark:bg-gray-900 rounded-xl shadow p-4 transition-colors duration-300">
       <div class="flex justify-between items-center mb-3">
         <div>
           <h2 data-i18n="umlCode" class="font-semibold text-gray-700 dark:text-gray-100">
@@ -210,7 +226,7 @@
           </p>
         </div>
 
-        <span data-i18n="mermaidSyntax" class="text-xs bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
+        <span data-i18n="mermaidSyntax" class="text-xs bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1 rounded">
           Mermaid Syntax
         </span>
       </div>
@@ -219,7 +235,7 @@
     </section>
 
     <!-- Preview -->
-    <section class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
+    <section class="bg-white dark:bg-gray-900 rounded-xl shadow p-4 transition-colors duration-300">
       <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center mb-3">
         <div>
           <h2 data-i18n="preview" class="font-semibold text-gray-700 dark:text-gray-100">
@@ -232,31 +248,36 @@
         </div>
 
         <div class="flex gap-2">
-          <select id="downloadType"
-            class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg px-3 py-1 text-sm">
+          <select
+            id="downloadType"
+            class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-1 text-sm"
+          >
             <option value="png">PNG</option>
             <option value="jpg">JPG</option>
             <option value="pdf">PDF</option>
             <option value="svg">SVG</option>
           </select>
 
-          <button id="btnDownload"
+          <button
+            id="btnDownload"
             data-i18n="download"
-            class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">
+            class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+          >
             ទាញយក
           </button>
         </div>
       </div>
 
-      <div id="preview"
-        class="border border-dashed border-gray-300 dark:border-gray-700 rounded-xl min-h-[500px] p-4 overflow-auto flex items-start justify-center bg-gray-50 dark:bg-gray-800 cursor-zoom-in">
-      </div>
+      <div
+        id="preview"
+        class="border border-dashed border-gray-300 dark:border-gray-700 rounded-xl min-h-[500px] p-4 overflow-auto flex items-start justify-center bg-gray-50 dark:bg-gray-800 cursor-zoom-in transition-colors duration-300"
+      ></div>
     </section>
   </main>
 
   <!-- Save Project Modal -->
   <div id="saveProjectModal" class="fixed inset-0 bg-black/70 hidden z-50 items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-5">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-5 transition-colors duration-300">
       <h3 data-i18n="saveProjectTitle" class="text-lg font-bold text-gray-800 dark:text-white mb-2">
         រក្សាទុក Project
       </h3>
@@ -270,19 +291,23 @@
         type="text"
         data-i18n-placeholder="projectNamePlaceholder"
         placeholder="ឈ្មោះ Project"
-        class="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
       />
 
       <div class="flex justify-end gap-2 mt-5">
-        <button id="btnCancelSaveProject"
+        <button
+          id="btnCancelSaveProject"
           data-i18n="cancel"
-          class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
+          class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+        >
           បោះបង់
         </button>
 
-        <button id="btnConfirmSaveProject"
+        <button
+          id="btnConfirmSaveProject"
           data-i18n="save"
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
           រក្សាទុក
         </button>
       </div>
@@ -291,7 +316,7 @@
 
   <!-- Import Option Modal -->
   <div id="importOptionModal" class="fixed inset-0 bg-black/70 hidden z-50 items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg p-5">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg p-5 transition-colors duration-300">
       <h3 data-i18n="importOptionTitle" class="text-lg font-bold text-gray-800 dark:text-white mb-2">
         ជ្រើសរើសរបៀប Import
       </h3>
@@ -300,26 +325,32 @@
         តើអ្នកចង់បញ្ចូល Project ថ្មីជាមួយ Project ចាស់ ឬជំនួស Project ចាស់ទាំងអស់?
       </p>
 
-      <div id="importPreviewInfo" class="text-sm bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mb-4"></div>
+      <div id="importPreviewInfo" class="text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg p-3 mb-4"></div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button id="btnImportMerge"
+        <button
+          id="btnImportMerge"
           data-i18n="mergeImport"
-          class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
           Merge ជាមួយ Project ចាស់
         </button>
 
-        <button id="btnImportReplace"
+        <button
+          id="btnImportReplace"
           data-i18n="replaceImport"
-          class="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          class="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
           Replace Project ចាស់
         </button>
       </div>
 
       <div class="flex justify-end mt-4">
-        <button id="btnCancelImport"
+        <button
+          id="btnCancelImport"
           data-i18n="cancel"
-          class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
+          class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+        >
           បោះបង់
         </button>
       </div>
@@ -558,6 +589,7 @@ G --> D`;
     }
 
     function updateLanguageButton() {
+      // Button shows next language
       if (currentLanguage === "km") {
         $("#btnToggleLanguage").html("🇺🇸 English");
       } else {
@@ -601,6 +633,8 @@ G --> D`;
 
     // -----------------------------
     // Theme
+    // Same key as main page: app_theme
+    // Button shows next mode
     // -----------------------------
     function getSavedTheme() {
       const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
@@ -614,26 +648,22 @@ G --> D`;
     }
 
     function updateThemeButton() {
-      if (currentTheme === "light") {
-        $("#btnToggleTheme").html("🌙 Dark");
-      } else {
+      // Button shows next theme
+      if (currentTheme === "dark") {
         $("#btnToggleTheme").html("☀️ Light");
+      } else {
+        $("#btnToggleTheme").html("🌙 Dark");
       }
     }
 
-    function setTheme(theme, shouldRender = true) {
-      if (!ALLOWED_THEMES.includes(theme)) {
-        theme = DEFAULT_THEME;
-      }
-
-      currentTheme = theme;
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
-
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
+    function applyTheme(shouldRender = true) {
+      if (currentTheme === "dark") {
+        $("html").addClass("dark");
       } else {
-        document.documentElement.classList.remove("dark");
+        $("html").removeClass("dark");
       }
+
+      localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
 
       updateThemeButton();
       initMermaid();
@@ -643,9 +673,18 @@ G --> D`;
       }
     }
 
+    function setTheme(theme, shouldRender = true) {
+      if (!ALLOWED_THEMES.includes(theme)) {
+        theme = DEFAULT_THEME;
+      }
+
+      currentTheme = theme;
+      applyTheme(shouldRender);
+    }
+
     $("#btnToggleTheme").on("click", function () {
-      const nextTheme = currentTheme === "light" ? "dark" : "light";
-      setTheme(nextTheme);
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme(true);
     });
 
     // -----------------------------
@@ -733,13 +772,13 @@ G --> D`;
 
       projects.forEach((project) => {
         const card = $(`
-          <div class="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+          <div class="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl p-4 transition-colors duration-300">
             <div class="min-w-0">
               <h3 class="font-semibold text-gray-800 dark:text-white truncate"></h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
             </div>
 
-            <pre class="mt-3 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-28 overflow-auto whitespace-pre-wrap"></pre>
+            <pre class="mt-3 text-xs bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-28 overflow-auto whitespace-pre-wrap"></pre>
 
             <div class="flex flex-wrap gap-2 mt-3">
               <button class="btn-load px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">${t("load")}</button>
@@ -1275,6 +1314,9 @@ G --> D`;
     $(document).on("keydown", function (event) {
       if (event.key === "Escape") {
         closeImagePreview();
+
+        $("#saveProjectModal").addClass("hidden").removeClass("flex");
+        $("#importOptionModal").addClass("hidden").removeClass("flex");
       }
 
       if (event.key === "Enter" && $("#saveProjectModal").hasClass("flex")) {
@@ -1285,7 +1327,10 @@ G --> D`;
     // -----------------------------
     // Init App
     // -----------------------------
-    setTheme(currentTheme, false);
+    currentTheme = getSavedTheme();
+    currentLanguage = getSavedLanguage();
+
+    applyTheme(false);
     setLanguage(currentLanguage);
     renderProjectList();
     renderUML();
