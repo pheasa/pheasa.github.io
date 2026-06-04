@@ -20,8 +20,10 @@
       font-family: Arial, "Khmer OS Battambang", "Noto Sans Khmer", sans-serif;
     }
 
-    .json-key { cursor: pointer; }
-    .json-value { cursor: pointer; }
+    .json-key,
+    .json-value {
+      cursor: pointer;
+    }
 
     .json-line {
       padding: 3px 6px;
@@ -46,31 +48,44 @@
       color: #64748b;
     }
 
-    .editable-input {
-      border: 1px solid #6366f1;
-      outline: none;
-      padding: 2px 6px;
-      border-radius: 6px;
-      background: white;
-      color: #111827;
-      min-width: 80px;
-    }
-
-    .dark .editable-input {
-      background: #111827;
-      color: #f9fafb;
-      border-color: #818cf8;
-    }
-
     .context-menu {
       position: fixed;
       z-index: 9999;
-      min-width: 210px;
+      min-width: 230px;
       display: none;
     }
 
     textarea {
       tab-size: 2;
+    }
+
+    .modal-backdrop {
+      display: none;
+    }
+
+    .form-control {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      padding: 10px 12px;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+
+    .dark .form-control {
+      border-color: #334155;
+      background: #020617;
+      color: #f8fafc;
+    }
+
+    .dark .form-control:focus {
+      border-color: #818cf8;
     }
   </style>
 </head>
@@ -125,9 +140,9 @@
         </div>
       </div>
 
-      <textarea id="jsonInput" spellcheck="false" class="h-[560px] w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-6 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-400" placeholder='{"name":"Pheak","role":"Developer","active":true}'></textarea>
+      <div id="errorBox" class="mb-4 hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"></div>
 
-      <div id="errorBox" class="mt-4 hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"></div>
+      <textarea id="jsonInput" spellcheck="false" class="h-[560px] w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-6 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-400" placeholder='{"name":"Pheak","role":"Developer","active":true}'></textarea>
     </section>
 
     <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900">
@@ -174,6 +189,100 @@
       <i class="fa-solid fa-trash"></i>
       <span data-i18n="deleteSelected">Delete selected</span>
     </button>
+  </div>
+
+  <div id="valueModal" class="modal-backdrop fixed inset-0 z-[99999] items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 id="modalTitle" class="text-xl font-bold">Edit Value</h3>
+          <p id="modalSubTitle" class="text-sm text-slate-500 dark:text-slate-400">Update selected JSON item</p>
+        </div>
+
+        <button id="btnCloseModal" class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="keyFieldWrapper" class="mb-4 hidden">
+        <label data-i18n="fieldKey" class="mb-2 block text-sm font-semibold">Key</label>
+        <input id="modalKeyInput" type="text" class="form-control" />
+      </div>
+
+      <div class="mb-4">
+        <label data-i18n="fieldType" class="mb-2 block text-sm font-semibold">Value Type</label>
+        <select id="modalTypeSelect" class="form-control">
+          <option value="string">String</option>
+          <option value="number">Number</option>
+          <option value="boolean">Boolean</option>
+          <option value="array">List / Array</option>
+          <option value="object">Dictionary / Object</option>
+          <option value="null">None / Null</option>
+        </select>
+      </div>
+
+      <label class="mb-4 flex cursor-pointer items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold dark:border-slate-700 dark:bg-slate-800">
+        <input id="modalNoneCheck" type="checkbox" class="h-4 w-4 accent-indigo-600" />
+        <span data-i18n="noneValue">Use none value type</span>
+      </label>
+
+      <div id="positionWrapper" class="mb-4 hidden rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+        <label data-i18n="fieldPosition" class="mb-2 block text-sm font-semibold">Position</label>
+
+        <div class="flex gap-4 text-sm">
+          <label class="flex cursor-pointer items-center gap-2">
+            <input type="radio" name="insertPosition" value="append" checked class="h-4 w-4 accent-indigo-600" />
+            <span data-i18n="append">Append</span>
+          </label>
+
+          <label class="flex cursor-pointer items-center gap-2">
+            <input type="radio" name="insertPosition" value="prepend" class="h-4 w-4 accent-indigo-600" />
+            <span data-i18n="prepend">Prepend</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="valueStringWrapper" class="mb-4">
+        <label data-i18n="fieldValue" class="mb-2 block text-sm font-semibold">Value</label>
+        <textarea id="modalStringInput" rows="4" class="form-control resize-none"></textarea>
+      </div>
+
+      <div id="valueNumberWrapper" class="mb-4 hidden">
+        <label data-i18n="fieldNumber" class="mb-2 block text-sm font-semibold">Number</label>
+        <input id="modalNumberInput" type="number" step="any" class="form-control" />
+      </div>
+
+      <div id="valueBooleanWrapper" class="mb-4 hidden">
+        <label data-i18n="fieldBoolean" class="mb-2 block text-sm font-semibold">Boolean</label>
+        <select id="modalBooleanSelect" class="form-control">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      </div>
+
+      <div id="valueArrayWrapper" class="mb-4 hidden">
+        <label data-i18n="fieldList" class="mb-2 block text-sm font-semibold">List Items</label>
+        <textarea id="modalArrayInput" rows="5" class="form-control resize-none" placeholder='["item 1", "item 2"]'></textarea>
+      </div>
+
+      <div id="valueObjectWrapper" class="mb-4 hidden">
+        <label data-i18n="fieldDictionary" class="mb-2 block text-sm font-semibold">Dictionary</label>
+        <textarea id="modalObjectInput" rows="5" class="form-control resize-none" placeholder='{"key":"value"}'></textarea>
+      </div>
+
+      <div id="modalError" class="mb-4 hidden rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"></div>
+
+      <div class="flex justify-end gap-2">
+        <button id="btnCancelModal" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
+          <span data-i18n="cancel">Cancel</span>
+        </button>
+
+        <button id="btnSaveModal" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">
+          <i class="fa-solid fa-check mr-1"></i>
+          <span data-i18n="save">Save</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -228,6 +337,8 @@
     let currentLanguage = getSavedLanguage();
     let currentJsonData = null;
     let contextTarget = null;
+    let modalMode = "editValue";
+    let modalPath = [];
 
     const translations = {
       en: {
@@ -247,17 +358,33 @@
         addItem: "Add item / row",
         deleteSelected: "Delete selected",
         invalidJson: "Invalid JSON syntax",
-        validJson: "JSON preview ready",
         confirmClear: "Do you want to clear JSON data?",
-        keyPrompt: "Input new key name",
-        valuePrompt: "Input value",
-        addKeyPrompt: "Input key name",
-        addValuePrompt: "Input value",
-        addArrayValuePrompt: "Input new array value",
+        cannotDeleteRoot: "Root data cannot delete",
         copied: "Copied",
-        deleted: "Deleted",
-        added: "Added",
-        cannotDeleteRoot: "Root data cannot delete"
+        fieldKey: "Key",
+        fieldType: "Value Type",
+        noneValue: "Use none value type",
+        fieldValue: "Value",
+        fieldNumber: "Number",
+        fieldBoolean: "Boolean",
+        fieldList: "List Items",
+        fieldDictionary: "Dictionary",
+        fieldPosition: "Position",
+        append: "Append",
+        prepend: "Prepend",
+        cancel: "Cancel",
+        save: "Save",
+        editKeyTitle: "Edit Key",
+        editValueTitle: "Edit Value",
+        addItemTitle: "Add Item / Row",
+        editKeySubTitle: "Change selected object key",
+        editValueSubTitle: "Change selected JSON value",
+        addItemSubTitle: "Add new row based on selected type",
+        keyRequired: "Key is required.",
+        invalidNumber: "Number value is invalid.",
+        invalidArray: "List must be valid JSON array.",
+        invalidObject: "Dictionary must be valid JSON object.",
+        rootKeyCannotEdit: "Root key cannot edit."
       },
       km: {
         title: "Json Format and Preview",
@@ -276,17 +403,33 @@
         addItem: "បន្ថែម item / row",
         deleteSelected: "លុបចំណុចនេះ",
         invalidJson: "JSON syntax មិនត្រឹមត្រូវ",
-        validJson: "JSON preview រួចរាល់",
         confirmClear: "តើអ្នកចង់សម្អាត JSON មែនទេ?",
-        keyPrompt: "បញ្ចូលឈ្មោះ key ថ្មី",
-        valuePrompt: "បញ្ចូល value",
-        addKeyPrompt: "បញ្ចូលឈ្មោះ key",
-        addValuePrompt: "បញ្ចូល value",
-        addArrayValuePrompt: "បញ្ចូល value ថ្មីក្នុង array",
+        cannotDeleteRoot: "មិនអាចលុប root data បានទេ",
         copied: "បាន Copy",
-        deleted: "បានលុប",
-        added: "បានបន្ថែម",
-        cannotDeleteRoot: "មិនអាចលុប root data បានទេ"
+        fieldKey: "Key",
+        fieldType: "ប្រភេទ Value",
+        noneValue: "ប្រើ None / Null value",
+        fieldValue: "Value",
+        fieldNumber: "លេខ",
+        fieldBoolean: "Boolean",
+        fieldList: "List Items",
+        fieldDictionary: "Dictionary",
+        fieldPosition: "ទីតាំង",
+        append: "ដាក់ខាងក្រោយ",
+        prepend: "ដាក់ខាងមុខ",
+        cancel: "បោះបង់",
+        save: "រក្សាទុក",
+        editKeyTitle: "កែ Key",
+        editValueTitle: "កែ Value",
+        addItemTitle: "បន្ថែម Item / Row",
+        editKeySubTitle: "ប្តូរ object key ដែលបានជ្រើស",
+        editValueSubTitle: "ប្តូរ JSON value ដែលបានជ្រើស",
+        addItemSubTitle: "បន្ថែម row ថ្មីតាមប្រភេទដែលបានជ្រើស",
+        keyRequired: "ត្រូវបញ្ចូល Key។",
+        invalidNumber: "តម្លៃលេខមិនត្រឹមត្រូវ។",
+        invalidArray: "List ត្រូវតែជា JSON array ត្រឹមត្រូវ។",
+        invalidObject: "Dictionary ត្រូវតែជា JSON object ត្រឹមត្រូវ។",
+        rootKeyCannotEdit: "មិនអាចកែ root key បានទេ។"
       }
     };
 
@@ -311,7 +454,7 @@
       }
     }
 
-    // Apply all text by current language
+    // Apply language text
     function applyLanguage() {
       $("html").attr("lang", currentLanguage);
 
@@ -329,7 +472,7 @@
       return translations[currentLanguage][key] || key;
     }
 
-    // Parse JSON with error message
+    // Parse JSON input and show syntax error above textarea
     function parseJsonInput() {
       const text = $("#jsonInput").val().trim();
 
@@ -359,7 +502,7 @@
       localStorage.setItem(JSON_STORAGE_KEY, $("#jsonInput").val());
     }
 
-    // Restore saved input from localStorage
+    // Restore saved input
     function restoreInput() {
       const savedData = localStorage.getItem(JSON_STORAGE_KEY);
 
@@ -392,7 +535,7 @@
       renderPreview();
     }
 
-    // Render empty preview message
+    // Render empty preview
     function renderEmptyPreview() {
       $("#jsonPreview").html(`
         <div class="flex h-full flex-col items-center justify-center text-center text-slate-400">
@@ -402,30 +545,27 @@
       `);
     }
 
-    // Render JSON preview tree
+    // Render JSON preview
     function renderPreview() {
       const data = parseJsonInput();
 
       if (data === null) return;
 
-      const html = renderNode(data, [], "root");
-      $("#jsonPreview").html(`<div class="min-w-max">${html}</div>`);
+      $("#jsonPreview").html(`<div class="min-w-max">${renderNode(data, [], "root")}</div>`);
       saveInput();
     }
 
-    // Render one JSON node
+    // Render JSON node
     function renderNode(value, path, keyName) {
       const valueType = getValueType(value);
       const pathValue = encodeURIComponent(JSON.stringify(path));
       const showType = $("#showType").is(":checked");
-      const isTree = $("#showTree").is(":checked");
 
       if (valueType === "object" || valueType === "array") {
         const isArray = valueType === "array";
         const entries = isArray ? value.map((item, index) => [index, item]) : Object.entries(value);
-        const openIcon = isTree ? `<span class="tree-toggle" data-path="${pathValue}"><i class="fa-solid fa-caret-down"></i></span>` : `<span class="tree-toggle"></span>`;
 
-        let children = entries.map(([childKey, childValue]) => {
+        const children = entries.map(([childKey, childValue]) => {
           const childPath = path.concat([childKey]);
 
           return `
@@ -437,13 +577,15 @@
         }).join("");
 
         return `
-          <span>
-            ${path.length === 0 ? openIcon : ""}
-            <span class="font-semibold ${getKeyColorClass(value)}">${isArray ? "[" : "{"}</span>
+          <span class="json-value ${getKeyColorClass(value)}"
+                data-path="${pathValue}"
+                data-type="${valueType}">
+            <span class="tree-toggle"><i class="fa-solid fa-caret-down"></i></span>
+            <span class="font-semibold">${isArray ? "[" : "{"}</span>
             ${showType ? renderTypeBadge(valueType) : ""}
             <span class="text-slate-400">${entries.length} ${isArray ? "items" : "keys"}</span>
           </span>
-          <div class="tree-children">
+          <div class="${$("#showTree").is(":checked") ? "tree-children" : ""}">
             ${children || `<div class="text-slate-400">empty</div>`}
           </div>
           <span class="font-semibold ${getKeyColorClass(value)}">${isArray ? "]" : "}"}</span>
@@ -460,7 +602,7 @@
       `;
     }
 
-    // Render JSON key with color by value type
+    // Render key with color based on value type
     function renderKey(key, value, path, isArray) {
       if (isArray) {
         return `<span class="mr-2 text-slate-400">${key}:</span>`;
@@ -480,17 +622,15 @@
       return `<span class="ml-2 rounded-lg bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">${type}</span>`;
     }
 
-    // Get real JSON value type
+    // Get JSON value type
     function getValueType(value) {
       if (value === null) return "null";
       if (Array.isArray(value)) return "array";
       return typeof value;
     }
 
-    // Color for key based on value type
+    // Get key color based on value type
     function getKeyColorClass(value) {
-      const type = getValueType(value);
-
       const colors = {
         string: "text-emerald-600 dark:text-emerald-400",
         number: "text-sky-600 dark:text-sky-400",
@@ -500,13 +640,11 @@
         null: "text-slate-500 dark:text-slate-400"
       };
 
-      return colors[type] || colors.string;
+      return colors[getValueType(value)] || colors.string;
     }
 
-    // Color for value based on value type
+    // Get value color based on value type
     function getValueColorClass(value) {
-      const type = getValueType(value);
-
       const colors = {
         string: "text-emerald-700 dark:text-emerald-300",
         number: "text-sky-700 dark:text-sky-300",
@@ -514,17 +652,17 @@
         null: "text-slate-500 dark:text-slate-400"
       };
 
-      return colors[type] || "text-slate-900 dark:text-slate-100";
+      return colors[getValueType(value)] || "text-slate-900 dark:text-slate-100";
     }
 
-    // Format JSON primitive value for display
+    // Format JSON value to display
     function formatValue(value) {
       if (typeof value === "string") return `"${escapeHtml(value)}"`;
       if (value === null) return "null";
       return escapeHtml(String(value));
     }
 
-    // Escape HTML safely
+    // Escape HTML
     function escapeHtml(text) {
       return String(text)
         .replaceAll("&", "&amp;")
@@ -536,6 +674,7 @@
 
     // Get value by path
     function getByPath(data, path) {
+      if (path.length === 0) return data;
       return path.reduce((obj, key) => obj[key], data);
     }
 
@@ -568,13 +707,13 @@
 
     // Rename object key
     function renameKey(data, path, newKey) {
-      if (path.length === 0) return;
+      if (path.length === 0) return false;
 
       const parent = getByPath(data, path.slice(0, -1));
       const oldKey = path[path.length - 1];
 
-      if (Array.isArray(parent)) return;
-      if (!newKey || newKey === oldKey) return;
+      if (Array.isArray(parent)) return false;
+      if (!newKey || newKey === oldKey) return false;
 
       const newParent = {};
 
@@ -588,123 +727,233 @@
 
       Object.keys(parent).forEach((key) => delete parent[key]);
       Object.assign(parent, newParent);
+
+      return true;
     }
 
-    // Convert input string to JSON value
-    function parseValueFromInput(input) {
-      const text = String(input).trim();
-
-      if (text === "true") return true;
-      if (text === "false") return false;
-      if (text === "null") return null;
-      if (text !== "" && !isNaN(text)) return Number(text);
-
-      try {
-        return JSON.parse(text);
-      } catch {
-        return input;
-      }
-    }
-
-    // Sync preview data back to textarea
+    // Sync preview data to textarea
     function syncDataToInput() {
       $("#jsonInput").val(JSON.stringify(currentJsonData, null, 2));
       saveInput();
       renderPreview();
     }
 
-    // Start inline edit for key or value
-    function startInlineEdit($target, mode) {
-      const path = JSON.parse(decodeURIComponent($target.data("path")));
-      const currentValue = mode === "key"
-        ? path[path.length - 1]
-        : getByPath(currentJsonData, path);
+    // Open modal
+    function openModal(mode, path) {
+      modalMode = mode;
+      modalPath = path || [];
 
-      const displayValue = typeof currentValue === "string"
-        ? currentValue
-        : JSON.stringify(currentValue);
+      $("#modalError").addClass("hidden").html("");
+      $("#keyFieldWrapper").addClass("hidden");
+      $("#positionWrapper").addClass("hidden");
+      $("#modalNoneCheck").prop("checked", false);
+      $("#modalTypeSelect").prop("disabled", false);
 
-      const $input = $(`<input class="editable-input" />`).val(displayValue);
-      $target.replaceWith($input);
-      $input.focus().select();
+      if (mode === "editKey") {
+        if (modalPath.length === 0) {
+          alert(t("rootKeyCannotEdit"));
+          return;
+        }
 
-      function saveEdit() {
-        const newValue = $input.val();
+        $("#modalTitle").text(t("editKeyTitle"));
+        $("#modalSubTitle").text(t("editKeySubTitle"));
+        $("#keyFieldWrapper").removeClass("hidden");
+        $("#modalKeyInput").val(modalPath[modalPath.length - 1]);
+        $("#modalTypeSelect").prop("disabled", true);
+        setModalValue(getByPath(currentJsonData, modalPath));
+      }
 
-        if (mode === "key") {
-          renameKey(currentJsonData, path, newValue);
-        } else {
-          setByPath(currentJsonData, path, parseValueFromInput(newValue));
+      if (mode === "editValue") {
+        $("#modalTitle").text(t("editValueTitle"));
+        $("#modalSubTitle").text(t("editValueSubTitle"));
+        setModalValue(getByPath(currentJsonData, modalPath));
+      }
+
+      if (mode === "addItem") {
+        $("#modalTitle").text(t("addItemTitle"));
+        $("#modalSubTitle").text(t("addItemSubTitle"));
+
+        const parentValue = getByPath(currentJsonData, modalPath);
+        const parentType = getValueType(parentValue);
+
+        if (parentType === "object") {
+          $("#keyFieldWrapper").removeClass("hidden");
+          $("#modalKeyInput").val("");
+        }
+
+        if (parentType === "array") {
+          $("#positionWrapper").removeClass("hidden");
+        }
+
+        setModalValue("");
+      }
+
+      updateModalFieldVisibility();
+      $("#valueModal").css("display", "flex").hide().fadeIn(120);
+    }
+
+    // Close modal
+    function closeModal() {
+      $("#valueModal").fadeOut(100);
+    }
+
+    // Set modal value by current JSON type
+    function setModalValue(value) {
+      const type = getValueType(value);
+
+      $("#modalTypeSelect").val(type);
+      $("#modalStringInput").val(typeof value === "string" ? value : "");
+      $("#modalNumberInput").val(type === "number" ? value : "");
+      $("#modalBooleanSelect").val(value === false ? "false" : "true");
+      $("#modalArrayInput").val(type === "array" ? JSON.stringify(value, null, 2) : "[]");
+      $("#modalObjectInput").val(type === "object" ? JSON.stringify(value, null, 2) : "{}");
+
+      if (type === "null") {
+        $("#modalNoneCheck").prop("checked", true);
+      }
+    }
+
+    // Update modal input by selected type
+    function updateModalFieldVisibility() {
+      const type = $("#modalNoneCheck").is(":checked") ? "null" : $("#modalTypeSelect").val();
+
+      $("#valueStringWrapper").addClass("hidden");
+      $("#valueNumberWrapper").addClass("hidden");
+      $("#valueBooleanWrapper").addClass("hidden");
+      $("#valueArrayWrapper").addClass("hidden");
+      $("#valueObjectWrapper").addClass("hidden");
+
+      $("#modalTypeSelect").prop("disabled", $("#modalNoneCheck").is(":checked") || modalMode === "editKey");
+
+      if (type === "string") $("#valueStringWrapper").removeClass("hidden");
+      if (type === "number") $("#valueNumberWrapper").removeClass("hidden");
+      if (type === "boolean") $("#valueBooleanWrapper").removeClass("hidden");
+      if (type === "array") $("#valueArrayWrapper").removeClass("hidden");
+      if (type === "object") $("#valueObjectWrapper").removeClass("hidden");
+    }
+
+    // Build value from modal fields
+    function buildModalValue() {
+      if ($("#modalNoneCheck").is(":checked")) return null;
+
+      const type = $("#modalTypeSelect").val();
+
+      if (type === "string") {
+        return $("#modalStringInput").val();
+      }
+
+      if (type === "number") {
+        const numberValue = Number($("#modalNumberInput").val());
+
+        if ($("#modalNumberInput").val() === "" || Number.isNaN(numberValue)) {
+          throw new Error(t("invalidNumber"));
+        }
+
+        return numberValue;
+      }
+
+      if (type === "boolean") {
+        return $("#modalBooleanSelect").val() === "true";
+      }
+
+      if (type === "array") {
+        const arrayValue = JSON.parse($("#modalArrayInput").val() || "[]");
+
+        if (!Array.isArray(arrayValue)) {
+          throw new Error(t("invalidArray"));
+        }
+
+        return arrayValue;
+      }
+
+      if (type === "object") {
+        const objectValue = JSON.parse($("#modalObjectInput").val() || "{}");
+
+        if (objectValue === null || Array.isArray(objectValue) || typeof objectValue !== "object") {
+          throw new Error(t("invalidObject"));
+        }
+
+        return objectValue;
+      }
+
+      return null;
+    }
+
+    // Save modal action
+    function saveModal() {
+      try {
+        $("#modalError").addClass("hidden").html("");
+
+        if (modalMode === "editKey") {
+          const newKey = $("#modalKeyInput").val().trim();
+
+          if (!newKey) {
+            throw new Error(t("keyRequired"));
+          }
+
+          renameKey(currentJsonData, modalPath, newKey);
+        }
+
+        if (modalMode === "editValue") {
+          const newValue = buildModalValue();
+          setByPath(currentJsonData, modalPath, newValue);
+        }
+
+        if (modalMode === "addItem") {
+          const parentValue = getByPath(currentJsonData, modalPath);
+          const parentType = getValueType(parentValue);
+          const newValue = buildModalValue();
+
+          if (parentType === "object") {
+            const key = $("#modalKeyInput").val().trim();
+
+            if (!key) {
+              throw new Error(t("keyRequired"));
+            }
+
+            parentValue[key] = newValue;
+          } else if (parentType === "array") {
+            const position = $("input[name='insertPosition']:checked").val();
+
+            if (position === "prepend") {
+              parentValue.unshift(newValue);
+            } else {
+              parentValue.push(newValue);
+            }
+          } else {
+            const parent = getByPath(currentJsonData, modalPath.slice(0, -1));
+            const lastKey = modalPath[modalPath.length - 1];
+
+            if (Array.isArray(parent)) {
+              const position = $("input[name='insertPosition']:checked").val();
+
+              if (position === "prepend") {
+                parent.splice(lastKey, 0, newValue);
+              } else {
+                parent.splice(lastKey + 1, 0, newValue);
+              }
+            } else {
+              const key = $("#modalKeyInput").val().trim();
+
+              if (!key) {
+                throw new Error(t("keyRequired"));
+              }
+
+              parent[key] = newValue;
+            }
+          }
         }
 
         syncDataToInput();
+        closeModal();
+      } catch (error) {
+        $("#modalError")
+          .removeClass("hidden")
+          .html(escapeHtml(error.message));
       }
-
-      $input.on("keydown", function (e) {
-        if (e.key === "Enter") saveEdit();
-        if (e.key === "Escape") renderPreview();
-      });
-
-      $input.on("blur", saveEdit);
     }
 
-    // Add item based on selected type
-function addItemByContext() {
-  if (!contextTarget) return;
-
-  const path = contextTarget.path;
-  const value = getByPath(currentJsonData, path);
-  const type = getValueType(value);
-
-  if (type === "object") {
-    const key = prompt(t("addKeyPrompt"));
-
-    // user clicked Cancel or empty key
-    if (key === null || key.trim() === "") return;
-
-    const inputValue = prompt(t("addValuePrompt"), "value");
-
-    // user clicked Cancel
-    if (inputValue === null) return;
-
-    value[key.trim()] = parseValueFromInput(inputValue);
-  } else if (type === "array") {
-    const inputValue = prompt(t("addArrayValuePrompt"), "value");
-
-    // user clicked Cancel
-    if (inputValue === null) return;
-
-    value.push(parseValueFromInput(inputValue));
-  } else {
-    const parent = getByPath(currentJsonData, path.slice(0, -1));
-    const lastKey = path[path.length - 1];
-
-    if (Array.isArray(parent)) {
-      const inputValue = prompt(t("addArrayValuePrompt"), "value");
-
-      // user clicked Cancel
-      if (inputValue === null) return;
-
-      parent.splice(lastKey + 1, 0, parseValueFromInput(inputValue));
-    } else {
-      const key = prompt(t("addKeyPrompt"));
-
-      // user clicked Cancel or empty key
-      if (key === null || key.trim() === "") return;
-
-      const inputValue = prompt(t("addValuePrompt"), "value");
-
-      // user clicked Cancel
-      if (inputValue === null) return;
-
-      parent[key.trim()] = parseValueFromInput(inputValue);
-    }
-  }
-
-  syncDataToInput();
-}
-
-    // Copy selected item to clipboard
+    // Copy selected value
     function copyContextValue() {
       if (!contextTarget) return;
 
@@ -714,7 +963,7 @@ function addItemByContext() {
       navigator.clipboard.writeText(text);
     }
 
-    // Delete selected item
+    // Delete selected value
     function deleteContextValue() {
       if (!contextTarget) return;
 
@@ -728,7 +977,7 @@ function addItemByContext() {
       syncDataToInput();
     }
 
-    // Show custom right click menu
+    // Show right click menu
     function showContextMenu(e, path) {
       e.preventDefault();
 
@@ -742,7 +991,7 @@ function addItemByContext() {
         .fadeIn(100);
     }
 
-    // Bind all app events
+    // Bind app events
     function bindEvents() {
       $("#btnToggleLanguage").on("click", function () {
         currentLanguage = currentLanguage === "km" ? "en" : "km";
@@ -750,9 +999,7 @@ function addItemByContext() {
         if (currentJsonData) renderPreview();
       });
 
-      $("#jsonInput").on("input", function () {
-        saveInput();
-      });
+      $("#jsonInput").on("input", saveInput);
 
       $("#btnFormat").on("click", formatJson);
       $("#btnPreview").on("click", renderPreview);
@@ -772,11 +1019,13 @@ function addItemByContext() {
       });
 
       $(document).on("dblclick", ".json-key", function () {
-        startInlineEdit($(this), "key");
+        const path = JSON.parse(decodeURIComponent($(this).data("path")));
+        openModal("editKey", path);
       });
 
       $(document).on("dblclick", ".json-value", function () {
-        startInlineEdit($(this), "value");
+        const path = JSON.parse(decodeURIComponent($(this).data("path")));
+        openModal("editValue", path);
       });
 
       $(document).on("contextmenu", ".json-line, .json-value, .json-key", function (e) {
@@ -797,10 +1046,21 @@ function addItemByContext() {
         const action = $(this).data("action");
 
         if (action === "copy") copyContextValue();
-        if (action === "add") addItemByContext();
+        if (action === "add") openModal("addItem", contextTarget.path);
         if (action === "delete") deleteContextValue();
 
         $("#contextMenu").fadeOut(80);
+      });
+
+      $("#modalTypeSelect, #modalNoneCheck").on("change", updateModalFieldVisibility);
+
+      $("#btnCloseModal, #btnCancelModal").on("click", closeModal);
+      $("#btnSaveModal").on("click", saveModal);
+
+      $("#valueModal").on("click", function (e) {
+        if (e.target.id === "valueModal") {
+          closeModal();
+        }
       });
     }
 
