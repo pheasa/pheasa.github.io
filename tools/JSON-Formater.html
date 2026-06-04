@@ -50,7 +50,7 @@
     .context-menu {
       position: fixed;
       z-index: 9999;
-      min-width: 230px;
+      min-width: 235px;
       display: none;
     }
 
@@ -106,7 +106,6 @@
 
       <div class="flex flex-wrap items-center gap-2">
         <button id="btnToggleLanguage" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"></button>
-
         <button id="btnToggleTheme" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"></button>
       </div>
     </div>
@@ -148,7 +147,7 @@
       <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 data-i18n="previewTitle" class="text-lg font-bold">JSON Preview</h2>
-          <p data-i18n="previewHint" class="text-sm text-slate-500 dark:text-slate-400">Preview JSON as tree and edit by double click.</p>
+          <p data-i18n="previewHint" class="text-sm text-slate-500 dark:text-slate-400">Right click key/value for action.</p>
         </div>
 
         <div class="flex flex-wrap gap-2">
@@ -164,19 +163,14 @@
         </div>
       </div>
 
-      <div id="jsonPreview" class="h-[620px] overflow-auto rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 transition-colors duration-300 dark:border-slate-700 dark:bg-slate-950">
-        <div class="flex h-full flex-col items-center justify-center text-center text-slate-400">
-          <i class="fa-solid fa-code mb-3 text-4xl"></i>
-          <p data-i18n="emptyPreview">Paste JSON and click Preview</p>
-        </div>
-      </div>
+      <div id="jsonPreview" class="h-[620px] overflow-auto rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 transition-colors duration-300 dark:border-slate-700 dark:bg-slate-950"></div>
     </section>
   </main>
 
   <div id="contextMenu" class="context-menu overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
     <button id="menuEditItem" data-action="edit" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
       <i class="fa-solid fa-pen-to-square text-sky-500"></i>
-      <span data-i18n="editSelected">Edit selected</span>
+      <span id="menuEditText">Edit selected</span>
     </button>
 
     <button data-action="copy" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
@@ -398,11 +392,12 @@
         preview: "Preview",
         clear: "Clear",
         previewTitle: "JSON Preview",
-        previewHint: "Preview JSON as tree and edit by double click.",
+        previewHint: "Right click key/value for action.",
         tree: "Tree",
         type: "Type",
         emptyPreview: "Paste JSON and click Preview",
-        editSelected: "Edit selected",
+        editKey: "Edit key",
+        editValue: "Edit value",
         copySelected: "Copy selected",
         addItem: "Add item / row",
         setNull: "Set to null",
@@ -430,6 +425,7 @@
         editValueSubTitle: "Change selected JSON value",
         addItemSubTitle: "Add new row inside object or array only",
         keyRequired: "Key is required.",
+        duplicateKey: "This key already exists in the same dictionary.",
         invalidNumber: "Number value is invalid.",
         invalidArray: "List must be valid JSON array.",
         invalidObject: "Dictionary must be valid JSON object.",
@@ -450,11 +446,12 @@
         preview: "Preview",
         clear: "សម្អាត",
         previewTitle: "មើល JSON",
-        previewHint: "មើលជា tree និង double click ដើម្បីកែ។",
+        previewHint: "Right click លើ key/value ដើម្បីធ្វើ action។",
         tree: "Tree",
         type: "ប្រភេទ",
         emptyPreview: "បិទភ្ជាប់ JSON រួចចុច Preview",
-        editSelected: "កែចំណុចនេះ",
+        editKey: "កែ Key",
+        editValue: "កែ Value",
         copySelected: "Copy ចំណុចនេះ",
         addItem: "បន្ថែម item / row",
         setNull: "កំណត់ជា null",
@@ -482,6 +479,7 @@
         editValueSubTitle: "ប្តូរ JSON value ដែលបានជ្រើស",
         addItemSubTitle: "បន្ថែម row ថ្មីក្នុង object ឬ array ប៉ុណ្ណោះ",
         keyRequired: "ត្រូវបញ្ចូល Key។",
+        duplicateKey: "Key នេះមានរួចហើយក្នុង dictionary ដូចគ្នា។",
         invalidNumber: "តម្លៃលេខមិនត្រឹមត្រូវ។",
         invalidArray: "List ត្រូវតែជា JSON array ត្រឹមត្រូវ។",
         invalidObject: "Dictionary ត្រូវតែជា JSON object ត្រឹមត្រូវ។",
@@ -578,7 +576,8 @@
           version: 1,
           author: {
             name: "Pheak",
-            role: "Developer"
+            role: "Developer",
+            testing: "Hello world"
           },
           tags: ["json", "format", "preview"],
           settings: null
@@ -768,7 +767,18 @@
       return true;
     }
 
-    // Rename object key
+    // Check duplicated key in same dictionary
+    function hasDuplicateKey(path, newKey) {
+      if (path.length === 0) return false;
+
+      const parent = getByPath(currentJsonData, path.slice(0, -1));
+      const oldKey = path[path.length - 1];
+
+      if (Array.isArray(parent)) return false;
+      return newKey !== oldKey && Object.prototype.hasOwnProperty.call(parent, newKey);
+    }
+
+    // Rename object key with duplicate check
     function renameKey(data, path, newKey) {
       if (path.length === 0) return false;
 
@@ -777,6 +787,10 @@
 
       if (Array.isArray(parent)) return false;
       if (!newKey || newKey === oldKey) return false;
+
+      if (Object.prototype.hasOwnProperty.call(parent, newKey)) {
+        throw new Error(t("duplicateKey"));
+      }
 
       const newParent = {};
 
@@ -808,29 +822,30 @@
       return type === "object" || type === "array";
     }
 
-    // Check selected item can edit value
+    // Check selected value can edit
     function canEditValue(path) {
       const value = getByPath(currentJsonData, path);
       const type = getValueType(value);
       return type !== "object" && type !== "array";
     }
 
-    // Show or hide context menu options based on selected type
-    function updateContextMenuOptions(path) {
-      if (canAddChild(path)) {
-        $("#menuAddItem").removeClass("hidden");
-      } else {
-        $("#menuAddItem").addClass("hidden");
-      }
+    // Show or hide context menu options based on selected target
+    function updateContextMenuOptions(path, kind) {
+      const value = getByPath(currentJsonData, path);
+      const type = getValueType(value);
 
-      if (canEditValue(path)) {
+      $("#menuAddItem").toggleClass("hidden", !(type === "object" || type === "array"));
+
+      if (kind === "key") {
         $("#menuEditItem").removeClass("hidden");
+        $("#menuEditText").text(t("editKey"));
       } else {
-        $("#menuEditItem").addClass("hidden");
+        $("#menuEditText").text(t("editValue"));
+        $("#menuEditItem").toggleClass("hidden", type === "object" || type === "array");
       }
     }
 
-    // Open modal
+    // Open edit/add modal
     function openModal(mode, path) {
       modalMode = mode;
       modalPath = path || [];
@@ -891,7 +906,7 @@
       $("#valueModal").css("display", "flex").hide().fadeIn(120);
     }
 
-    // Close modal
+    // Close edit/add modal
     function closeModal() {
       $("#valueModal").fadeOut(100);
     }
@@ -1042,6 +1057,10 @@
               throw new Error(t("keyRequired"));
             }
 
+            if (Object.prototype.hasOwnProperty.call(parentValue, key)) {
+              throw new Error(t("duplicateKey"));
+            }
+
             parentValue[key] = newValue;
           }
 
@@ -1092,11 +1111,12 @@
     // Show right click menu
     function showContextMenu(e, path, kind) {
       e.preventDefault();
+      e.stopPropagation();
 
       contextTarget = { path };
       contextClickKind = kind || "value";
 
-      updateContextMenuOptions(path);
+      updateContextMenuOptions(path, contextClickKind);
 
       $("#contextMenu")
         .css({
@@ -1133,12 +1153,16 @@
         if (currentJsonData !== null) renderPreview();
       });
 
-      $(document).on("dblclick", ".json-key", function () {
+      $(document).on("dblclick", ".json-key", function (e) {
+        e.stopPropagation();
+
         const path = JSON.parse(decodeURIComponent($(this).data("path")));
         openModal("editKey", path);
       });
 
-      $(document).on("dblclick", ".json-value", function () {
+      $(document).on("dblclick", ".json-value", function (e) {
+        e.stopPropagation();
+
         const path = JSON.parse(decodeURIComponent($(this).data("path")));
         openModal("editValue", path);
       });
@@ -1154,6 +1178,8 @@
       });
 
       $(document).on("contextmenu", ".json-line", function (e) {
+        if ($(e.target).closest(".json-key, .json-value").length) return;
+
         const rawPath = $(this).data("path");
         const path = rawPath ? JSON.parse(decodeURIComponent(rawPath)) : [];
         showContextMenu(e, path, "value");
