@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jsong Format and Preview</title>
+
+  <!-- Tailwind config must be before Tailwind CDN -->
+  <script>
+    tailwind = {
+      config: {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "Arial", "sans-serif"]
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+  <!-- Font Awesome Icon -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
+  <style>
+    /* Small custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 999px;
+    }
+
+    .json-line {
+      line-height: 1.8;
+    }
+
+    .json-key,
+    .json-value {
+      cursor: pointer;
+      border-radius: 6px;
+      padding: 1px 4px;
+    }
+
+    .json-key:hover,
+    .json-value:hover {
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    .json-node {
+      margin-left: 18px;
+      border-left: 1px dashed rgba(148, 163, 184, 0.5);
+      padding-left: 12px;
+    }
+
+    .context-menu {
+      position: fixed;
+      z-index: 9999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <div class="flex items-center gap-3">
+        <a
+          href="/"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          title="Back"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <div>
+          <h1 data-i18n="title" class="text-xl font-bold sm:text-2xl">
+            Jsong Format and Preview
+          </h1>
+          <p data-i18n="subtitle" class="text-sm text-slate-500 dark:text-slate-400">
+            Paste JSON data, format, preview tree, and edit values.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Language switch button show next language only -->
+        <button
+          id="btnLanguage"
+          class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+        >
+          🇺🇸 English
+        </button>
+
+        <!-- Theme switch button show next theme only -->
+        <button
+          id="btnTheme"
+          class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+        >
+          <i class="fa-solid fa-moon"></i>
+          Dark
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-7xl px-4 py-6">
+    <!-- Top action card -->
+    <section class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 data-i18n="toolPurpose" class="font-semibold">
+            Paste JSON data for tool format
+          </h2>
+          <p data-i18n="toolHint" class="text-sm text-slate-500 dark:text-slate-400">
+            This tool will show missing syntax errors when JSON is wrong.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button id="btnFormat" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
+            <span data-i18n="format">Format</span>
+          </button>
+
+          <button id="btnPreview" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+            <i class="fa-solid fa-eye mr-1"></i>
+            <span data-i18n="preview">Preview JSON</span>
+          </button>
+
+          <button id="btnMinify" class="rounded-xl bg-slate-700 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-compress mr-1"></i>
+            <span data-i18n="minify">Minify</span>
+          </button>
+
+          <button id="btnClear" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+            <i class="fa-solid fa-trash mr-1"></i>
+            <span data-i18n="clear">Clear</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Options -->
+    <section class="mb-5 grid gap-3 md:grid-cols-3">
+      <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <input id="optTree" type="checkbox" checked class="h-4 w-4 accent-indigo-600" />
+        <div>
+          <div data-i18n="treeMode" class="font-semibold">Tree preview</div>
+          <div data-i18n="treeModeDesc" class="text-sm text-slate-500 dark:text-slate-400">
+            Show JSON as expandable tree.
+          </div>
+        </div>
+      </label>
+
+      <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <input id="optType" type="checkbox" checked class="h-4 w-4 accent-indigo-600" />
+        <div>
+          <div data-i18n="showType" class="font-semibold">Show value type</div>
+          <div data-i18n="showTypeDesc" class="text-sm text-slate-500 dark:text-slate-400">
+            Display string, number, boolean, object...
+          </div>
+        </div>
+      </label>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div data-i18n="editHintTitle" class="font-semibold">Edit helper</div>
+        <div data-i18n="editHint" class="text-sm text-slate-500 dark:text-slate-400">
+          Double click key/value to edit. Right click to show menu.
+        </div>
+      </div>
+    </section>
+
+    <!-- Editor and Preview -->
+    <section class="grid gap-5 lg:grid-cols-2">
+      <!-- JSON input -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <h3 data-i18n="jsonInput" class="font-bold">JSON Input</h3>
+          <button id="btnSample" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+            <i class="fa-solid fa-code mr-1"></i>
+            <span data-i18n="sample">Sample</span>
+          </button>
+        </div>
+
+        <textarea
+          id="jsonInput"
+          class="h-[520px] w-full resize-none rounded-b-2xl bg-slate-950 p-4 font-mono text-sm text-slate-100 outline-none"
+          spellcheck="false"
+          placeholder='{"name":"Pheak","role":"Developer"}'
+        ></textarea>
+      </div>
+
+      <!-- JSON preview -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <h3 data-i18n="jsonPreview" class="font-bold">JSON Preview</h3>
+
+          <button id="btnCopyAll" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+            <i class="fa-solid fa-copy mr-1"></i>
+            <span data-i18n="copyAll">Copy All</span>
+          </button>
+        </div>
+
+        <!-- Error box -->
+        <div id="errorBox" class="hidden border-b border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"></div>
+
+        <!-- Preview box -->
+        <div id="previewBox" class="h-[520px] overflow-auto rounded-b-2xl p-4 font-mono text-sm">
+          <div class="flex h-full items-center justify-center text-center text-slate-400">
+            <div>
+              <i class="fa-solid fa-file-code mb-3 text-4xl"></i>
+              <p data-i18n="emptyPreview">Paste JSON and click Preview JSON.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Right click context menu -->
+  <div id="contextMenu" class="context-menu w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-800">
+    <button data-action="copy" class="menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700">
+      <i class="fa-solid fa-copy w-5"></i>
+      <span data-i18n="copy">Copy</span>
+    </button>
+
+    <button data-action="edit" class="menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700">
+      <i class="fa-solid fa-pen w-5"></i>
+      <span data-i18n="edit">Edit</span>
+    </button>
+
+    <button data-action="addChild" class="menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700">
+      <i class="fa-solid fa-plus w-5"></i>
+      <span data-i18n="addChild">Add child</span>
+    </button>
+
+    <button data-action="addSibling" class="menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700">
+      <i class="fa-solid fa-layer-group w-5"></i>
+      <span data-i18n="addSibling">Add sibling</span>
+    </button>
+
+    <hr class="my-2 border-slate-200 dark:border-slate-700" />
+
+    <button data-action="delete" class="menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40">
+      <i class="fa-solid fa-trash w-5"></i>
+      <span data-i18n="delete">Delete</span>
+    </button>
+  </div>
+
+  <script>
+    // -----------------------------
+    // Global app state
+    // -----------------------------
+    let currentJson = null;
+    let rightClickedInfo = null;
+
+    // -----------------------------
+    // Translation dictionary
+    // -----------------------------
+    const translations = {
+      en: {
+        title: "Jsong Format and Preview",
+        subtitle: "Paste JSON data, format, preview tree, and edit values.",
+        toolPurpose: "Paste JSON data for tool format",
+        toolHint: "This tool will show missing syntax errors when JSON is wrong.",
+        format: "Format",
+        preview: "Preview JSON",
+        minify: "Minify",
+        clear: "Clear",
+        treeMode: "Tree preview",
+        treeModeDesc: "Show JSON as expandable tree.",
+        showType: "Show value type",
+        showTypeDesc: "Display string, number, boolean, object...",
+        editHintTitle: "Edit helper",
+        editHint: "Double click key/value to edit. Right click to show menu.",
+        jsonInput: "JSON Input",
+        jsonPreview: "JSON Preview",
+        sample: "Sample",
+        copyAll: "Copy All",
+        emptyPreview: "Paste JSON and click Preview JSON.",
+        copy: "Copy",
+        edit: "Edit",
+        addChild: "Add child",
+        addSibling: "Add sibling",
+        delete: "Delete",
+        invalidJson: "Invalid JSON",
+        validJson: "Valid JSON",
+        inputKey: "Input key name",
+        inputValue: "Input value. Example: string, 123, true, null, {\"a\":1}, [1,2]",
+        editValue: "Edit value",
+        editKey: "Edit key",
+        copied: "Copied",
+        noJson: "No JSON data"
+      },
+      km: {
+        title: "Jsong Format and Preview",
+        subtitle: "បិទភ្ជាប់ JSON, រៀបចំ Format, Preview Tree និងកែតម្លៃបាន។",
+        toolPurpose: "បិទភ្ជាប់ JSON data សម្រាប់ tool format",
+        toolHint: "Tool នេះបង្ហាញ syntax error ពេល JSON ខុស។",
+        format: "រៀបចំ",
+        preview: "មើល JSON",
+        minify: "បង្រួម",
+        clear: "សម្អាត",
+        treeMode: "Tree preview",
+        treeModeDesc: "បង្ហាញ JSON ជាទម្រង់ Tree។",
+        showType: "បង្ហាញប្រភេទ Value",
+        showTypeDesc: "បង្ហាញ string, number, boolean, object...",
+        editHintTitle: "ជំនួយកែប្រែ",
+        editHint: "Double click លើ key/value ដើម្បីកែ។ Right click ដើម្បីបង្ហាញ Menu។",
+        jsonInput: "JSON Input",
+        jsonPreview: "JSON Preview",
+        sample: "គំរូ",
+        copyAll: "ចម្លងទាំងអស់",
+        emptyPreview: "បិទភ្ជាប់ JSON ហើយចុច Preview JSON។",
+        copy: "ចម្លង",
+        edit: "កែប្រែ",
+        addChild: "បន្ថែម child",
+        addSibling: "បន្ថែម sibling",
+        delete: "លុប",
+        invalidJson: "JSON មិនត្រឹមត្រូវ",
+        validJson: "JSON ត្រឹមត្រូវ",
+        inputKey: "បញ្ចូលឈ្មោះ key",
+        inputValue: "បញ្ចូល value. ឧទាហរណ៍: string, 123, true, null, {\"a\":1}, [1,2]",
+        editValue: "កែ value",
+        editKey: "កែ key",
+        copied: "បានចម្លង",
+        noJson: "មិនមាន JSON data"
+      }
+    };
+
+    // -----------------------------
+    // Get current language
+    // -----------------------------
+    function getLang() {
+      return localStorage.getItem("app_language") || "km";
+    }
+
+    // -----------------------------
+    // Get text by key
+    // -----------------------------
+    function t(key) {
+      const lang = getLang();
+      return translations[lang][key] || translations.en[key] || key;
+    }
+
+    // -----------------------------
+    // Apply app language
+    // -----------------------------
+    function applyLanguage() {
+      const lang = getLang();
+
+      $("html").attr("lang", lang);
+
+      $("[data-i18n]").each(function () {
+        const key = $(this).data("i18n");
+        $(this).text(t(key));
+      });
+
+      // Button shows target language only
+      if (lang === "km") {
+        $("#btnLanguage").html("🇺🇸 English");
+      } else {
+        $("#btnLanguage").html("🇰🇭 ខ្មែរ");
+      }
+    }
+
+    // -----------------------------
+    // Apply app theme using same localStorage key
+    // -----------------------------
+    function applyTheme() {
+      const theme = localStorage.getItem("app_theme") || "light";
+
+      if (theme === "dark") {
+        $("html").addClass("dark");
+        $("#btnTheme").html('<i class="fa-solid fa-sun"></i> Light');
+      } else {
+        $("html").removeClass("dark");
+        $("#btnTheme").html('<i class="fa-solid fa-moon"></i> Dark');
+      }
+    }
+
+    // -----------------------------
+    // Detect JSON value type
+    // -----------------------------
+    function getValueType(value) {
+      if (value === null) return "null";
+      if (Array.isArray(value)) return "array";
+      return typeof value;
+    }
+
+    // -----------------------------
+    // Color based on value type
+    // Key color uses only value type
+    // -----------------------------
+    function getTypeColorClass(value) {
+      const type = getValueType(value);
+
+      switch (type) {
+        case "string":
+          return "text-emerald-600 dark:text-emerald-400";
+        case "number":
+          return "text-blue-600 dark:text-blue-400";
+        case "boolean":
+          return "text-purple-600 dark:text-purple-400";
+        case "null":
+          return "text-slate-500 dark:text-slate-400";
+        case "array":
+          return "text-orange-600 dark:text-orange-400";
+        case "object":
+          return "text-pink-600 dark:text-pink-400";
+        default:
+          return "text-slate-700 dark:text-slate-200";
+      }
+    }
+
+    // -----------------------------
+    // Escape HTML
+    // -----------------------------
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // -----------------------------
+    // Safe path for HTML data attribute
+    // -----------------------------
+    function encodePath(path) {
+      return escapeHtml(JSON.stringify(path));
+    }
+
+    // -----------------------------
+    // Parse user input to JSON value
+    // -----------------------------
+    function parseInputValue(input) {
+      const value = input.trim();
+
+      if (value === "") return "";
+
+      try {
+        return JSON.parse(value);
+      } catch {
+        return input;
+      }
+    }
+
+    // -----------------------------
+    // Get value by path
+    // -----------------------------
+    function getByPath(obj, path) {
+      return path.reduce((acc, key) => acc[key], obj);
+    }
+
+    // -----------------------------
+    // Set value by path
+    // -----------------------------
+    function setByPath(obj, path, value) {
+      const lastKey = path[path.length - 1];
+      const parent = getByPath(obj, path.slice(0, -1));
+      parent[lastKey] = value;
+    }
+
+    // -----------------------------
+    // Delete value by path
+    // -----------------------------
+    function deleteByPath(obj, path) {
+      if (path.length === 0) {
+        currentJson = null;
+        return;
+      }
+
+      const lastKey = path[path.length - 1];
+      const parent = getByPath(obj, path.slice(0, -1));
+
+      if (Array.isArray(parent)) {
+        parent.splice(Number(lastKey), 1);
+      } else {
+        delete parent[lastKey];
+      }
+    }
+
+    // -----------------------------
+    // Rename object key by path
+    // -----------------------------
+    function renameKeyByPath(obj, path, newKey) {
+      const oldKey = path[path.length - 1];
+      const parent = getByPath(obj, path.slice(0, -1));
+
+      if (!parent || Array.isArray(parent) || typeof parent !== "object") return;
+      if (!newKey || newKey === oldKey) return;
+
+      parent[newKey] = parent[oldKey];
+      delete parent[oldKey];
+    }
+
+    // -----------------------------
+    // Build JSON tree HTML
+    // -----------------------------
+    function buildTree(value, path = []) {
+      const type = getValueType(value);
+      const showType = $("#optType").is(":checked");
+      const color = getTypeColorClass(value);
+
+      if (type === "object") {
+        const keys = Object.keys(value);
+
+        if (keys.length === 0) {
+          return `<span class="${color}">{}</span>${showType ? typeBadge(type) : ""}`;
+        }
+
+        let html = `<span class="${color}">{</span>${showType ? typeBadge(type) : ""}<div class="json-node">`;
+
+        keys.forEach((key) => {
+          const childValue = value[key];
+          const childPath = [...path, key];
+          const childColor = getTypeColorClass(childValue);
+
+          html += `
+            <div class="json-line">
+              <span
+                class="json-key ${childColor}"
+                data-type="key"
+                data-path='${encodePath(childPath)}'
+              >"${escapeHtml(key)}"</span>
+              <span class="text-slate-400">:</span>
+              ${buildValue(childValue, childPath)}
+            </div>
+          `;
+        });
+
+        html += `</div><span class="${color}">}</span>`;
+        return html;
+      }
+
+      if (type === "array") {
+        if (value.length === 0) {
+          return `<span class="${color}">[]</span>${showType ? typeBadge(type) : ""}`;
+        }
+
+        let html = `<span class="${color}">[</span>${showType ? typeBadge(type) : ""}<div class="json-node">`;
+
+        value.forEach((item, index) => {
+          const childPath = [...path, index];
+
+          html += `
+            <div class="json-line">
+              <span class="text-slate-400">${index}:</span>
+              ${buildValue(item, childPath)}
+            </div>
+          `;
+        });
+
+        html += `</div><span class="${color}">]</span>`;
+        return html;
+      }
+
+      return buildValue(value, path);
+    }
+
+    // -----------------------------
+    // Build value HTML
+    // -----------------------------
+    function buildValue(value, path) {
+      const type = getValueType(value);
+      const color = getTypeColorClass(value);
+      const showType = $("#optType").is(":checked");
+
+      if (type === "object" || type === "array") {
+        return `
+          <span
+            class="json-value"
+            data-type="value"
+            data-path='${encodePath(path)}'
+          >
+            ${buildTree(value, path)}
+          </span>
+        `;
+      }
+
+      let displayValue = "";
+
+      if (type === "string") {
+        displayValue = `"${escapeHtml(value)}"`;
+      } else {
+        displayValue = escapeHtml(String(value));
+      }
+
+      return `
+        <span
+          class="json-value ${color}"
+          data-type="value"
+          data-path='${encodePath(path)}'
+        >${displayValue}</span>
+        ${showType ? typeBadge(type) : ""}
+      `;
+    }
+
+    // -----------------------------
+    // Type badge
+    // -----------------------------
+    function typeBadge(type) {
+      return `
+        <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          ${type}
+        </span>
+      `;
+    }
+
+    // -----------------------------
+    // Render preview
+    // -----------------------------
+    function renderPreview() {
+      if (currentJson === null) {
+        $("#previewBox").html(`
+          <div class="flex h-full items-center justify-center text-center text-slate-400">
+            <div>
+              <i class="fa-solid fa-file-code mb-3 text-4xl"></i>
+              <p>${t("emptyPreview")}</p>
+            </div>
+          </div>
+        `);
+        return;
+      }
+
+      $("#errorBox").addClass("hidden").empty();
+
+      if ($("#optTree").is(":checked")) {
+        $("#previewBox").html(buildTree(currentJson));
+      } else {
+        $("#previewBox").html(`
+          <pre class="whitespace-pre-wrap text-sm">${escapeHtml(JSON.stringify(currentJson, null, 2))}</pre>
+        `);
+      }
+
+      $("#jsonInput").val(JSON.stringify(currentJson, null, 2));
+    }
+
+    // -----------------------------
+    // Show JSON syntax error
+    // -----------------------------
+    function showJsonError(error, rawText) {
+      let message = error.message;
+      let positionInfo = "";
+
+      const match = message.match(/position\s+(\d+)/i);
+
+      if (match) {
+        const position = Number(match[1]);
+        const beforeError = rawText.slice(0, position);
+        const line = beforeError.split("\n").length;
+        const column = beforeError.split("\n").pop().length + 1;
+
+        positionInfo = `<div class="mt-1">Line: <b>${line}</b>, Column: <b>${column}</b></div>`;
+      }
+
+      $("#errorBox")
+        .removeClass("hidden")
+        .html(`
+          <div class="font-bold">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+            ${t("invalidJson")}
+          </div>
+          <div class="mt-1">${escapeHtml(message)}</div>
+          ${positionInfo}
+        `);
+
+      $("#previewBox").html(`
+        <div class="flex h-full items-center justify-center text-center text-red-400">
+          <div>
+            <i class="fa-solid fa-bug mb-3 text-4xl"></i>
+            <p>${t("invalidJson")}</p>
+          </div>
+        </div>
+      `);
+    }
+
+    // -----------------------------
+    // Parse JSON from textarea
+    // -----------------------------
+    function parseJsonFromInput() {
+      const rawText = $("#jsonInput").val().trim();
+
+      if (!rawText) {
+        currentJson = null;
+        $("#errorBox").addClass("hidden").empty();
+        renderPreview();
+        return false;
+      }
+
+      try {
+        currentJson = JSON.parse(rawText);
+        $("#errorBox").addClass("hidden").empty();
+        return true;
+      } catch (error) {
+        showJsonError(error, rawText);
+        return false;
+      }
+    }
+
+    // -----------------------------
+    // Copy text to clipboard
+    // -----------------------------
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+    }
+
+    // -----------------------------
+    // Show context menu
+    // -----------------------------
+    function showContextMenu(event, element) {
+      event.preventDefault();
+
+      const path = JSON.parse($(element).attr("data-path"));
+      const elementType = $(element).attr("data-type");
+      const value = getByPath(currentJson, path);
+      const valueType = getValueType(value);
+
+      rightClickedInfo = {
+        path,
+        elementType,
+        value,
+        valueType
+      };
+
+      const canAddChild = valueType === "object" || valueType === "array";
+
+      $("[data-action='addChild']").toggle(canAddChild);
+      $("[data-action='delete']").toggle(path.length > 0);
+
+      $("#contextMenu")
+        .css({
+          top: event.clientY + "px",
+          left: event.clientX + "px"
+        })
+        .show();
+    }
+
+    // -----------------------------
+    // Add child to object or array
+    // -----------------------------
+    function addChild(path) {
+      const target = getByPath(currentJson, path);
+      const type = getValueType(target);
+
+      if (type === "object") {
+        const key = prompt(t("inputKey"));
+        if (!key) return;
+
+        const value = prompt(t("inputValue"), '""');
+        target[key] = parseInputValue(value || "");
+      }
+
+      if (type === "array") {
+        const value = prompt(t("inputValue"), '""');
+        target.push(parseInputValue(value || ""));
+      }
+
+      renderPreview();
+    }
+
+    // -----------------------------
+    // Add sibling beside clicked item
+    // -----------------------------
+    function addSibling(path) {
+      if (path.length === 0) return;
+
+      const parentPath = path.slice(0, -1);
+      const parent = getByPath(currentJson, parentPath);
+
+      if (Array.isArray(parent)) {
+        const index = Number(path[path.length - 1]);
+        const value = prompt(t("inputValue"), '""');
+
+        parent.splice(index + 1, 0, parseInputValue(value || ""));
+      } else {
+        const key = prompt(t("inputKey"));
+        if (!key) return;
+
+        const value = prompt(t("inputValue"), '""');
+        parent[key] = parseInputValue(value || "");
+      }
+
+      renderPreview();
+    }
+
+    // -----------------------------
+    // Edit key or value
+    // -----------------------------
+    function editItem(info) {
+      if (!info) return;
+
+      if (info.elementType === "key") {
+        const oldKey = info.path[info.path.length - 1];
+        const newKey = prompt(t("editKey"), oldKey);
+
+        if (newKey) {
+          renameKeyByPath(currentJson, info.path, newKey);
+          renderPreview();
+        }
+
+        return;
+      }
+
+      const currentValue = getByPath(currentJson, info.path);
+      const oldValueText = JSON.stringify(currentValue);
+      const newValueText = prompt(t("editValue"), oldValueText);
+
+      if (newValueText !== null) {
+        setByPath(currentJson, info.path, parseInputValue(newValueText));
+        renderPreview();
+      }
+    }
+
+    // -----------------------------
+    // Event: change language
+    // -----------------------------
+    $("#btnLanguage").on("click", function () {
+      const currentLang = getLang();
+      const nextLang = currentLang === "km" ? "en" : "km";
+
+      localStorage.setItem("app_language", nextLang);
+      applyLanguage();
+      renderPreview();
+    });
+
+    // -----------------------------
+    // Event: change theme
+    // -----------------------------
+    $("#btnTheme").on("click", function () {
+      const currentTheme = localStorage.getItem("app_theme") || "light";
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+      localStorage.setItem("app_theme", nextTheme);
+      applyTheme();
+    });
+
+    // -----------------------------
+    // Event: preview JSON
+    // -----------------------------
+    $("#btnPreview").on("click", function () {
+      if (parseJsonFromInput()) {
+        renderPreview();
+      }
+    });
+
+    // -----------------------------
+    // Event: format JSON
+    // -----------------------------
+    $("#btnFormat").on("click", function () {
+      if (parseJsonFromInput()) {
+        $("#jsonInput").val(JSON.stringify(currentJson, null, 2));
+        renderPreview();
+      }
+    });
+
+    // -----------------------------
+    // Event: minify JSON
+    // -----------------------------
+    $("#btnMinify").on("click", function () {
+      if (parseJsonFromInput()) {
+        $("#jsonInput").val(JSON.stringify(currentJson));
+        renderPreview();
+      }
+    });
+
+    // -----------------------------
+    // Event: clear JSON
+    // -----------------------------
+    $("#btnClear").on("click", function () {
+      currentJson = null;
+      $("#jsonInput").val("");
+      $("#errorBox").addClass("hidden").empty();
+      renderPreview();
+    });
+
+    // -----------------------------
+    // Event: sample JSON
+    // -----------------------------
+    $("#btnSample").on("click", function () {
+      const sample = {
+        toolName: "Jsong Format and Preview",
+        purpose: "Paste JSON data for tool format",
+        active: true,
+        version: 1,
+        features: [
+          "Show syntax error",
+          "Preview JSON",
+          "Tree view",
+          "Show value type",
+          "Edit key or value",
+          "Right click menu"
+        ],
+        author: {
+          name: "Developer",
+          country: "Cambodia",
+          skills: ["iOS", "Flutter", "PHP", "Python"]
+        },
+        config: {
+          themeKey: "app_theme",
+          languageKey: "app_language",
+          allowEdit: true,
+          maxSize: null
+        }
+      };
+
+      $("#jsonInput").val(JSON.stringify(sample, null, 2));
+      parseJsonFromInput();
+      renderPreview();
+    });
+
+    // -----------------------------
+    // Event: copy all JSON
+    // -----------------------------
+    $("#btnCopyAll").on("click", function () {
+      if (!currentJson && !parseJsonFromInput()) {
+        alert(t("noJson"));
+        return;
+      }
+
+      copyText(JSON.stringify(currentJson, null, 2));
+      alert(t("copied"));
+    });
+
+    // -----------------------------
+    // Event: options changed
+    // -----------------------------
+    $("#optTree, #optType").on("change", function () {
+      renderPreview();
+    });
+
+    // -----------------------------
+    // Event: double click edit
+    // -----------------------------
+    $(document).on("dblclick", ".json-key, .json-value", function (event) {
+      event.stopPropagation();
+
+      const path = JSON.parse($(this).attr("data-path"));
+      const elementType = $(this).attr("data-type");
+
+      editItem({
+        path,
+        elementType
+      });
+    });
+
+    // -----------------------------
+    // Event: right click menu
+    // -----------------------------
+    $(document).on("contextmenu", ".json-key, .json-value", function (event) {
+      event.stopPropagation();
+      showContextMenu(event, this);
+    });
+
+    // -----------------------------
+    // Event: context menu action
+    // -----------------------------
+    $(".menu-item").on("click", function () {
+      const action = $(this).data("action");
+
+      $("#contextMenu").hide();
+
+      if (!rightClickedInfo) return;
+
+      if (action === "copy") {
+        const value = getByPath(currentJson, rightClickedInfo.path);
+        copyText(JSON.stringify(value, null, 2));
+        alert(t("copied"));
+      }
+
+      if (action === "edit") {
+        editItem(rightClickedInfo);
+      }
+
+      if (action === "addChild") {
+        addChild(rightClickedInfo.path);
+      }
+
+      if (action === "addSibling") {
+        addSibling(rightClickedInfo.path);
+      }
+
+      if (action === "delete") {
+        deleteByPath(currentJson, rightClickedInfo.path);
+        renderPreview();
+      }
+    });
+
+    // -----------------------------
+    // Hide context menu when click outside
+    // -----------------------------
+    $(document).on("click scroll", function () {
+      $("#contextMenu").hide();
+    });
+
+    // -----------------------------
+    // First app load
+    // -----------------------------
+    $(document).ready(function () {
+      applyTheme();
+      applyLanguage();
+      renderPreview();
+    });
+  </script>
+</body>
+</html>
