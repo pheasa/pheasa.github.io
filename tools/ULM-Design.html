@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UML Designer Preview</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- Mermaid UML Renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <!-- CodeMirror Editor -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/material-darker.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.js"></script>
+
+  <!-- jsPDF for PDF download -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <!-- Panzoom for zoom and move image -->
+  <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script>
+
+  <style>
+    .CodeMirror {
+      height: calc(100vh - 190px);
+      font-size: 14px;
+      border-radius: 12px;
+    }
+
+    #preview svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    #modalImageContainer svg {
+      max-width: none;
+      height: auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white shadow px-6 py-4 flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">UML Designer Preview</h1>
+      <p class="text-sm text-gray-500">Write Mermaid UML and preview instantly</p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button id="btnClass"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Class UML
+      </button>
+
+      <button id="btnSequence"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        Sequence UML
+      </button>
+
+      <button id="btnFlowchart"
+        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+        Flowchart
+      </button>
+
+      <button id="btnRender"
+        class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-black">
+        Render
+      </button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6">
+
+    <!-- Editor -->
+    <section class="bg-white rounded-xl shadow p-4">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-semibold text-gray-700">UML Code</h2>
+        <span class="text-xs bg-gray-200 px-2 py-1 rounded">Mermaid Syntax</span>
+      </div>
+
+      <textarea id="umlCode"></textarea>
+    </section>
+
+    <!-- Preview -->
+    <section class="bg-white rounded-xl shadow p-4">
+      <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center mb-3">
+        <div>
+          <h2 class="font-semibold text-gray-700">Preview</h2>
+          <p class="text-xs text-gray-500">Click diagram to open zoom preview</p>
+        </div>
+
+        <div class="flex gap-2">
+          <select id="downloadType"
+            class="border border-gray-300 rounded-lg px-3 py-1 text-sm">
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="pdf">PDF</option>
+            <option value="svg">SVG</option>
+          </select>
+
+          <button id="btnDownload"
+            class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">
+            Download
+          </button>
+        </div>
+      </div>
+
+      <div id="preview"
+        class="border border-dashed border-gray-300 rounded-xl min-h-[500px] p-4 overflow-auto flex items-start justify-center bg-gray-50 cursor-zoom-in">
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Image Preview Modal -->
+  <div id="imageModal"
+    class="fixed inset-0 bg-black/80 hidden z-50 items-center justify-center">
+
+    <div class="absolute top-4 right-4 flex flex-wrap gap-2 z-50">
+      <button id="btnZoomIn"
+        class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
+        Zoom +
+      </button>
+
+      <button id="btnZoomOut"
+        class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
+        Zoom -
+      </button>
+
+      <button id="btnResetZoom"
+        class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
+        Reset
+      </button>
+
+      <button id="btnCloseModal"
+        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        Close
+      </button>
+    </div>
+
+    <div id="modalBox"
+      class="w-[90vw] h-[85vh] overflow-hidden bg-white rounded-xl flex items-center justify-center">
+      <div id="modalImageContainer" class="cursor-move">
+        <!-- UML SVG will copy here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -----------------------------
+    // Mermaid Config
+    // -----------------------------
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "default",
+      securityLevel: "loose"
+    });
+
+    // -----------------------------
+    // UML Examples
+    // -----------------------------
+    const classDiagram = `classDiagram
+class User {
+  +int id
+  +string name
+  +string email
+  +login()
+  +logout()
+}
+
+class Order {
+  +int id
+  +double total
+  +createOrder()
+  +cancelOrder()
+}
+
+class Payment {
+  +int id
+  +double amount
+  +pay()
+}
+
+User "1" --> "many" Order
+Order "1" --> "1" Payment`;
+
+    const sequenceDiagram = `sequenceDiagram
+actor User
+participant App
+participant API
+participant Database
+
+User->>App: Click Login
+App->>API: POST /login
+API->>Database: Check user
+Database-->>API: User found
+API-->>App: Return token
+App-->>User: Show dashboard`;
+
+    const flowchartDiagram = `flowchart TD
+A[Start] --> B{User Login?}
+B -- Yes --> C[Show Dashboard]
+B -- No --> D[Show Login Page]
+D --> E[Submit Email and Password]
+E --> F{Valid?}
+F -- Yes --> C
+F -- No --> G[Show Error]
+G --> D`;
+
+    // -----------------------------
+    // CodeMirror Editor
+    // -----------------------------
+    const editor = CodeMirror.fromTextArea(document.getElementById("umlCode"), {
+      lineNumbers: true,
+      theme: "material-darker",
+      mode: "javascript"
+    });
+
+    editor.setValue(classDiagram);
+
+    // -----------------------------
+    // Render UML Preview
+    // -----------------------------
+    async function renderUML() {
+      const code = editor.getValue();
+      const preview = $("#preview");
+
+      preview.html(`
+        <div class="text-gray-500 animate-pulse">
+          Rendering UML...
+        </div>
+      `);
+
+      try {
+        const id = "uml-" + Date.now();
+        const result = await mermaid.render(id, code);
+
+        preview.html(result.svg);
+      } catch (error) {
+        preview.html(`
+          <div class="text-red-600 bg-red-50 border border-red-200 p-4 rounded-lg w-full">
+            <h3 class="font-bold mb-2">UML Syntax Error</h3>
+            <pre class="text-sm whitespace-pre-wrap">${error.message}</pre>
+          </div>
+        `);
+      }
+    }
+
+    // -----------------------------
+    // Template Buttons
+    // -----------------------------
+    $("#btnClass").on("click", function () {
+      editor.setValue(classDiagram);
+      renderUML();
+    });
+
+    $("#btnSequence").on("click", function () {
+      editor.setValue(sequenceDiagram);
+      renderUML();
+    });
+
+    $("#btnFlowchart").on("click", function () {
+      editor.setValue(flowchartDiagram);
+      renderUML();
+    });
+
+    $("#btnRender").on("click", function () {
+      renderUML();
+    });
+
+    // -----------------------------
+    // Auto Render When Typing
+    // -----------------------------
+    let typingTimer;
+
+    editor.on("change", function () {
+      clearTimeout(typingTimer);
+
+      typingTimer = setTimeout(function () {
+        renderUML();
+      }, 600);
+    });
+
+    // -----------------------------
+    // Convert SVG To Canvas
+    // -----------------------------
+    async function getSvgAsCanvas() {
+      const svg = $("#preview svg")[0];
+
+      if (!svg) {
+        alert("Please render UML first.");
+        return null;
+      }
+
+      const svgData = new XMLSerializer().serializeToString(svg);
+
+      const svgBlob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8"
+      });
+
+      const url = URL.createObjectURL(svgBlob);
+
+      return new Promise((resolve) => {
+        const image = new Image();
+
+        image.onload = function () {
+          const canvas = document.createElement("canvas");
+
+          const width = image.width || svg.clientWidth || 1200;
+          const height = image.height || svg.clientHeight || 800;
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+
+          // White background because JPG/PDF cannot keep transparent background
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.drawImage(image, 0, 0, width, height);
+
+          URL.revokeObjectURL(url);
+
+          resolve(canvas);
+        };
+
+        image.onerror = function () {
+          URL.revokeObjectURL(url);
+          alert("Cannot convert SVG to image.");
+          resolve(null);
+        };
+
+        image.src = url;
+      });
+    }
+
+    // -----------------------------
+    // Download Helper
+    // -----------------------------
+    function downloadFile(url, fileName) {
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = fileName;
+      link.click();
+    }
+
+    // -----------------------------
+    // Download SVG
+    // -----------------------------
+    async function downloadSVG() {
+      const svg = $("#preview svg")[0];
+
+      if (!svg) {
+        alert("Please render UML first.");
+        return;
+      }
+
+      const svgData = new XMLSerializer().serializeToString(svg);
+
+      const blob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8"
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      downloadFile(url, "uml-diagram.svg");
+
+      URL.revokeObjectURL(url);
+    }
+
+    // -----------------------------
+    // Download PNG / JPG
+    // -----------------------------
+    async function downloadImage(type) {
+      const canvas = await getSvgAsCanvas();
+
+      if (!canvas) return;
+
+      const mimeType = type === "jpg" ? "image/jpeg" : "image/png";
+      const extension = type === "jpg" ? "jpg" : "png";
+
+      const imageUrl = canvas.toDataURL(mimeType, 1.0);
+
+      downloadFile(imageUrl, `uml-diagram.${extension}`);
+    }
+
+    // -----------------------------
+    // Download PDF
+    // -----------------------------
+    async function downloadPDF() {
+      const canvas = await getSvgAsCanvas();
+
+      if (!canvas) return;
+
+      const imageData = canvas.toDataURL("image/png", 1.0);
+
+      const { jsPDF } = window.jspdf;
+
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imageData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save("uml-diagram.pdf");
+    }
+
+    // -----------------------------
+    // Download Button
+    // -----------------------------
+    $("#btnDownload").on("click", async function () {
+      const type = $("#downloadType").val();
+
+      if (type === "svg") {
+        await downloadSVG();
+        return;
+      }
+
+      if (type === "pdf") {
+        await downloadPDF();
+        return;
+      }
+
+      await downloadImage(type);
+    });
+
+    // -----------------------------
+    // Image Preview Modal With Zoom
+    // -----------------------------
+    let panzoomInstance = null;
+    let wheelHandler = null;
+
+    function openImagePreview() {
+      const svg = $("#preview svg")[0];
+
+      if (!svg) {
+        alert("Please render UML first.");
+        return;
+      }
+
+      const svgClone = svg.cloneNode(true);
+
+      $("#modalImageContainer").html("");
+      $("#modalImageContainer")[0].appendChild(svgClone);
+
+      $("#imageModal")
+        .removeClass("hidden")
+        .addClass("flex");
+
+      if (panzoomInstance) {
+        panzoomInstance.destroy();
+        panzoomInstance = null;
+      }
+
+      const container = $("#modalImageContainer")[0];
+
+      panzoomInstance = Panzoom(container, {
+        maxScale: 8,
+        minScale: 0.3,
+        contain: "outside"
+      });
+
+      const parent = $("#modalBox")[0];
+
+      if (wheelHandler) {
+        parent.removeEventListener("wheel", wheelHandler);
+      }
+
+      wheelHandler = function (event) {
+        panzoomInstance.zoomWithWheel(event);
+      };
+
+      parent.addEventListener("wheel", wheelHandler, {
+        passive: false
+      });
+    }
+
+    function closeImagePreview() {
+      $("#imageModal")
+        .addClass("hidden")
+        .removeClass("flex");
+
+      const parent = $("#modalBox")[0];
+
+      if (wheelHandler) {
+        parent.removeEventListener("wheel", wheelHandler);
+        wheelHandler = null;
+      }
+
+      if (panzoomInstance) {
+        panzoomInstance.destroy();
+        panzoomInstance = null;
+      }
+
+      $("#modalImageContainer").html("");
+    }
+
+    $("#preview").on("click", function () {
+      openImagePreview();
+    });
+
+    $("#btnZoomIn").on("click", function () {
+      if (panzoomInstance) {
+        panzoomInstance.zoomIn();
+      }
+    });
+
+    $("#btnZoomOut").on("click", function () {
+      if (panzoomInstance) {
+        panzoomInstance.zoomOut();
+      }
+    });
+
+    $("#btnResetZoom").on("click", function () {
+      if (panzoomInstance) {
+        panzoomInstance.reset();
+      }
+    });
+
+    $("#btnCloseModal").on("click", function () {
+      closeImagePreview();
+    });
+
+    $("#imageModal").on("click", function (event) {
+      if (event.target.id === "imageModal") {
+        closeImagePreview();
+      }
+    });
+
+    $(document).on("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeImagePreview();
+      }
+    });
+
+    // -----------------------------
+    // First Render
+    // -----------------------------
+    renderUML();
+  </script>
+
+</body>
+</html>
