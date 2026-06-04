@@ -8,10 +8,8 @@
 
   <!-- Tailwind Config -->
   <script>
-    tailwind = {
-      config: {
-        darkMode: "class"
-      }
+    tailwind.config = {
+      darkMode: "class"
     };
   </script>
 
@@ -31,10 +29,10 @@
   <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.js"></script>
 
-  <!-- jsPDF for PDF download -->
+  <!-- jsPDF -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
-  <!-- Panzoom for zoom and move image -->
+  <!-- Panzoom -->
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script>
 
   <style>
@@ -58,21 +56,6 @@
       max-width: none;
       height: auto;
     }
-
-    .language-active,
-    .theme-active {
-      border: 2px solid #2563eb;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-weight: 600;
-    }
-
-    .dark .language-active,
-    .dark .theme-active {
-      border: 2px solid #60a5fa;
-      background: #1e3a8a;
-      color: #ffffff;
-    }
   </style>
 </head>
 
@@ -80,9 +63,9 @@
 
   <!-- Header -->
   <header class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+
     <div class="flex items-start gap-3">
 
-      <!-- Back Button -->
       <a
         href="/"
         data-i18n-title="backHome"
@@ -124,35 +107,21 @@
 
     <div class="flex flex-wrap items-center gap-2">
 
-      <!-- Language Switch -->
-      <div class="flex gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-        <button
-          class="language-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
-          data-lang="km">
-          🇰🇭 <span>ខ្មែរ</span>
-        </button>
+      <!-- One Button Language Switch -->
+      <button
+        id="btnToggleLanguage"
+        class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+      >
+        🇺🇸 English
+      </button>
 
-        <button
-          class="language-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
-          data-lang="en">
-          🇺🇸 <span>English</span>
-        </button>
-      </div>
-
-      <!-- Theme Switch -->
-      <div class="flex gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-        <button
-          class="theme-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
-          data-theme="light">
-          ☀️ <span data-i18n="light">ភ្លឺ</span>
-        </button>
-
-        <button
-          class="theme-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
-          data-theme="dark">
-          🌙 <span data-i18n="dark">ងងឹត</span>
-        </button>
-      </div>
+      <!-- One Button Theme Switch -->
+      <button
+        id="btnToggleTheme"
+        class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+      >
+        🌙 Dark
+      </button>
 
       <button id="btnClass"
         data-i18n="classUML"
@@ -181,13 +150,13 @@
       <button id="btnExportProjects"
         data-i18n="exportProject"
         class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
-        Export
+        Export Project
       </button>
 
       <button id="btnImportProjects"
         data-i18n="importProject"
         class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-        Import
+        Import Project
       </button>
 
       <input id="importFileInput" type="file" accept="application/json,.json" class="hidden" />
@@ -208,6 +177,7 @@
           <h2 data-i18n="projectList" class="font-semibold text-gray-800 dark:text-white">
             បញ្ជី Project
           </h2>
+
           <p data-i18n="projectListSubtitle" class="text-xs text-gray-500 dark:text-gray-400">
             ចុច Load ដើម្បីយក UML Code មកប្រើវិញ
           </p>
@@ -220,9 +190,7 @@
         </button>
       </div>
 
-      <div id="projectList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        <!-- Projects render here -->
-      </div>
+      <div id="projectList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
     </div>
   </section>
 
@@ -236,6 +204,7 @@
           <h2 data-i18n="umlCode" class="font-semibold text-gray-700 dark:text-gray-100">
             កូដ UML
           </h2>
+
           <p data-i18n="autoSaveNote" class="text-xs text-gray-500 dark:text-gray-400">
             Code បច្ចុប្បន្ននឹងរក្សាទុកស្វ័យប្រវត្តិ
           </p>
@@ -283,7 +252,6 @@
         class="border border-dashed border-gray-300 dark:border-gray-700 rounded-xl min-h-[500px] p-4 overflow-auto flex items-start justify-center bg-gray-50 dark:bg-gray-800 cursor-zoom-in">
       </div>
     </section>
-
   </main>
 
   <!-- Save Project Modal -->
@@ -332,9 +300,7 @@
         តើអ្នកចង់បញ្ចូល Project ថ្មីជាមួយ Project ចាស់ ឬជំនួស Project ចាស់ទាំងអស់?
       </p>
 
-      <div id="importPreviewInfo" class="text-sm bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mb-4">
-        <!-- Import info -->
-      </div>
+      <div id="importPreviewInfo" class="text-sm bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mb-4"></div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button id="btnImportMerge"
@@ -361,40 +327,27 @@
   </div>
 
   <!-- Image Preview Modal -->
-  <div id="imageModal"
-    class="fixed inset-0 bg-black/80 hidden z-50 items-center justify-center">
-
+  <div id="imageModal" class="fixed inset-0 bg-black/80 hidden z-50 items-center justify-center">
     <div class="absolute top-4 right-4 flex flex-wrap gap-2 z-50">
-      <button id="btnZoomIn"
-        data-i18n="zoomIn"
-        class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
+      <button id="btnZoomIn" data-i18n="zoomIn" class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
         ពង្រីក +
       </button>
 
-      <button id="btnZoomOut"
-        data-i18n="zoomOut"
-        class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
+      <button id="btnZoomOut" data-i18n="zoomOut" class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
         បង្រួម -
       </button>
 
-      <button id="btnResetZoom"
-        data-i18n="reset"
-        class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
+      <button id="btnResetZoom" data-i18n="reset" class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
         កំណត់ឡើងវិញ
       </button>
 
-      <button id="btnCloseModal"
-        data-i18n="close"
-        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+      <button id="btnCloseModal" data-i18n="close" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
         បិទ
       </button>
     </div>
 
-    <div id="modalBox"
-      class="w-[90vw] h-[85vh] overflow-hidden bg-white rounded-xl flex items-center justify-center">
-      <div id="modalImageContainer" class="cursor-move">
-        <!-- UML SVG will copy here -->
-      </div>
+    <div id="modalBox" class="w-[90vw] h-[85vh] overflow-hidden bg-white rounded-xl flex items-center justify-center">
+      <div id="modalImageContainer" class="cursor-move"></div>
     </div>
   </div>
 
@@ -473,8 +426,6 @@ G --> D`;
         appSubtitle: "សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ",
         backHome: "ត្រឡប់ទៅទំព័រដើម",
         howToUse: "របៀបប្រើប្រាស់?",
-        light: "ភ្លឺ",
-        dark: "ងងឹត",
         classUML: "Class UML",
         sequenceUML: "Sequence UML",
         flowchart: "Flowchart",
@@ -524,16 +475,13 @@ G --> D`;
         importSuccess: "Import Project ជោគជ័យ។",
         importInfo: "រកឃើញ Project ចំនួន",
         projectCount: "Project",
-        updatedAt: "កែប្រែ",
-        createdAt: "បង្កើត"
+        updatedAt: "កែប្រែ"
       },
       en: {
         appTitle: "UML Designer Preview",
         appSubtitle: "Write Mermaid UML and preview instantly",
         backHome: "Back to Home",
         howToUse: "How to use?",
-        light: "Light",
-        dark: "Dark",
         classUML: "Class UML",
         sequenceUML: "Sequence UML",
         flowchart: "Flowchart",
@@ -583,8 +531,7 @@ G --> D`;
         importSuccess: "Project imported successfully.",
         importInfo: "Found projects",
         projectCount: "Project",
-        updatedAt: "Updated",
-        createdAt: "Created"
+        updatedAt: "Updated"
       }
     };
 
@@ -593,7 +540,7 @@ G --> D`;
     let pendingImportProjects = [];
 
     // -----------------------------
-    // Language Helpers
+    // Language
     // -----------------------------
     function getSavedLanguage() {
       const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -608,6 +555,14 @@ G --> D`;
 
     function t(key) {
       return translations[currentLanguage][key] || key;
+    }
+
+    function updateLanguageButton() {
+      if (currentLanguage === "km") {
+        $("#btnToggleLanguage").html("🇺🇸 English");
+      } else {
+        $("#btnToggleLanguage").html("🇰🇭 ខ្មែរ");
+      }
     }
 
     function setLanguage(lang) {
@@ -635,14 +590,17 @@ G --> D`;
         $(this).attr("placeholder", t(key));
       });
 
-      $(".language-btn").removeClass("language-active");
-      $(`.language-btn[data-lang="${lang}"]`).addClass("language-active");
-
+      updateLanguageButton();
       renderProjectList();
     }
 
+    $("#btnToggleLanguage").on("click", function () {
+      const nextLanguage = currentLanguage === "km" ? "en" : "km";
+      setLanguage(nextLanguage);
+    });
+
     // -----------------------------
-    // Theme Helpers
+    // Theme
     // -----------------------------
     function getSavedTheme() {
       const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
@@ -655,7 +613,15 @@ G --> D`;
       return DEFAULT_THEME;
     }
 
-    function setTheme(theme) {
+    function updateThemeButton() {
+      if (currentTheme === "light") {
+        $("#btnToggleTheme").html("🌙 Dark");
+      } else {
+        $("#btnToggleTheme").html("☀️ Light");
+      }
+    }
+
+    function setTheme(theme, shouldRender = true) {
       if (!ALLOWED_THEMES.includes(theme)) {
         theme = DEFAULT_THEME;
       }
@@ -664,17 +630,23 @@ G --> D`;
       localStorage.setItem(THEME_STORAGE_KEY, theme);
 
       if (theme === "dark") {
-        $("html").addClass("dark");
+        document.documentElement.classList.add("dark");
       } else {
-        $("html").removeClass("dark");
+        document.documentElement.classList.remove("dark");
       }
 
-      $(".theme-btn").removeClass("theme-active");
-      $(`.theme-btn[data-theme="${theme}"]`).addClass("theme-active");
-
+      updateThemeButton();
       initMermaid();
-      renderUML();
+
+      if (shouldRender) {
+        renderUML();
+      }
     }
+
+    $("#btnToggleTheme").on("click", function () {
+      const nextTheme = currentTheme === "light" ? "dark" : "light";
+      setTheme(nextTheme);
+    });
 
     // -----------------------------
     // Mermaid
@@ -762,11 +734,9 @@ G --> D`;
       projects.forEach((project) => {
         const card = $(`
           <div class="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-            <div class="flex justify-between gap-3">
-              <div class="min-w-0">
-                <h3 class="font-semibold text-gray-800 dark:text-white truncate"></h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
-              </div>
+            <div class="min-w-0">
+              <h3 class="font-semibold text-gray-800 dark:text-white truncate"></h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
             </div>
 
             <pre class="mt-3 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-28 overflow-auto whitespace-pre-wrap"></pre>
@@ -793,24 +763,22 @@ G --> D`;
 
         card.find(".btn-duplicate").on("click", function () {
           const projects = getProjects();
-          const duplicateProject = {
+
+          projects.unshift({
             ...project,
             id: generateId(),
             name: `${project.name} Copy`,
             createdAt: getCurrentDateTime(),
             updatedAt: getCurrentDateTime()
-          };
+          });
 
-          projects.unshift(duplicateProject);
           setProjects(projects);
         });
 
         card.find(".btn-rename").on("click", function () {
           const newName = prompt(t("projectNamePlaceholder"), project.name);
 
-          if (!newName || !newName.trim()) {
-            return;
-          }
+          if (!newName || !newName.trim()) return;
 
           const projects = getProjects().map((item) => {
             if (item.id === project.id) {
@@ -828,9 +796,7 @@ G --> D`;
         });
 
         card.find(".btn-delete").on("click", function () {
-          if (!confirm(t("deletedConfirm"))) {
-            return;
-          }
+          if (!confirm(t("deletedConfirm"))) return;
 
           const projects = getProjects().filter((item) => item.id !== project.id);
 
@@ -854,7 +820,7 @@ G --> D`;
     editor.setValue(getCurrentCodeFromStorage());
 
     // -----------------------------
-    // Render UML Preview
+    // Render UML
     // -----------------------------
     async function renderUML() {
       const code = editor.getValue();
@@ -908,9 +874,7 @@ G --> D`;
     });
 
     $("#btnClearCurrent").on("click", function () {
-      if (!confirm(t("clearConfirm"))) {
-        return;
-      }
+      if (!confirm(t("clearConfirm"))) return;
 
       editor.setValue("");
       saveCurrentCodeToStorage();
@@ -918,7 +882,7 @@ G --> D`;
     });
 
     // -----------------------------
-    // Auto Render + Auto Save
+    // Auto Save + Auto Render
     // -----------------------------
     let typingTimer;
 
@@ -933,11 +897,12 @@ G --> D`;
     });
 
     // -----------------------------
-    // Save Project Modal
+    // Save Project
     // -----------------------------
     $("#btnSaveProject").on("click", function () {
       $("#projectNameInput").val("");
       $("#saveProjectModal").removeClass("hidden").addClass("flex");
+
       setTimeout(() => $("#projectNameInput").focus(), 100);
     });
 
@@ -965,7 +930,7 @@ G --> D`;
     });
 
     // -----------------------------
-    // Export Projects
+    // Export
     // -----------------------------
     $("#btnExportProjects").on("click", function () {
       const exportData = {
@@ -980,8 +945,8 @@ G --> D`;
       });
 
       const url = URL.createObjectURL(blob);
-
       const link = document.createElement("a");
+
       link.href = url;
       link.download = "uml-projects.json";
       link.click();
@@ -992,7 +957,7 @@ G --> D`;
     });
 
     // -----------------------------
-    // Import Projects
+    // Import
     // -----------------------------
     $("#btnImportProjects").on("click", function () {
       $("#importFileInput").val("");
@@ -1002,9 +967,7 @@ G --> D`;
     $("#importFileInput").on("change", function (event) {
       const file = event.target.files[0];
 
-      if (!file) {
-        return;
-      }
+      if (!file) return;
 
       const reader = new FileReader();
 
@@ -1069,9 +1032,7 @@ G --> D`;
         } else {
           existingProjects.unshift({
             ...importProject,
-            id: generateId(),
-            createdAt: importProject.createdAt || getCurrentDateTime(),
-            updatedAt: importProject.updatedAt || getCurrentDateTime()
+            id: generateId()
           });
         }
       });
@@ -1085,12 +1046,7 @@ G --> D`;
     });
 
     $("#btnImportReplace").on("click", function () {
-      const newProjects = pendingImportProjects.map((project) => ({
-        ...project,
-        id: project.id || generateId()
-      }));
-
-      setProjects(newProjects);
+      setProjects(pendingImportProjects);
 
       pendingImportProjects = [];
       $("#importOptionModal").addClass("hidden").removeClass("flex");
@@ -1099,7 +1055,7 @@ G --> D`;
     });
 
     // -----------------------------
-    // Convert SVG To Canvas
+    // Download Helpers
     // -----------------------------
     async function getSvgAsCanvas() {
       const svg = $("#preview svg")[0];
@@ -1151,9 +1107,6 @@ G --> D`;
       });
     }
 
-    // -----------------------------
-    // Download Helper
-    // -----------------------------
     function downloadFile(url, fileName) {
       const link = document.createElement("a");
 
@@ -1202,7 +1155,6 @@ G --> D`;
       if (!canvas) return;
 
       const imageData = canvas.toDataURL("image/png", 1.0);
-
       const { jsPDF } = window.jspdf;
 
       const pdf = new jsPDF({
@@ -1232,7 +1184,7 @@ G --> D`;
     });
 
     // -----------------------------
-    // Image Preview Modal With Zoom
+    // Image Preview Modal
     // -----------------------------
     let panzoomInstance = null;
     let wheelHandler = null;
@@ -1250,9 +1202,7 @@ G --> D`;
       $("#modalImageContainer").html("");
       $("#modalImageContainer")[0].appendChild(svgClone);
 
-      $("#imageModal")
-        .removeClass("hidden")
-        .addClass("flex");
+      $("#imageModal").removeClass("hidden").addClass("flex");
 
       if (panzoomInstance) {
         panzoomInstance.destroy();
@@ -1283,9 +1233,7 @@ G --> D`;
     }
 
     function closeImagePreview() {
-      $("#imageModal")
-        .addClass("hidden")
-        .removeClass("flex");
+      $("#imageModal").addClass("hidden").removeClass("flex");
 
       const parent = $("#modalBox")[0];
 
@@ -1302,31 +1250,21 @@ G --> D`;
       $("#modalImageContainer").html("");
     }
 
-    $("#preview").on("click", function () {
-      openImagePreview();
-    });
+    $("#preview").on("click", openImagePreview);
 
     $("#btnZoomIn").on("click", function () {
-      if (panzoomInstance) {
-        panzoomInstance.zoomIn();
-      }
+      if (panzoomInstance) panzoomInstance.zoomIn();
     });
 
     $("#btnZoomOut").on("click", function () {
-      if (panzoomInstance) {
-        panzoomInstance.zoomOut();
-      }
+      if (panzoomInstance) panzoomInstance.zoomOut();
     });
 
     $("#btnResetZoom").on("click", function () {
-      if (panzoomInstance) {
-        panzoomInstance.reset();
-      }
+      if (panzoomInstance) panzoomInstance.reset();
     });
 
-    $("#btnCloseModal").on("click", function () {
-      closeImagePreview();
-    });
+    $("#btnCloseModal").on("click", closeImagePreview);
 
     $("#imageModal").on("click", function (event) {
       if (event.target.id === "imageModal") {
@@ -1345,24 +1283,10 @@ G --> D`;
     });
 
     // -----------------------------
-    // Button Events
-    // -----------------------------
-    $(".language-btn").on("click", function () {
-      const lang = $(this).data("lang");
-      setLanguage(lang);
-    });
-
-    $(".theme-btn").on("click", function () {
-      const theme = $(this).data("theme");
-      setTheme(theme);
-    });
-
-    // -----------------------------
     // Init App
     // -----------------------------
+    setTheme(currentTheme, false);
     setLanguage(currentLanguage);
-    setTheme(currentTheme);
-    initMermaid();
     renderProjectList();
     renderUML();
   </script>
