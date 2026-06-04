@@ -174,7 +174,7 @@
   </main>
 
   <div id="contextMenu" class="context-menu overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-    <button data-action="edit" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+    <button id="menuEditItem" data-action="edit" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
       <i class="fa-solid fa-pen-to-square text-sky-500"></i>
       <span data-i18n="editSelected">Edit selected</span>
     </button>
@@ -187,6 +187,11 @@
     <button id="menuAddItem" data-action="add" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
       <i class="fa-solid fa-plus text-emerald-500"></i>
       <span data-i18n="addItem">Add item / row</span>
+    </button>
+
+    <button data-action="setNull" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+      <i class="fa-solid fa-circle-minus text-amber-500"></i>
+      <span data-i18n="setNull">Set to null</span>
     </button>
 
     <button data-action="delete" class="menu-item flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40">
@@ -289,6 +294,44 @@
     </div>
   </div>
 
+  <div id="nullModal" class="modal-backdrop fixed inset-0 z-[99999] items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 data-i18n="setNullTitle" class="text-xl font-bold">Set value to null</h3>
+          <p data-i18n="setNullSubTitle" class="text-sm text-slate-500 dark:text-slate-400">Type null to confirm this action.</p>
+        </div>
+
+        <button id="btnCloseNullModal" class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+        <span data-i18n="setNullWarning">This selected key or value will be changed to null.</span>
+      </div>
+
+      <div class="mb-4">
+        <label data-i18n="typeNullLabel" class="mb-2 block text-sm font-semibold">Please type null</label>
+        <input id="nullConfirmInput" type="text" class="form-control" placeholder="null" />
+      </div>
+
+      <div id="nullModalError" class="mb-4 hidden rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"></div>
+
+      <div class="flex justify-end gap-2">
+        <button id="btnCancelNullModal" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
+          <span data-i18n="cancel">Cancel</span>
+        </button>
+
+        <button id="btnConfirmNullModal" class="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700">
+          <i class="fa-solid fa-circle-minus mr-1"></i>
+          <span data-i18n="confirmNull">Set Null</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const THEME_STORAGE_KEY = "app_theme";
     const ALLOWED_THEMES = ["light", "dark"];
@@ -362,6 +405,7 @@
         editSelected: "Edit selected",
         copySelected: "Copy selected",
         addItem: "Add item / row",
+        setNull: "Set to null",
         deleteSelected: "Delete selected",
         invalidJson: "Invalid JSON syntax",
         confirmClear: "Do you want to clear JSON data?",
@@ -389,7 +433,13 @@
         invalidNumber: "Number value is invalid.",
         invalidArray: "List must be valid JSON array.",
         invalidObject: "Dictionary must be valid JSON object.",
-        rootKeyCannotEdit: "Root key cannot edit."
+        rootKeyCannotEdit: "Root key cannot edit.",
+        setNullTitle: "Set value to null",
+        setNullSubTitle: "Type null to confirm this action.",
+        setNullWarning: "This selected key or value will be changed to null.",
+        typeNullLabel: "Please type null",
+        confirmNull: "Set Null",
+        nullConfirmWrong: "Please type null to confirm."
       },
       km: {
         title: "Json Format and Preview",
@@ -407,6 +457,7 @@
         editSelected: "កែចំណុចនេះ",
         copySelected: "Copy ចំណុចនេះ",
         addItem: "បន្ថែម item / row",
+        setNull: "កំណត់ជា null",
         deleteSelected: "លុបចំណុចនេះ",
         invalidJson: "JSON syntax មិនត្រឹមត្រូវ",
         confirmClear: "តើអ្នកចង់សម្អាត JSON មែនទេ?",
@@ -434,7 +485,13 @@
         invalidNumber: "តម្លៃលេខមិនត្រឹមត្រូវ។",
         invalidArray: "List ត្រូវតែជា JSON array ត្រឹមត្រូវ។",
         invalidObject: "Dictionary ត្រូវតែជា JSON object ត្រឹមត្រូវ។",
-        rootKeyCannotEdit: "មិនអាចកែ root key បានទេ។"
+        rootKeyCannotEdit: "មិនអាចកែ root key បានទេ។",
+        setNullTitle: "កំណត់ value ជា null",
+        setNullSubTitle: "សូមវាយពាក្យ null ដើម្បីបញ្ជាក់។",
+        setNullWarning: "Key ឬ value ដែលបានជ្រើសនឹងត្រូវប្តូរទៅជា null។",
+        typeNullLabel: "សូមវាយ null",
+        confirmNull: "Set Null",
+        nullConfirmWrong: "សូមវាយពាក្យ null ដើម្បីបញ្ជាក់។"
       }
     };
 
@@ -751,12 +808,25 @@
       return type === "object" || type === "array";
     }
 
-    // Show or hide add menu based on selected type
+    // Check selected item can edit value
+    function canEditValue(path) {
+      const value = getByPath(currentJsonData, path);
+      const type = getValueType(value);
+      return type !== "object" && type !== "array";
+    }
+
+    // Show or hide context menu options based on selected type
     function updateContextMenuOptions(path) {
       if (canAddChild(path)) {
         $("#menuAddItem").removeClass("hidden");
       } else {
         $("#menuAddItem").addClass("hidden");
+      }
+
+      if (canEditValue(path)) {
+        $("#menuEditItem").removeClass("hidden");
+      } else {
+        $("#menuEditItem").addClass("hidden");
       }
     }
 
@@ -786,19 +856,21 @@
       }
 
       if (mode === "editValue") {
+        const currentValue = getByPath(currentJsonData, modalPath);
+        const currentType = getValueType(currentValue);
+
+        if (currentType === "object" || currentType === "array") return;
+
         $("#modalTitle").text(t("editValueTitle"));
         $("#modalSubTitle").text(t("editValueSubTitle"));
-        setModalValue(getByPath(currentJsonData, modalPath));
+        setModalValue(currentValue);
       }
 
       if (mode === "addItem") {
         const parentValue = getByPath(currentJsonData, modalPath);
         const parentType = getValueType(parentValue);
 
-        if (parentType !== "object" && parentType !== "array") {
-          openModal("editValue", modalPath);
-          return;
-        }
+        if (parentType !== "object" && parentType !== "array") return;
 
         $("#modalTitle").text(t("addItemTitle"));
         $("#modalSubTitle").text(t("addItemSubTitle"));
@@ -822,6 +894,36 @@
     // Close modal
     function closeModal() {
       $("#valueModal").fadeOut(100);
+    }
+
+    // Open null confirm modal
+    function openNullModal(path) {
+      modalPath = path || [];
+      $("#nullConfirmInput").val("");
+      $("#nullModalError").addClass("hidden").html("");
+      $("#nullModal").css("display", "flex").hide().fadeIn(120);
+      setTimeout(() => $("#nullConfirmInput").focus(), 150);
+    }
+
+    // Close null confirm modal
+    function closeNullModal() {
+      $("#nullModal").fadeOut(100);
+    }
+
+    // Confirm set selected value to null
+    function confirmSetNull() {
+      const typedValue = $("#nullConfirmInput").val().trim();
+
+      if (typedValue !== "null") {
+        $("#nullModalError")
+          .removeClass("hidden")
+          .html(escapeHtml(t("nullConfirmWrong")));
+        return;
+      }
+
+      setByPath(currentJsonData, modalPath, null);
+      syncDataToInput();
+      closeNullModal();
     }
 
     // Set modal value by current JSON type
@@ -1084,6 +1186,10 @@
           openModal("addItem", contextTarget.path);
         }
 
+        if (action === "setNull") {
+          openNullModal(contextTarget.path);
+        }
+
         if (action === "delete") {
           deleteContextValue();
         }
@@ -1099,6 +1205,21 @@
       $("#valueModal").on("click", function (e) {
         if (e.target.id === "valueModal") {
           closeModal();
+        }
+      });
+
+      $("#btnCloseNullModal, #btnCancelNullModal").on("click", closeNullModal);
+      $("#btnConfirmNullModal").on("click", confirmSetNull);
+
+      $("#nullModal").on("click", function (e) {
+        if (e.target.id === "nullModal") {
+          closeNullModal();
+        }
+      });
+
+      $("#nullConfirmInput").on("keydown", function (e) {
+        if (e.key === "Enter") {
+          confirmSetNull();
         }
       });
     }
