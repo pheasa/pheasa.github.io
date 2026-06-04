@@ -62,24 +62,46 @@
 
   <!-- Header -->
   <header class="bg-white shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
-    <div>
-      <h1 data-i18n="appTitle" class="text-2xl font-bold text-gray-800">
-        កម្មវិធីរចនា UML
-      </h1>
+    <div class="flex items-start gap-3">
 
-      <p data-i18n="appSubtitle" class="text-sm text-gray-500">
-        សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ
-      </p>
-
+      <!-- Back Button -->
       <a
-        href="https://github.com/pheasa/pheasa.github.io/wiki/ULM-Design"
-        target="_blank"
-        rel="noopener noreferrer"
-        data-i18n="howToUse"
-        class="inline-block mt-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+        href="/"
+        data-i18n-title="backHome"
+        class="mt-1 inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition"
       >
-        របៀបប្រើប្រាស់?
+        ←
       </a>
+
+      <div>
+        <h1 data-i18n="appTitle" class="text-2xl font-bold text-gray-800">
+          កម្មវិធីរចនា UML
+        </h1>
+
+        <p data-i18n="appSubtitle" class="text-sm text-gray-500">
+          សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 mt-2">
+          <a
+            href="/"
+            data-i18n="backHome"
+            class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 hover:underline"
+          >
+            ← ត្រឡប់ទៅទំព័រដើម
+          </a>
+
+          <a
+            href="https://github.com/pheasa/pheasa.github.io/wiki/ULM-Design"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-i18n="howToUse"
+            class="inline-block text-sm text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            របៀបប្រើប្រាស់?
+          </a>
+        </div>
+      </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
@@ -244,6 +266,7 @@
       km: {
         appTitle: "កម្មវិធីរចនា UML",
         appSubtitle: "សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ",
+        backHome: "ត្រឡប់ទៅទំព័រដើម",
         howToUse: "របៀបប្រើប្រាស់?",
         classUML: "Class UML",
         sequenceUML: "Sequence UML",
@@ -266,6 +289,7 @@
       en: {
         appTitle: "UML Designer Preview",
         appSubtitle: "Write Mermaid UML and preview instantly",
+        backHome: "Back to Home",
         howToUse: "How to use?",
         classUML: "Class UML",
         sequenceUML: "Sequence UML",
@@ -307,6 +331,11 @@
       $("[data-i18n]").each(function () {
         const key = $(this).data("i18n");
         $(this).text(t(key));
+      });
+
+      $("[data-i18n-title]").each(function () {
+        const key = $(this).data("i18n-title");
+        $(this).attr("title", t(key));
       });
 
       $(".language-btn").removeClass("language-active");
