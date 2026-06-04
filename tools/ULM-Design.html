@@ -6,6 +6,15 @@
 
   <title>UML Designer Preview</title>
 
+  <!-- Tailwind Config -->
+  <script>
+    tailwind = {
+      config: {
+        darkMode: "class"
+      }
+    };
+  </script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -34,7 +43,8 @@
     }
 
     .CodeMirror {
-      height: calc(100vh - 190px);
+      height: calc(100vh - 260px);
+      min-height: 480px;
       font-size: 14px;
       border-radius: 12px;
     }
@@ -49,36 +59,44 @@
       height: auto;
     }
 
-    .language-active {
+    .language-active,
+    .theme-active {
       border: 2px solid #2563eb;
       background: #eff6ff;
       color: #1d4ed8;
       font-weight: 600;
     }
+
+    .dark .language-active,
+    .dark .theme-active {
+      border: 2px solid #60a5fa;
+      background: #1e3a8a;
+      color: #ffffff;
+    }
   </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen">
 
   <!-- Header -->
-  <header class="bg-white shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+  <header class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
     <div class="flex items-start gap-3">
 
       <!-- Back Button -->
       <a
         href="/"
         data-i18n-title="backHome"
-        class="mt-1 inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition"
+        class="mt-1 inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
       >
         ←
       </a>
 
       <div>
-        <h1 data-i18n="appTitle" class="text-2xl font-bold text-gray-800">
+        <h1 data-i18n="appTitle" class="text-2xl font-bold text-gray-800 dark:text-white">
           កម្មវិធីរចនា UML
         </h1>
 
-        <p data-i18n="appSubtitle" class="text-sm text-gray-500">
+        <p data-i18n="appSubtitle" class="text-sm text-gray-500 dark:text-gray-400">
           សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ
         </p>
 
@@ -86,9 +104,9 @@
           <a
             href="/"
             data-i18n="backHome"
-            class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 hover:underline"
+            class="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:underline"
           >
-            ← ត្រឡប់ទៅទំព័រដើម
+            ត្រឡប់ទៅទំព័រដើម
           </a>
 
           <a
@@ -96,7 +114,7 @@
             target="_blank"
             rel="noopener noreferrer"
             data-i18n="howToUse"
-            class="inline-block text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            class="inline-block text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
           >
             របៀបប្រើប្រាស់?
           </a>
@@ -107,17 +125,32 @@
     <div class="flex flex-wrap items-center gap-2">
 
       <!-- Language Switch -->
-      <div class="flex gap-2 bg-gray-100 p-1 rounded-xl">
-        <button id="btnKhmer"
+      <div class="flex gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+        <button
           class="language-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
           data-lang="km">
           🇰🇭 <span>ខ្មែរ</span>
         </button>
 
-        <button id="btnEnglish"
+        <button
           class="language-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
           data-lang="en">
           🇺🇸 <span>English</span>
+        </button>
+      </div>
+
+      <!-- Theme Switch -->
+      <div class="flex gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+        <button
+          class="theme-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+          data-theme="light">
+          ☀️ <span data-i18n="light">ភ្លឺ</span>
+        </button>
+
+        <button
+          class="theme-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+          data-theme="dark">
+          🌙 <span data-i18n="dark">ងងឹត</span>
         </button>
       </div>
 
@@ -139,25 +172,76 @@
         Flowchart
       </button>
 
+      <button id="btnSaveProject"
+        data-i18n="saveProject"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+        រក្សាទុក Project
+      </button>
+
+      <button id="btnExportProjects"
+        data-i18n="exportProject"
+        class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+        Export
+      </button>
+
+      <button id="btnImportProjects"
+        data-i18n="importProject"
+        class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+        Import
+      </button>
+
+      <input id="importFileInput" type="file" accept="application/json,.json" class="hidden" />
+
       <button id="btnRender"
         data-i18n="render"
-        class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-black">
+        class="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-black dark:hover:bg-gray-600">
         បង្ហាញលទ្ធផល
       </button>
     </div>
   </header>
 
+  <!-- Project List -->
+  <section class="px-6 pt-6">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
+      <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center mb-3">
+        <div>
+          <h2 data-i18n="projectList" class="font-semibold text-gray-800 dark:text-white">
+            បញ្ជី Project
+          </h2>
+          <p data-i18n="projectListSubtitle" class="text-xs text-gray-500 dark:text-gray-400">
+            ចុច Load ដើម្បីយក UML Code មកប្រើវិញ
+          </p>
+        </div>
+
+        <button id="btnClearCurrent"
+          data-i18n="clearCurrent"
+          class="px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
+          សម្អាត Code បច្ចុប្បន្ន
+        </button>
+      </div>
+
+      <div id="projectList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <!-- Projects render here -->
+      </div>
+    </div>
+  </section>
+
   <!-- Main -->
   <main class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6">
 
     <!-- Editor -->
-    <section class="bg-white rounded-xl shadow p-4">
+    <section class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
       <div class="flex justify-between items-center mb-3">
-        <h2 data-i18n="umlCode" class="font-semibold text-gray-700">
-          កូដ UML
-        </h2>
+        <div>
+          <h2 data-i18n="umlCode" class="font-semibold text-gray-700 dark:text-gray-100">
+            កូដ UML
+          </h2>
+          <p data-i18n="autoSaveNote" class="text-xs text-gray-500 dark:text-gray-400">
+            Code បច្ចុប្បន្ននឹងរក្សាទុកស្វ័យប្រវត្តិ
+          </p>
+        </div>
 
-        <span data-i18n="mermaidSyntax" class="text-xs bg-gray-200 px-2 py-1 rounded">
+        <span data-i18n="mermaidSyntax" class="text-xs bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
           Mermaid Syntax
         </span>
       </div>
@@ -166,21 +250,21 @@
     </section>
 
     <!-- Preview -->
-    <section class="bg-white rounded-xl shadow p-4">
+    <section class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
       <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center mb-3">
         <div>
-          <h2 data-i18n="preview" class="font-semibold text-gray-700">
+          <h2 data-i18n="preview" class="font-semibold text-gray-700 dark:text-gray-100">
             មើលលទ្ធផល
           </h2>
 
-          <p data-i18n="clickToZoom" class="text-xs text-gray-500">
+          <p data-i18n="clickToZoom" class="text-xs text-gray-500 dark:text-gray-400">
             ចុចលើ Diagram ដើម្បីបើកមើលធំ និង Zoom
           </p>
         </div>
 
         <div class="flex gap-2">
           <select id="downloadType"
-            class="border border-gray-300 rounded-lg px-3 py-1 text-sm">
+            class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg px-3 py-1 text-sm">
             <option value="png">PNG</option>
             <option value="jpg">JPG</option>
             <option value="pdf">PDF</option>
@@ -196,11 +280,85 @@
       </div>
 
       <div id="preview"
-        class="border border-dashed border-gray-300 rounded-xl min-h-[500px] p-4 overflow-auto flex items-start justify-center bg-gray-50 cursor-zoom-in">
+        class="border border-dashed border-gray-300 dark:border-gray-700 rounded-xl min-h-[500px] p-4 overflow-auto flex items-start justify-center bg-gray-50 dark:bg-gray-800 cursor-zoom-in">
       </div>
     </section>
 
   </main>
+
+  <!-- Save Project Modal -->
+  <div id="saveProjectModal" class="fixed inset-0 bg-black/70 hidden z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-5">
+      <h3 data-i18n="saveProjectTitle" class="text-lg font-bold text-gray-800 dark:text-white mb-2">
+        រក្សាទុក Project
+      </h3>
+
+      <p data-i18n="saveProjectSubtitle" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        បញ្ចូលឈ្មោះ Project របស់អ្នក
+      </p>
+
+      <input
+        id="projectNameInput"
+        type="text"
+        data-i18n-placeholder="projectNamePlaceholder"
+        placeholder="ឈ្មោះ Project"
+        class="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      <div class="flex justify-end gap-2 mt-5">
+        <button id="btnCancelSaveProject"
+          data-i18n="cancel"
+          class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
+          បោះបង់
+        </button>
+
+        <button id="btnConfirmSaveProject"
+          data-i18n="save"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+          រក្សាទុក
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Option Modal -->
+  <div id="importOptionModal" class="fixed inset-0 bg-black/70 hidden z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg p-5">
+      <h3 data-i18n="importOptionTitle" class="text-lg font-bold text-gray-800 dark:text-white mb-2">
+        ជ្រើសរើសរបៀប Import
+      </h3>
+
+      <p data-i18n="importOptionSubtitle" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        តើអ្នកចង់បញ្ចូល Project ថ្មីជាមួយ Project ចាស់ ឬជំនួស Project ចាស់ទាំងអស់?
+      </p>
+
+      <div id="importPreviewInfo" class="text-sm bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mb-4">
+        <!-- Import info -->
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button id="btnImportMerge"
+          data-i18n="mergeImport"
+          class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Merge ជាមួយ Project ចាស់
+        </button>
+
+        <button id="btnImportReplace"
+          data-i18n="replaceImport"
+          class="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          Replace Project ចាស់
+        </button>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button id="btnCancelImport"
+          data-i18n="cancel"
+          class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
+          បោះបង់
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Image Preview Modal -->
   <div id="imageModal"
@@ -242,125 +400,23 @@
 
   <script>
     // -----------------------------
-    // Language Config
+    // Storage Keys
     // -----------------------------
     const LANGUAGE_STORAGE_KEY = "app_language";
+    const THEME_STORAGE_KEY = "app_theme";
+    const CURRENT_CODE_STORAGE_KEY = "uml_current_code";
+    const PROJECTS_STORAGE_KEY = "uml_projects";
+
     const DEFAULT_LANGUAGE = "km";
+    const DEFAULT_THEME = "light";
+
     const ALLOWED_LANGUAGES = ["en", "km"];
-
-    function getSavedLanguage() {
-      const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-
-      if (ALLOWED_LANGUAGES.includes(savedLanguage)) {
-        return savedLanguage;
-      }
-
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, DEFAULT_LANGUAGE);
-      return DEFAULT_LANGUAGE;
-    }
+    const ALLOWED_THEMES = ["light", "dark"];
 
     // -----------------------------
-    // Language Translation
+    // Default UML Code
     // -----------------------------
-    const translations = {
-      km: {
-        appTitle: "កម្មវិធីរចនា UML",
-        appSubtitle: "សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ",
-        backHome: "ត្រឡប់ទៅទំព័រដើម",
-        howToUse: "របៀបប្រើប្រាស់?",
-        classUML: "Class UML",
-        sequenceUML: "Sequence UML",
-        flowchart: "Flowchart",
-        render: "បង្ហាញលទ្ធផល",
-        umlCode: "កូដ UML",
-        mermaidSyntax: "Mermaid Syntax",
-        preview: "មើលលទ្ធផល",
-        clickToZoom: "ចុចលើ Diagram ដើម្បីបើកមើលធំ និង Zoom",
-        download: "ទាញយក",
-        zoomIn: "ពង្រីក +",
-        zoomOut: "បង្រួម -",
-        reset: "កំណត់ឡើងវិញ",
-        close: "បិទ",
-        rendering: "កំពុងបង្ហាញ UML...",
-        syntaxErrorTitle: "កូដ UML មានបញ្ហា",
-        renderFirst: "សូមបង្ហាញ UML ជាមុនសិន។",
-        convertError: "មិនអាចបម្លែង SVG ទៅជា Image បានទេ។"
-      },
-      en: {
-        appTitle: "UML Designer Preview",
-        appSubtitle: "Write Mermaid UML and preview instantly",
-        backHome: "Back to Home",
-        howToUse: "How to use?",
-        classUML: "Class UML",
-        sequenceUML: "Sequence UML",
-        flowchart: "Flowchart",
-        render: "Render",
-        umlCode: "UML Code",
-        mermaidSyntax: "Mermaid Syntax",
-        preview: "Preview",
-        clickToZoom: "Click diagram to open zoom preview",
-        download: "Download",
-        zoomIn: "Zoom +",
-        zoomOut: "Zoom -",
-        reset: "Reset",
-        close: "Close",
-        rendering: "Rendering UML...",
-        syntaxErrorTitle: "UML Syntax Error",
-        renderFirst: "Please render UML first.",
-        convertError: "Cannot convert SVG to image."
-      }
-    };
-
-    let currentLanguage = getSavedLanguage();
-
-    function t(key) {
-      return translations[currentLanguage][key] || key;
-    }
-
-    function setLanguage(lang) {
-      if (!ALLOWED_LANGUAGES.includes(lang)) {
-        lang = DEFAULT_LANGUAGE;
-      }
-
-      currentLanguage = lang;
-
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-
-      $("html").attr("lang", lang);
-
-      $("[data-i18n]").each(function () {
-        const key = $(this).data("i18n");
-        $(this).text(t(key));
-      });
-
-      $("[data-i18n-title]").each(function () {
-        const key = $(this).data("i18n-title");
-        $(this).attr("title", t(key));
-      });
-
-      $(".language-btn").removeClass("language-active");
-      $(`.language-btn[data-lang="${lang}"]`).addClass("language-active");
-    }
-
-    $(".language-btn").on("click", function () {
-      const lang = $(this).data("lang");
-
-      setLanguage(lang);
-    });
-
-    // -----------------------------
-    // Mermaid Config
-    // -----------------------------
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: "default",
-      securityLevel: "loose"
-    });
-
-    // -----------------------------
-    // UML Examples
-    // -----------------------------
-    const classDiagram = `classDiagram
+    const defaultClassDiagram = `classDiagram
 class User {
   +int id
   +string name
@@ -409,6 +465,384 @@ F -- No --> G[Show Error]
 G --> D`;
 
     // -----------------------------
+    // Translation
+    // -----------------------------
+    const translations = {
+      km: {
+        appTitle: "កម្មវិធីរចនា UML",
+        appSubtitle: "សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ",
+        backHome: "ត្រឡប់ទៅទំព័រដើម",
+        howToUse: "របៀបប្រើប្រាស់?",
+        light: "ភ្លឺ",
+        dark: "ងងឹត",
+        classUML: "Class UML",
+        sequenceUML: "Sequence UML",
+        flowchart: "Flowchart",
+        render: "បង្ហាញលទ្ធផល",
+        saveProject: "រក្សាទុក Project",
+        exportProject: "Export Project",
+        importProject: "Import Project",
+        projectList: "បញ្ជី Project",
+        projectListSubtitle: "ចុច Load ដើម្បីយក UML Code មកប្រើវិញ",
+        clearCurrent: "សម្អាត Code បច្ចុប្បន្ន",
+        umlCode: "កូដ UML",
+        autoSaveNote: "Code បច្ចុប្បន្ននឹងរក្សាទុកស្វ័យប្រវត្តិ",
+        mermaidSyntax: "Mermaid Syntax",
+        preview: "មើលលទ្ធផល",
+        clickToZoom: "ចុចលើ Diagram ដើម្បីបើកមើលធំ និង Zoom",
+        download: "ទាញយក",
+        zoomIn: "ពង្រីក +",
+        zoomOut: "បង្រួម -",
+        reset: "កំណត់ឡើងវិញ",
+        close: "បិទ",
+        cancel: "បោះបង់",
+        save: "រក្សាទុក",
+        load: "Load",
+        delete: "លុប",
+        rename: "ប្ដូរឈ្មោះ",
+        duplicate: "ចម្លង",
+        saveProjectTitle: "រក្សាទុក Project",
+        saveProjectSubtitle: "បញ្ចូលឈ្មោះ Project របស់អ្នក",
+        projectNamePlaceholder: "ឈ្មោះ Project",
+        importOptionTitle: "ជ្រើសរើសរបៀប Import",
+        importOptionSubtitle: "តើអ្នកចង់បញ្ចូល Project ថ្មីជាមួយ Project ចាស់ ឬជំនួស Project ចាស់ទាំងអស់?",
+        mergeImport: "Merge ជាមួយ Project ចាស់",
+        replaceImport: "Replace Project ចាស់",
+        noProjects: "មិនទាន់មាន Project ទេ",
+        rendering: "កំពុងបង្ហាញ UML...",
+        syntaxErrorTitle: "កូដ UML មានបញ្ហា",
+        renderFirst: "សូមបង្ហាញ UML ជាមុនសិន។",
+        convertError: "មិនអាចបម្លែង SVG ទៅជា Image បានទេ។",
+        nameRequired: "សូមបញ្ចូលឈ្មោះ Project។",
+        savedSuccess: "រក្សាទុក Project ជោគជ័យ។",
+        loadedSuccess: "បាន Load Project ជោគជ័យ។",
+        deletedConfirm: "តើអ្នកពិតជាចង់លុប Project នេះមែនទេ?",
+        deletedSuccess: "បានលុប Project ជោគជ័យ។",
+        clearConfirm: "តើអ្នកចង់សម្អាត Code បច្ចុប្បន្នមែនទេ?",
+        exportedSuccess: "Export Project ជោគជ័យ។",
+        importInvalid: "File JSON មិនត្រឹមត្រូវ។",
+        importSuccess: "Import Project ជោគជ័យ។",
+        importInfo: "រកឃើញ Project ចំនួន",
+        projectCount: "Project",
+        updatedAt: "កែប្រែ",
+        createdAt: "បង្កើត"
+      },
+      en: {
+        appTitle: "UML Designer Preview",
+        appSubtitle: "Write Mermaid UML and preview instantly",
+        backHome: "Back to Home",
+        howToUse: "How to use?",
+        light: "Light",
+        dark: "Dark",
+        classUML: "Class UML",
+        sequenceUML: "Sequence UML",
+        flowchart: "Flowchart",
+        render: "Render",
+        saveProject: "Save Project",
+        exportProject: "Export Project",
+        importProject: "Import Project",
+        projectList: "Project List",
+        projectListSubtitle: "Click Load to reuse UML code",
+        clearCurrent: "Clear Current Code",
+        umlCode: "UML Code",
+        autoSaveNote: "Current code is saved automatically",
+        mermaidSyntax: "Mermaid Syntax",
+        preview: "Preview",
+        clickToZoom: "Click diagram to open zoom preview",
+        download: "Download",
+        zoomIn: "Zoom +",
+        zoomOut: "Zoom -",
+        reset: "Reset",
+        close: "Close",
+        cancel: "Cancel",
+        save: "Save",
+        load: "Load",
+        delete: "Delete",
+        rename: "Rename",
+        duplicate: "Duplicate",
+        saveProjectTitle: "Save Project",
+        saveProjectSubtitle: "Input your project name",
+        projectNamePlaceholder: "Project name",
+        importOptionTitle: "Select Import Option",
+        importOptionSubtitle: "Do you want to merge with existing projects or replace all existing projects?",
+        mergeImport: "Merge with Existing",
+        replaceImport: "Replace Existing",
+        noProjects: "No projects yet",
+        rendering: "Rendering UML...",
+        syntaxErrorTitle: "UML Syntax Error",
+        renderFirst: "Please render UML first.",
+        convertError: "Cannot convert SVG to image.",
+        nameRequired: "Please input project name.",
+        savedSuccess: "Project saved successfully.",
+        loadedSuccess: "Project loaded successfully.",
+        deletedConfirm: "Are you sure you want to delete this project?",
+        deletedSuccess: "Project deleted successfully.",
+        clearConfirm: "Are you sure you want to clear current code?",
+        exportedSuccess: "Project exported successfully.",
+        importInvalid: "Invalid JSON file.",
+        importSuccess: "Project imported successfully.",
+        importInfo: "Found projects",
+        projectCount: "Project",
+        updatedAt: "Updated",
+        createdAt: "Created"
+      }
+    };
+
+    let currentLanguage = getSavedLanguage();
+    let currentTheme = getSavedTheme();
+    let pendingImportProjects = [];
+
+    // -----------------------------
+    // Language Helpers
+    // -----------------------------
+    function getSavedLanguage() {
+      const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+
+      if (ALLOWED_LANGUAGES.includes(savedLanguage)) {
+        return savedLanguage;
+      }
+
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, DEFAULT_LANGUAGE);
+      return DEFAULT_LANGUAGE;
+    }
+
+    function t(key) {
+      return translations[currentLanguage][key] || key;
+    }
+
+    function setLanguage(lang) {
+      if (!ALLOWED_LANGUAGES.includes(lang)) {
+        lang = DEFAULT_LANGUAGE;
+      }
+
+      currentLanguage = lang;
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+
+      $("html").attr("lang", lang);
+
+      $("[data-i18n]").each(function () {
+        const key = $(this).data("i18n");
+        $(this).text(t(key));
+      });
+
+      $("[data-i18n-title]").each(function () {
+        const key = $(this).data("i18n-title");
+        $(this).attr("title", t(key));
+      });
+
+      $("[data-i18n-placeholder]").each(function () {
+        const key = $(this).data("i18n-placeholder");
+        $(this).attr("placeholder", t(key));
+      });
+
+      $(".language-btn").removeClass("language-active");
+      $(`.language-btn[data-lang="${lang}"]`).addClass("language-active");
+
+      renderProjectList();
+    }
+
+    // -----------------------------
+    // Theme Helpers
+    // -----------------------------
+    function getSavedTheme() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+      if (ALLOWED_THEMES.includes(savedTheme)) {
+        return savedTheme;
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, DEFAULT_THEME);
+      return DEFAULT_THEME;
+    }
+
+    function setTheme(theme) {
+      if (!ALLOWED_THEMES.includes(theme)) {
+        theme = DEFAULT_THEME;
+      }
+
+      currentTheme = theme;
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+      if (theme === "dark") {
+        $("html").addClass("dark");
+      } else {
+        $("html").removeClass("dark");
+      }
+
+      $(".theme-btn").removeClass("theme-active");
+      $(`.theme-btn[data-theme="${theme}"]`).addClass("theme-active");
+
+      initMermaid();
+      renderUML();
+    }
+
+    // -----------------------------
+    // Mermaid
+    // -----------------------------
+    function initMermaid() {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: currentTheme === "dark" ? "dark" : "default",
+        securityLevel: "loose"
+      });
+    }
+
+    // -----------------------------
+    // Project Helpers
+    // -----------------------------
+    function generateId() {
+      return "project_" + Date.now() + "_" + Math.random().toString(36).substring(2, 10);
+    }
+
+    function getCurrentDateTime() {
+      return new Date().toISOString();
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return "-";
+
+      const date = new Date(dateString);
+
+      if (Number.isNaN(date.getTime())) {
+        return "-";
+      }
+
+      return date.toLocaleString();
+    }
+
+    function getProjects() {
+      try {
+        const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
+        const projects = JSON.parse(raw || "[]");
+
+        return Array.isArray(projects) ? projects : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setProjects(projects) {
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+      renderProjectList();
+    }
+
+    function saveCurrentCodeToStorage() {
+      localStorage.setItem(CURRENT_CODE_STORAGE_KEY, editor.getValue());
+    }
+
+    function getCurrentCodeFromStorage() {
+      return localStorage.getItem(CURRENT_CODE_STORAGE_KEY) || defaultClassDiagram;
+    }
+
+    function createProject(name, code) {
+      return {
+        id: generateId(),
+        name: name,
+        code: code,
+        createdAt: getCurrentDateTime(),
+        updatedAt: getCurrentDateTime()
+      };
+    }
+
+    function renderProjectList() {
+      const projects = getProjects();
+      const container = $("#projectList");
+
+      container.html("");
+
+      if (projects.length === 0) {
+        container.html(`
+          <div class="col-span-full text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            ${t("noProjects")}
+          </div>
+        `);
+        return;
+      }
+
+      projects.forEach((project) => {
+        const card = $(`
+          <div class="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+            <div class="flex justify-between gap-3">
+              <div class="min-w-0">
+                <h3 class="font-semibold text-gray-800 dark:text-white truncate"></h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+              </div>
+            </div>
+
+            <pre class="mt-3 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-28 overflow-auto whitespace-pre-wrap"></pre>
+
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button class="btn-load px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">${t("load")}</button>
+              <button class="btn-duplicate px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">${t("duplicate")}</button>
+              <button class="btn-rename px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600">${t("rename")}</button>
+              <button class="btn-delete px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">${t("delete")}</button>
+            </div>
+          </div>
+        `);
+
+        card.find("h3").text(project.name);
+        card.find("p").text(`${t("updatedAt")}: ${formatDate(project.updatedAt)}`);
+        card.find("pre").text(project.code);
+
+        card.find(".btn-load").on("click", function () {
+          editor.setValue(project.code);
+          saveCurrentCodeToStorage();
+          renderUML();
+          alert(t("loadedSuccess"));
+        });
+
+        card.find(".btn-duplicate").on("click", function () {
+          const projects = getProjects();
+          const duplicateProject = {
+            ...project,
+            id: generateId(),
+            name: `${project.name} Copy`,
+            createdAt: getCurrentDateTime(),
+            updatedAt: getCurrentDateTime()
+          };
+
+          projects.unshift(duplicateProject);
+          setProjects(projects);
+        });
+
+        card.find(".btn-rename").on("click", function () {
+          const newName = prompt(t("projectNamePlaceholder"), project.name);
+
+          if (!newName || !newName.trim()) {
+            return;
+          }
+
+          const projects = getProjects().map((item) => {
+            if (item.id === project.id) {
+              return {
+                ...item,
+                name: newName.trim(),
+                updatedAt: getCurrentDateTime()
+              };
+            }
+
+            return item;
+          });
+
+          setProjects(projects);
+        });
+
+        card.find(".btn-delete").on("click", function () {
+          if (!confirm(t("deletedConfirm"))) {
+            return;
+          }
+
+          const projects = getProjects().filter((item) => item.id !== project.id);
+
+          setProjects(projects);
+          alert(t("deletedSuccess"));
+        });
+
+        container.append(card);
+      });
+    }
+
+    // -----------------------------
     // CodeMirror Editor
     // -----------------------------
     const editor = CodeMirror.fromTextArea(document.getElementById("umlCode"), {
@@ -417,7 +851,7 @@ G --> D`;
       mode: "javascript"
     });
 
-    editor.setValue(classDiagram);
+    editor.setValue(getCurrentCodeFromStorage());
 
     // -----------------------------
     // Render UML Preview
@@ -427,7 +861,7 @@ G --> D`;
       const preview = $("#preview");
 
       preview.html(`
-        <div class="text-gray-500 animate-pulse">
+        <div class="text-gray-500 dark:text-gray-400 animate-pulse">
           ${t("rendering")}
         </div>
       `);
@@ -439,7 +873,7 @@ G --> D`;
         preview.html(result.svg);
       } catch (error) {
         preview.html(`
-          <div class="text-red-600 bg-red-50 border border-red-200 p-4 rounded-lg w-full">
+          <div class="text-red-600 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-4 rounded-lg w-full">
             <h3 class="font-bold mb-2">${t("syntaxErrorTitle")}</h3>
             <pre class="text-sm whitespace-pre-wrap">${error.message}</pre>
           </div>
@@ -451,35 +885,217 @@ G --> D`;
     // Template Buttons
     // -----------------------------
     $("#btnClass").on("click", function () {
-      editor.setValue(classDiagram);
+      editor.setValue(defaultClassDiagram);
+      saveCurrentCodeToStorage();
       renderUML();
     });
 
     $("#btnSequence").on("click", function () {
       editor.setValue(sequenceDiagram);
+      saveCurrentCodeToStorage();
       renderUML();
     });
 
     $("#btnFlowchart").on("click", function () {
       editor.setValue(flowchartDiagram);
+      saveCurrentCodeToStorage();
       renderUML();
     });
 
     $("#btnRender").on("click", function () {
+      saveCurrentCodeToStorage();
+      renderUML();
+    });
+
+    $("#btnClearCurrent").on("click", function () {
+      if (!confirm(t("clearConfirm"))) {
+        return;
+      }
+
+      editor.setValue("");
+      saveCurrentCodeToStorage();
       renderUML();
     });
 
     // -----------------------------
-    // Auto Render When Typing
+    // Auto Render + Auto Save
     // -----------------------------
     let typingTimer;
 
     editor.on("change", function () {
       clearTimeout(typingTimer);
 
+      saveCurrentCodeToStorage();
+
       typingTimer = setTimeout(function () {
         renderUML();
       }, 600);
+    });
+
+    // -----------------------------
+    // Save Project Modal
+    // -----------------------------
+    $("#btnSaveProject").on("click", function () {
+      $("#projectNameInput").val("");
+      $("#saveProjectModal").removeClass("hidden").addClass("flex");
+      setTimeout(() => $("#projectNameInput").focus(), 100);
+    });
+
+    $("#btnCancelSaveProject").on("click", function () {
+      $("#saveProjectModal").addClass("hidden").removeClass("flex");
+    });
+
+    $("#btnConfirmSaveProject").on("click", function () {
+      const name = $("#projectNameInput").val().trim();
+
+      if (!name) {
+        alert(t("nameRequired"));
+        return;
+      }
+
+      const projects = getProjects();
+      const code = editor.getValue();
+
+      projects.unshift(createProject(name, code));
+      setProjects(projects);
+
+      $("#saveProjectModal").addClass("hidden").removeClass("flex");
+
+      alert(t("savedSuccess"));
+    });
+
+    // -----------------------------
+    // Export Projects
+    // -----------------------------
+    $("#btnExportProjects").on("click", function () {
+      const exportData = {
+        version: 1,
+        exportedAt: getCurrentDateTime(),
+        currentCode: editor.getValue(),
+        projects: getProjects()
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json;charset=utf-8"
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "uml-projects.json";
+      link.click();
+
+      URL.revokeObjectURL(url);
+
+      alert(t("exportedSuccess"));
+    });
+
+    // -----------------------------
+    // Import Projects
+    // -----------------------------
+    $("#btnImportProjects").on("click", function () {
+      $("#importFileInput").val("");
+      $("#importFileInput").click();
+    });
+
+    $("#importFileInput").on("change", function (event) {
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (readerEvent) {
+        try {
+          const json = JSON.parse(readerEvent.target.result);
+
+          let projects = [];
+
+          if (Array.isArray(json)) {
+            projects = json;
+          } else if (Array.isArray(json.projects)) {
+            projects = json.projects;
+          }
+
+          projects = projects
+            .filter((item) => item && item.name && item.code)
+            .map((item) => ({
+              id: item.id || generateId(),
+              name: item.name,
+              code: item.code,
+              createdAt: item.createdAt || getCurrentDateTime(),
+              updatedAt: item.updatedAt || getCurrentDateTime()
+            }));
+
+          if (projects.length === 0) {
+            alert(t("importInvalid"));
+            return;
+          }
+
+          pendingImportProjects = projects;
+
+          $("#importPreviewInfo").text(`${t("importInfo")}: ${projects.length} ${t("projectCount")}`);
+          $("#importOptionModal").removeClass("hidden").addClass("flex");
+        } catch {
+          alert(t("importInvalid"));
+        }
+      };
+
+      reader.readAsText(file);
+    });
+
+    $("#btnCancelImport").on("click", function () {
+      pendingImportProjects = [];
+      $("#importOptionModal").addClass("hidden").removeClass("flex");
+    });
+
+    $("#btnImportMerge").on("click", function () {
+      const existingProjects = getProjects();
+
+      pendingImportProjects.forEach((importProject) => {
+        const sameIndex = existingProjects.findIndex((item) => {
+          return item.id === importProject.id || item.name === importProject.name;
+        });
+
+        if (sameIndex >= 0) {
+          existingProjects[sameIndex] = {
+            ...importProject,
+            id: existingProjects[sameIndex].id,
+            updatedAt: getCurrentDateTime()
+          };
+        } else {
+          existingProjects.unshift({
+            ...importProject,
+            id: generateId(),
+            createdAt: importProject.createdAt || getCurrentDateTime(),
+            updatedAt: importProject.updatedAt || getCurrentDateTime()
+          });
+        }
+      });
+
+      setProjects(existingProjects);
+
+      pendingImportProjects = [];
+      $("#importOptionModal").addClass("hidden").removeClass("flex");
+
+      alert(t("importSuccess"));
+    });
+
+    $("#btnImportReplace").on("click", function () {
+      const newProjects = pendingImportProjects.map((project) => ({
+        ...project,
+        id: project.id || generateId()
+      }));
+
+      setProjects(newProjects);
+
+      pendingImportProjects = [];
+      $("#importOptionModal").addClass("hidden").removeClass("flex");
+
+      alert(t("importSuccess"));
     });
 
     // -----------------------------
@@ -546,9 +1162,6 @@ G --> D`;
       link.click();
     }
 
-    // -----------------------------
-    // Download SVG
-    // -----------------------------
     async function downloadSVG() {
       const svg = $("#preview svg")[0];
 
@@ -570,9 +1183,6 @@ G --> D`;
       URL.revokeObjectURL(url);
     }
 
-    // -----------------------------
-    // Download PNG / JPG
-    // -----------------------------
     async function downloadImage(type) {
       const canvas = await getSvgAsCanvas();
 
@@ -586,9 +1196,6 @@ G --> D`;
       downloadFile(imageUrl, `uml-diagram.${extension}`);
     }
 
-    // -----------------------------
-    // Download PDF
-    // -----------------------------
     async function downloadPDF() {
       const canvas = await getSvgAsCanvas();
 
@@ -608,9 +1215,6 @@ G --> D`;
       pdf.save("uml-diagram.pdf");
     }
 
-    // -----------------------------
-    // Download Button
-    // -----------------------------
     $("#btnDownload").on("click", async function () {
       const type = $("#downloadType").val();
 
@@ -734,12 +1338,32 @@ G --> D`;
       if (event.key === "Escape") {
         closeImagePreview();
       }
+
+      if (event.key === "Enter" && $("#saveProjectModal").hasClass("flex")) {
+        $("#btnConfirmSaveProject").click();
+      }
+    });
+
+    // -----------------------------
+    // Button Events
+    // -----------------------------
+    $(".language-btn").on("click", function () {
+      const lang = $(this).data("lang");
+      setLanguage(lang);
+    });
+
+    $(".theme-btn").on("click", function () {
+      const theme = $(this).data("theme");
+      setTheme(theme);
     });
 
     // -----------------------------
     // Init App
     // -----------------------------
     setLanguage(currentLanguage);
+    setTheme(currentTheme);
+    initMermaid();
+    renderProjectList();
     renderUML();
   </script>
 
