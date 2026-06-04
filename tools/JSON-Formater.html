@@ -649,37 +649,60 @@
     }
 
     // Add item based on selected type
-    function addItemByContext() {
-      if (!contextTarget) return;
+function addItemByContext() {
+  if (!contextTarget) return;
 
-      const path = contextTarget.path;
-      const value = getByPath(currentJsonData, path);
-      const type = getValueType(value);
+  const path = contextTarget.path;
+  const value = getByPath(currentJsonData, path);
+  const type = getValueType(value);
 
-      if (type === "object") {
-        const key = prompt(t("addKeyPrompt"));
-        if (!key) return;
+  if (type === "object") {
+    const key = prompt(t("addKeyPrompt"));
 
-        const inputValue = prompt(t("addValuePrompt"), "value");
-        value[key] = parseValueFromInput(inputValue || "");
-      } else if (type === "array") {
-        const inputValue = prompt(t("addArrayValuePrompt"), "value");
-        value.push(parseValueFromInput(inputValue || ""));
-      } else {
-        const parent = getByPath(currentJsonData, path.slice(0, -1));
-        const lastKey = path[path.length - 1];
+    // user clicked Cancel or empty key
+    if (key === null || key.trim() === "") return;
 
-        if (Array.isArray(parent)) {
-          parent.splice(lastKey + 1, 0, "");
-        } else {
-          const key = prompt(t("addKeyPrompt"));
-          if (!key) return;
-          parent[key] = "";
-        }
-      }
+    const inputValue = prompt(t("addValuePrompt"), "value");
 
-      syncDataToInput();
+    // user clicked Cancel
+    if (inputValue === null) return;
+
+    value[key.trim()] = parseValueFromInput(inputValue);
+  } else if (type === "array") {
+    const inputValue = prompt(t("addArrayValuePrompt"), "value");
+
+    // user clicked Cancel
+    if (inputValue === null) return;
+
+    value.push(parseValueFromInput(inputValue));
+  } else {
+    const parent = getByPath(currentJsonData, path.slice(0, -1));
+    const lastKey = path[path.length - 1];
+
+    if (Array.isArray(parent)) {
+      const inputValue = prompt(t("addArrayValuePrompt"), "value");
+
+      // user clicked Cancel
+      if (inputValue === null) return;
+
+      parent.splice(lastKey + 1, 0, parseValueFromInput(inputValue));
+    } else {
+      const key = prompt(t("addKeyPrompt"));
+
+      // user clicked Cancel or empty key
+      if (key === null || key.trim() === "") return;
+
+      const inputValue = prompt(t("addValuePrompt"), "value");
+
+      // user clicked Cancel
+      if (inputValue === null) return;
+
+      parent[key.trim()] = parseValueFromInput(inputValue);
     }
+  }
+
+  syncDataToInput();
+}
 
     // Copy selected item to clipboard
     function copyContextValue() {
