@@ -421,7 +421,7 @@
         editKeyTitle: "Edit Key",
         editValueTitle: "Edit Value",
         addItemTitle: "Add Item / Row",
-        editKeySubTitle: "Change selected object key",
+        editKeySubTitle: "Change selected object key and value",
         editValueSubTitle: "Change selected JSON value",
         addItemSubTitle: "Add new row inside object or array only",
         keyRequired: "Key is required.",
@@ -475,7 +475,7 @@
         editKeyTitle: "កែ Key",
         editValueTitle: "កែ Value",
         addItemTitle: "បន្ថែម Item / Row",
-        editKeySubTitle: "ប្តូរ object key ដែលបានជ្រើស",
+        editKeySubTitle: "ប្តូរ object key និង value ដែលបានជ្រើស",
         editValueSubTitle: "ប្តូរ JSON value ដែលបានជ្រើស",
         addItemSubTitle: "បន្ថែម row ថ្មីក្នុង object ឬ array ប៉ុណ្ណោះ",
         keyRequired: "ត្រូវបញ្ចូល Key។",
@@ -767,47 +767,6 @@
       return true;
     }
 
-    // Check duplicated key in same dictionary
-    function hasDuplicateKey(path, newKey) {
-      if (path.length === 0) return false;
-
-      const parent = getByPath(currentJsonData, path.slice(0, -1));
-      const oldKey = path[path.length - 1];
-
-      if (Array.isArray(parent)) return false;
-      return newKey !== oldKey && Object.prototype.hasOwnProperty.call(parent, newKey);
-    }
-
-    // Rename object key with duplicate check
-    function renameKey(data, path, newKey) {
-      if (path.length === 0) return false;
-
-      const parent = getByPath(data, path.slice(0, -1));
-      const oldKey = path[path.length - 1];
-
-      if (Array.isArray(parent)) return false;
-      if (!newKey || newKey === oldKey) return false;
-
-      if (Object.prototype.hasOwnProperty.call(parent, newKey)) {
-        throw new Error(t("duplicateKey"));
-      }
-
-      const newParent = {};
-
-      Object.keys(parent).forEach((key) => {
-        if (key === oldKey) {
-          newParent[newKey] = parent[oldKey];
-        } else {
-          newParent[key] = parent[key];
-        }
-      });
-
-      Object.keys(parent).forEach((key) => delete parent[key]);
-      Object.assign(parent, newParent);
-
-      return true;
-    }
-
     // Sync preview data to textarea
     function syncDataToInput() {
       $("#jsonInput").val(JSON.stringify(currentJsonData, null, 2));
@@ -815,34 +774,22 @@
       renderPreview();
     }
 
-    // Check selected item can add child
-    function canAddChild(path) {
-      const value = getByPath(currentJsonData, path);
-      const type = getValueType(value);
-      return type === "object" || type === "array";
-    }
-
-    // Check selected value can edit
-    function canEditValue(path) {
-      const value = getByPath(currentJsonData, path);
-      const type = getValueType(value);
-      return type !== "object" && type !== "array";
-    }
-
     // Show or hide context menu options based on selected target
     function updateContextMenuOptions(path, kind) {
       const value = getByPath(currentJsonData, path);
       const type = getValueType(value);
+      const isContainer = type === "object" || type === "array";
 
-      $("#menuAddItem").toggleClass("hidden", !(type === "object" || type === "array"));
+      $("#menuAddItem").toggleClass("hidden", !isContainer);
 
       if (kind === "key") {
-        $("#menuEditItem").removeClass("hidden");
+        $("#menuEditItem").toggleClass("hidden", isContainer);
         $("#menuEditText").text(t("editKey"));
-      } else {
-        $("#menuEditText").text(t("editValue"));
-        $("#menuEditItem").toggleClass("hidden", type === "object" || type === "array");
+        return;
       }
+
+      $("#menuEditItem").toggleClass("hidden", isContainer);
+      $("#menuEditText").text(t("editValue"));
     }
 
     // Open edit/add modal
@@ -862,12 +809,16 @@
           return;
         }
 
+        const currentValue = getByPath(currentJsonData, modalPath);
+        const currentType = getValueType(currentValue);
+
+        if (currentType === "object" || currentType === "array") return;
+
         $("#modalTitle").text(t("editKeyTitle"));
         $("#modalSubTitle").text(t("editKeySubTitle"));
         $("#keyFieldWrapper").removeClass("hidden");
         $("#modalKeyInput").val(modalPath[modalPath.length - 1]);
-        $("#modalTypeSelect").prop("disabled", true);
-        setModalValue(getByPath(currentJsonData, modalPath));
+        setModalValue(currentValue);
       }
 
       if (mode === "editValue") {
@@ -968,7 +919,7 @@
       $("#valueArrayWrapper").addClass("hidden");
       $("#valueObjectWrapper").addClass("hidden");
 
-      $("#modalTypeSelect").prop("disabled", isNone || modalMode === "editKey");
+      $("#modalTypeSelect").prop("disabled", isNone);
 
       if (type === "string") $("#valueStringWrapper").removeClass("hidden");
       if (type === "number") $("#valueNumberWrapper").removeClass("hidden");
@@ -1037,7 +988,28 @@
             throw new Error(t("keyRequired"));
           }
 
-          renameKey(currentJsonData, modalPath, newKey);
+          const parent = getByPath(currentJsonData, modalPath.slice(0, -1));
+          const oldKey = modalPath[modalPath.length - 1];
+          const newValue = buildModalValue();
+
+          if (!Array.isArray(parent)) {
+            if (newKey !== oldKey && Object.prototype.hasOwnProperty.call(parent, newKey)) {
+              throw new Error(t("duplicateKey"));
+            }
+
+            const newParent = {};
+
+            Object.keys(parent).forEach((key) => {
+              if (key === oldKey) {
+                newParent[newKey] = newValue;
+              } else {
+                newParent[key] = parent[key];
+              }
+            });
+
+            Object.keys(parent).forEach((key) => delete parent[key]);
+            Object.assign(parent, newParent);
+          }
         }
 
         if (modalMode === "editValue") {
@@ -1179,6 +1151,9 @@
 
       $(document).on("contextmenu", ".json-line", function (e) {
         if ($(e.target).closest(".json-key, .json-value").length) return;
+
+        e.preventDefault();
+        e.stopPropagation();
 
         const rawPath = $(this).data("path");
         const path = rawPath ? JSON.parse(decodeURIComponent(rawPath)) : [];
