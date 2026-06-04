@@ -77,14 +77,12 @@
                 }
             });
 
+            const tool_path = "/tools"
+
             // Tools data
             const tools = [
-                { name: "Password Generator", category: "Security", path: "/tools/password-generator" },
-                { name: "JSON Formatter", category: "Development", path: "/tools/json-formatter" },
-                { name: "Base64 Encoder", category: "Utilities", path: "/tools/base64-encoder" },
-                { name: "Color Picker", category: "Design", path: "/tools/color-picker" },
-                { name: "QR Generator", category: "Utilities", path: "/tools/qr-generator" },
-                { name: "Hash Calculator", category: "Security", path: "/tools/hash-calculator" }
+                { name: "UML Design", category: "Design", path: "ULM-Design.html" },
+                { name: "JSON Formatter", category: "Development", path: "json-formatter" }
             ];
 
             const container = $('#tools-container');
@@ -103,7 +101,7 @@
                 `);
                 
                 toolCard.click(function() {
-                    window.location.href = tool.path;
+                    window.location.href = `${tool_path}/${tool.path}`;
                 });
                 
                 container.append(toolCard);
