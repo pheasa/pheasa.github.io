@@ -91,18 +91,21 @@
         <div class="flex items-center gap-2 sm:gap-3">
 
           <!-- Language Switch -->
+          <!-- Show next language, not current language -->
           <button
             id="language-btn"
             class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
+            title="Switch language"
           >
-            <span id="language-flag" class="text-xl">🇰🇭</span>
-            <span id="language-label" class="font-semibold text-sm">ខ្មែរ</span>
+            <span id="language-flag" class="text-xl">🇺🇸</span>
+            <span id="language-label" class="font-semibold text-sm">English</span>
           </button>
 
           <!-- Dark Mode Switch -->
           <button
             id="theme-btn"
             class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
+            title="Switch theme"
           >
             <i id="theme-icon" class="fa-solid fa-moon"></i>
           </button>
@@ -130,7 +133,6 @@
 
       <div class="relative max-w-3xl">
         <span data-i18n="badge" class="inline-flex items-center gap-2 bg-white/15 px-3 py-1 rounded-full text-sm font-semibold mb-4">
-          <i class="fa-solid fa-sparkles"></i>
           ឧបករណ៍សម្រាប់ Developer
         </span>
 
@@ -185,8 +187,6 @@
           type="text"
           class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-4 focus:ring-blue-500/20 transition"
           placeholder="ស្វែងរក..."
-          data-placeholder-km="ស្វែងរក..."
-          data-placeholder-en="Search..."
         />
       </div>
     </div>
@@ -378,13 +378,24 @@
 
         $("[data-i18n]").each(function () {
           const key = $(this).data("i18n");
+
           if (t[key]) {
             $(this).text(t[key]);
           }
         });
 
-        $("#language-flag").text(t.languageFlag);
-        $("#language-label").text(t.languageLabel);
+        /*
+          Important:
+          Button shows NEXT language.
+          Current Khmer  => button shows English
+          Current English => button shows Khmer
+        */
+        const nextLang = currentLang === "km" ? "en" : "km";
+        const nextT = translations[nextLang];
+
+        $("#language-flag").text(nextT.languageFlag);
+        $("#language-label").text(nextT.languageLabel);
+
         $("#search-input").attr("placeholder", t.searchPlaceholder);
 
         localStorage.setItem("app_language", currentLang);

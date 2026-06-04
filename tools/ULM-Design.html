@@ -220,6 +220,24 @@
 
   <script>
     // -----------------------------
+    // Language Config
+    // -----------------------------
+    const LANGUAGE_STORAGE_KEY = "app_language";
+    const DEFAULT_LANGUAGE = "km";
+    const ALLOWED_LANGUAGES = ["en", "km"];
+
+    function getSavedLanguage() {
+      const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+
+      if (ALLOWED_LANGUAGES.includes(savedLanguage)) {
+        return savedLanguage;
+      }
+
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, DEFAULT_LANGUAGE);
+      return DEFAULT_LANGUAGE;
+    }
+
+    // -----------------------------
     // Language Translation
     // -----------------------------
     const translations = {
@@ -269,22 +287,25 @@
       }
     };
 
-    let currentLanguage = localStorage.getItem("uml_language") || "km";
+    let currentLanguage = getSavedLanguage();
 
     function t(key) {
       return translations[currentLanguage][key] || key;
     }
 
     function setLanguage(lang) {
+      if (!ALLOWED_LANGUAGES.includes(lang)) {
+        lang = DEFAULT_LANGUAGE;
+      }
+
       currentLanguage = lang;
 
-      localStorage.setItem("uml_language", lang);
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
 
       $("html").attr("lang", lang);
 
       $("[data-i18n]").each(function () {
         const key = $(this).data("i18n");
-
         $(this).text(t(key));
       });
 
