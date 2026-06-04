@@ -6,15 +6,15 @@
 
   <title>UML Designer Preview</title>
 
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Tailwind Config -->
   <script>
     tailwind.config = {
       darkMode: "class"
     };
   </script>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -34,29 +34,6 @@
 
   <!-- Panzoom -->
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, "Khmer OS Battambang", "Noto Sans Khmer", sans-serif;
-    }
-
-    .CodeMirror {
-      height: calc(100vh - 260px);
-      min-height: 480px;
-      font-size: 14px;
-      border-radius: 12px;
-    }
-
-    #preview svg {
-      max-width: 100%;
-      height: auto;
-    }
-
-    #modalImageContainer svg {
-      max-width: none;
-      height: auto;
-    }
-  </style>
 </head>
 
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen transition-colors duration-300">
