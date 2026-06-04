@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>UML Designer Preview</title>
 
   <!-- Tailwind CSS -->
@@ -28,6 +29,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script>
 
   <style>
+    body {
+      font-family: Arial, "Khmer OS Battambang", "Noto Sans Khmer", sans-serif;
+    }
+
     .CodeMirror {
       height: calc(100vh - 190px);
       font-size: 14px;
@@ -43,37 +48,79 @@
       max-width: none;
       height: auto;
     }
+
+    .language-active {
+      border: 2px solid #2563eb;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
   </style>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
   <!-- Header -->
-  <header class="bg-white shadow px-6 py-4 flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+  <header class="bg-white shadow px-6 py-4 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
     <div>
-      <h1 class="text-2xl font-bold text-gray-800">UML Designer Preview</h1>
-      <p class="text-sm text-gray-500">Write Mermaid UML and preview instantly</p>
+      <h1 data-i18n="appTitle" class="text-2xl font-bold text-gray-800">
+        កម្មវិធីរចនា UML
+      </h1>
+
+      <p data-i18n="appSubtitle" class="text-sm text-gray-500">
+        សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ
+      </p>
+
+      <a
+        href="https://github.com/pheasa/pheasa.github.io/wiki/ULM-Design"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-i18n="howToUse"
+        class="inline-block mt-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+      >
+        របៀបប្រើប្រាស់?
+      </a>
     </div>
 
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+
+      <!-- Language Switch -->
+      <div class="flex gap-2 bg-gray-100 p-1 rounded-xl">
+        <button id="btnKhmer"
+          class="language-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+          data-lang="km">
+          🇰🇭 <span>ខ្មែរ</span>
+        </button>
+
+        <button id="btnEnglish"
+          class="language-btn px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+          data-lang="en">
+          🇺🇸 <span>English</span>
+        </button>
+      </div>
+
       <button id="btnClass"
+        data-i18n="classUML"
         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
         Class UML
       </button>
 
       <button id="btnSequence"
+        data-i18n="sequenceUML"
         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
         Sequence UML
       </button>
 
       <button id="btnFlowchart"
+        data-i18n="flowchart"
         class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
         Flowchart
       </button>
 
       <button id="btnRender"
+        data-i18n="render"
         class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-black">
-        Render
+        បង្ហាញលទ្ធផល
       </button>
     </div>
   </header>
@@ -84,8 +131,13 @@
     <!-- Editor -->
     <section class="bg-white rounded-xl shadow p-4">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="font-semibold text-gray-700">UML Code</h2>
-        <span class="text-xs bg-gray-200 px-2 py-1 rounded">Mermaid Syntax</span>
+        <h2 data-i18n="umlCode" class="font-semibold text-gray-700">
+          កូដ UML
+        </h2>
+
+        <span data-i18n="mermaidSyntax" class="text-xs bg-gray-200 px-2 py-1 rounded">
+          Mermaid Syntax
+        </span>
       </div>
 
       <textarea id="umlCode"></textarea>
@@ -95,8 +147,13 @@
     <section class="bg-white rounded-xl shadow p-4">
       <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center mb-3">
         <div>
-          <h2 class="font-semibold text-gray-700">Preview</h2>
-          <p class="text-xs text-gray-500">Click diagram to open zoom preview</p>
+          <h2 data-i18n="preview" class="font-semibold text-gray-700">
+            មើលលទ្ធផល
+          </h2>
+
+          <p data-i18n="clickToZoom" class="text-xs text-gray-500">
+            ចុចលើ Diagram ដើម្បីបើកមើលធំ និង Zoom
+          </p>
         </div>
 
         <div class="flex gap-2">
@@ -109,8 +166,9 @@
           </select>
 
           <button id="btnDownload"
+            data-i18n="download"
             class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">
-            Download
+            ទាញយក
           </button>
         </div>
       </div>
@@ -128,23 +186,27 @@
 
     <div class="absolute top-4 right-4 flex flex-wrap gap-2 z-50">
       <button id="btnZoomIn"
+        data-i18n="zoomIn"
         class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
-        Zoom +
+        ពង្រីក +
       </button>
 
       <button id="btnZoomOut"
+        data-i18n="zoomOut"
         class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
-        Zoom -
+        បង្រួម -
       </button>
 
       <button id="btnResetZoom"
+        data-i18n="reset"
         class="px-3 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-200">
-        Reset
+        កំណត់ឡើងវិញ
       </button>
 
       <button id="btnCloseModal"
+        data-i18n="close"
         class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-        Close
+        បិទ
       </button>
     </div>
 
@@ -157,6 +219,85 @@
   </div>
 
   <script>
+    // -----------------------------
+    // Language Translation
+    // -----------------------------
+    const translations = {
+      km: {
+        appTitle: "កម្មវិធីរចនា UML",
+        appSubtitle: "សរសេរ Mermaid UML ហើយមើលលទ្ធផលភ្លាមៗ",
+        howToUse: "របៀបប្រើប្រាស់?",
+        classUML: "Class UML",
+        sequenceUML: "Sequence UML",
+        flowchart: "Flowchart",
+        render: "បង្ហាញលទ្ធផល",
+        umlCode: "កូដ UML",
+        mermaidSyntax: "Mermaid Syntax",
+        preview: "មើលលទ្ធផល",
+        clickToZoom: "ចុចលើ Diagram ដើម្បីបើកមើលធំ និង Zoom",
+        download: "ទាញយក",
+        zoomIn: "ពង្រីក +",
+        zoomOut: "បង្រួម -",
+        reset: "កំណត់ឡើងវិញ",
+        close: "បិទ",
+        rendering: "កំពុងបង្ហាញ UML...",
+        syntaxErrorTitle: "កូដ UML មានបញ្ហា",
+        renderFirst: "សូមបង្ហាញ UML ជាមុនសិន។",
+        convertError: "មិនអាចបម្លែង SVG ទៅជា Image បានទេ។"
+      },
+      en: {
+        appTitle: "UML Designer Preview",
+        appSubtitle: "Write Mermaid UML and preview instantly",
+        howToUse: "How to use?",
+        classUML: "Class UML",
+        sequenceUML: "Sequence UML",
+        flowchart: "Flowchart",
+        render: "Render",
+        umlCode: "UML Code",
+        mermaidSyntax: "Mermaid Syntax",
+        preview: "Preview",
+        clickToZoom: "Click diagram to open zoom preview",
+        download: "Download",
+        zoomIn: "Zoom +",
+        zoomOut: "Zoom -",
+        reset: "Reset",
+        close: "Close",
+        rendering: "Rendering UML...",
+        syntaxErrorTitle: "UML Syntax Error",
+        renderFirst: "Please render UML first.",
+        convertError: "Cannot convert SVG to image."
+      }
+    };
+
+    let currentLanguage = localStorage.getItem("uml_language") || "km";
+
+    function t(key) {
+      return translations[currentLanguage][key] || key;
+    }
+
+    function setLanguage(lang) {
+      currentLanguage = lang;
+
+      localStorage.setItem("uml_language", lang);
+
+      $("html").attr("lang", lang);
+
+      $("[data-i18n]").each(function () {
+        const key = $(this).data("i18n");
+
+        $(this).text(t(key));
+      });
+
+      $(".language-btn").removeClass("language-active");
+      $(`.language-btn[data-lang="${lang}"]`).addClass("language-active");
+    }
+
+    $(".language-btn").on("click", function () {
+      const lang = $(this).data("lang");
+
+      setLanguage(lang);
+    });
+
     // -----------------------------
     // Mermaid Config
     // -----------------------------
@@ -237,7 +378,7 @@ G --> D`;
 
       preview.html(`
         <div class="text-gray-500 animate-pulse">
-          Rendering UML...
+          ${t("rendering")}
         </div>
       `);
 
@@ -249,7 +390,7 @@ G --> D`;
       } catch (error) {
         preview.html(`
           <div class="text-red-600 bg-red-50 border border-red-200 p-4 rounded-lg w-full">
-            <h3 class="font-bold mb-2">UML Syntax Error</h3>
+            <h3 class="font-bold mb-2">${t("syntaxErrorTitle")}</h3>
             <pre class="text-sm whitespace-pre-wrap">${error.message}</pre>
           </div>
         `);
@@ -298,7 +439,7 @@ G --> D`;
       const svg = $("#preview svg")[0];
 
       if (!svg) {
-        alert("Please render UML first.");
+        alert(t("renderFirst"));
         return null;
       }
 
@@ -324,7 +465,6 @@ G --> D`;
 
           const ctx = canvas.getContext("2d");
 
-          // White background because JPG/PDF cannot keep transparent background
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -337,7 +477,7 @@ G --> D`;
 
         image.onerror = function () {
           URL.revokeObjectURL(url);
-          alert("Cannot convert SVG to image.");
+          alert(t("convertError"));
           resolve(null);
         };
 
@@ -363,7 +503,7 @@ G --> D`;
       const svg = $("#preview svg")[0];
 
       if (!svg) {
-        alert("Please render UML first.");
+        alert(t("renderFirst"));
         return;
       }
 
@@ -447,7 +587,7 @@ G --> D`;
       const svg = $("#preview svg")[0];
 
       if (!svg) {
-        alert("Please render UML first.");
+        alert(t("renderFirst"));
         return;
       }
 
@@ -547,8 +687,9 @@ G --> D`;
     });
 
     // -----------------------------
-    // First Render
+    // Init App
     // -----------------------------
+    setLanguage(currentLanguage);
     renderUML();
   </script>
 
