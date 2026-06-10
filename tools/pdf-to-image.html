@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF to Image</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class"
+    };
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, "Khmer OS Battambang", "Noto Sans Khmer", sans-serif;
+    }
+
+    .loader {
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+
+  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <a
+          href="/"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          title="Back"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <div>
+          <h1 class="flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
+            <i class="fa-solid fa-file-pdf text-red-500"></i>
+            <span data-i18n="appTitle">PDF to Image</span>
+          </h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="appSubtitle">
+            Upload PDF, convert pages to images, preview and download.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          id="btnToggleLanguage"
+          class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+        >
+          🇺🇸 English
+        </button>
+
+        <button
+          id="btnToggleTheme"
+          class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+        >
+          🌙 Dark
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-6">
+    <section class="grid gap-6 lg:grid-cols-[380px_1fr]">
+      <aside class="space-y-5">
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-i18n="uploadTitle">
+              Upload PDF
+            </h2>
+            <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600 dark:bg-red-950/40 dark:text-red-300">
+              PDF
+            </span>
+          </div>
+
+          <label
+            for="pdfFileInput"
+            class="flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center transition hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-blue-500 dark:hover:bg-blue-950/30"
+          >
+            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-3xl text-red-500 shadow-sm dark:bg-slate-900">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <p class="font-bold text-slate-800 dark:text-slate-100" data-i18n="selectPdf">
+              Click to select PDF file
+            </p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" data-i18n="selectPdfHelp">
+              Your file converts in browser only.
+            </p>
+          </label>
+
+          <input id="pdfFileInput" type="file" accept="application/pdf" class="hidden" />
+
+          <div id="selectedFileBox" class="mt-4 hidden rounded-2xl bg-slate-100 p-4 dark:bg-slate-800">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="selectedFile">
+              Selected file
+            </p>
+            <p id="selectedFileName" class="mt-1 break-all font-semibold text-slate-800 dark:text-slate-100">-</p>
+          </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900">
+          <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-white" data-i18n="settingTitle">
+            Convert Settings
+          </h2>
+
+          <div class="space-y-4">
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200" data-i18n="formatLabel">
+                Image format
+              </label>
+              <select
+                id="imageFormat"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              >
+                <option value="png">PNG</option>
+                <option value="jpeg">JPG</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200" data-i18n="qualityLabel">
+                Quality / Scale
+              </label>
+              <select
+                id="imageScale"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              >
+                <option value="1.5">Normal</option>
+                <option value="2">High</option>
+                <option value="3">Very High</option>
+              </select>
+            </div>
+
+            <button
+              id="btnConvert"
+              class="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled
+            >
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span data-i18n="convertBtn">Convert PDF to Image</span>
+            </button>
+
+            <button
+              id="btnDownloadAll"
+              class="hidden w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-emerald-700"
+            >
+              <i class="fa-solid fa-file-zipper"></i>
+              <span data-i18n="downloadAllBtn">Download all pages</span>
+            </button>
+
+            <button
+              id="btnClear"
+              class="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+              <span data-i18n="clearBtn">Clear / Reset</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="space-y-5">
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-i18n="previewTitle">
+                Image Preview
+              </h2>
+              <p id="previewInfo" class="text-sm text-slate-500 dark:text-slate-400" data-i18n="previewEmpty">
+                No PDF converted yet.
+              </p>
+            </div>
+
+            <div id="statusBadge" class="hidden rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+              <span id="statusText">Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="loadingBox" class="hidden rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-blue-600 loader"></div>
+          <p class="font-bold text-slate-800 dark:text-slate-100" data-i18n="convertingText">
+            Converting PDF pages...
+          </p>
+          <p id="progressText" class="mt-1 text-sm text-slate-500 dark:text-slate-400">0%</p>
+        </div>
+
+        <div id="emptyState" class="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-100 text-4xl text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+            <i class="fa-regular fa-images"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white" data-i18n="emptyTitle">
+            No image preview
+          </h3>
+          <p class="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400" data-i18n="emptyDesc">
+            Select your PDF file and click convert. Every page will show here as an image.
+          </p>
+        </div>
+
+        <div id="previewGrid" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const STORAGE_KEYS = {
+      language: "app_language",
+      format: "pdf_to_image_format",
+      scale: "pdf_to_image_scale",
+      lastFileName: "pdf_to_image_last_file_name"
+    };
+
+    const LANGUAGES = ["km", "en"];
+    const DEFAULT_LANGUAGE = "km";
+
+    let currentLanguage = getSavedLanguage();
+    let selectedFile = null;
+    let convertedPages = [];
+
+    const translations = {
+      en: {
+        appTitle: "PDF to Image",
+        appSubtitle: "Upload PDF, convert pages to images, preview and download.",
+        uploadTitle: "Upload PDF",
+        selectPdf: "Click to select PDF file",
+        selectPdfHelp: "Your file converts in browser only.",
+        selectedFile: "Selected file",
+        settingTitle: "Convert Settings",
+        formatLabel: "Image format",
+        qualityLabel: "Quality / Scale",
+        convertBtn: "Convert PDF to Image",
+        downloadAllBtn: "Download all pages",
+        clearBtn: "Clear / Reset",
+        previewTitle: "Image Preview",
+        previewEmpty: "No PDF converted yet.",
+        convertingText: "Converting PDF pages...",
+        emptyTitle: "No image preview",
+        emptyDesc: "Select your PDF file and click convert. Every page will show here as an image.",
+        page: "Page",
+        download: "Download",
+        ready: "Ready",
+        converted: "Converted",
+        choosePdfFirst: "Please select PDF file first.",
+        invalidPdf: "Please select valid PDF file.",
+        convertFailed: "Convert failed. Please try another PDF.",
+        downloadAllEmpty: "No converted pages to download.",
+        lastFile: "Last file"
+      },
+      km: {
+        appTitle: "PDF ទៅជា Image",
+        appSubtitle: "Upload PDF បម្លែងទៅជា Image មើល Preview និង Download។",
+        uploadTitle: "Upload PDF",
+        selectPdf: "ចុចដើម្បីជ្រើសរើស PDF",
+        selectPdfHelp: "File របស់អ្នកបម្លែងនៅលើ Browser ប៉ុណ្ណោះ។",
+        selectedFile: "File បានជ្រើសរើស",
+        settingTitle: "ការកំណត់បម្លែង",
+        formatLabel: "ប្រភេទ Image",
+        qualityLabel: "គុណភាព / Scale",
+        convertBtn: "បម្លែង PDF ទៅជា Image",
+        downloadAllBtn: "Download គ្រប់ Page",
+        clearBtn: "Clear / Reset",
+        previewTitle: "មើល Image Preview",
+        previewEmpty: "មិនទាន់មាន PDF បានបម្លែងទេ។",
+        convertingText: "កំពុងបម្លែង PDF pages...",
+        emptyTitle: "មិនទាន់មាន Preview",
+        emptyDesc: "សូមជ្រើសរើស PDF ហើយចុច Convert។ Page នីមួយៗនឹងបង្ហាញជា Image នៅទីនេះ។",
+        page: "ទំព័រ",
+        download: "Download",
+        ready: "រួចរាល់",
+        converted: "បានបម្លែង",
+        choosePdfFirst: "សូមជ្រើសរើស PDF ជាមុនសិន។",
+        invalidPdf: "សូមជ្រើសរើស PDF file ដែលត្រឹមត្រូវ។",
+        convertFailed: "បម្លែងមិនបានជោគជ័យ។ សូមសាកល្បង PDF ផ្សេងទៀត។",
+        downloadAllEmpty: "មិនមាន Page សម្រាប់ Download ទេ។",
+        lastFile: "File មុន"
+      }
+    };
+
+    // Get saved language from localStorage.
+    function getSavedLanguage() {
+      const savedLanguage = localStorage.getItem(STORAGE_KEYS.language);
+
+      if (LANGUAGES.includes(savedLanguage)) {
+        return savedLanguage;
+      }
+
+      localStorage.setItem(STORAGE_KEYS.language, DEFAULT_LANGUAGE);
+      return DEFAULT_LANGUAGE;
+    }
+
+    // Update all UI text by selected language.
+    function applyLanguage() {
+      const text = translations[currentLanguage];
+
+      $("[data-i18n]").each(function () {
+        const key = $(this).data("i18n");
+        if (text[key]) {
+          $(this).text(text[key]);
+        }
+      });
+
+      $("html").attr("lang", currentLanguage);
+      localStorage.setItem(STORAGE_KEYS.language, currentLanguage);
+      updateLanguageButton();
+
+      if (convertedPages.length === 0) {
+        $("#previewInfo").text(text.previewEmpty);
+      } else {
+        $("#previewInfo").text(`${text.converted}: ${convertedPages.length} ${text.page}`);
+      }
+
+      renderPreviewCards();
+    }
+
+    // Update language button to show next language.
+    function updateLanguageButton() {
+      if (currentLanguage === "km") {
+        $("#btnToggleLanguage").html("🇺🇸 English");
+      } else {
+        $("#btnToggleLanguage").html("🇰🇭 ខ្មែរ");
+      }
+    }
+
+    // Save useful settings to localStorage.
+    function saveSettings() {
+      localStorage.setItem(STORAGE_KEYS.format, $("#imageFormat").val());
+      localStorage.setItem(STORAGE_KEYS.scale, $("#imageScale").val());
+
+      if (selectedFile) {
+        localStorage.setItem(STORAGE_KEYS.lastFileName, selectedFile.name);
+      }
+    }
+
+    // Restore useful settings from localStorage.
+    function restoreSettings() {
+      const savedFormat = localStorage.getItem(STORAGE_KEYS.format);
+      const savedScale = localStorage.getItem(STORAGE_KEYS.scale);
+      const lastFileName = localStorage.getItem(STORAGE_KEYS.lastFileName);
+
+      if (savedFormat) {
+        $("#imageFormat").val(savedFormat);
+      }
+
+      if (savedScale) {
+        $("#imageScale").val(savedScale);
+      }
+
+      if (lastFileName) {
+        $("#selectedFileBox").removeClass("hidden");
+        $("#selectedFileName").text(`${translations[currentLanguage].lastFile}: ${lastFileName}`);
+      }
+    }
+
+    // Show status badge message.
+    function setStatus(message, type = "blue") {
+      const colorMap = {
+        blue: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
+        green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+        red: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+      };
+
+      $("#statusBadge")
+        .removeClass()
+        .addClass(`rounded-full px-4 py-2 text-sm font-bold ${colorMap[type] || colorMap.blue}`)
+        .removeClass("hidden");
+
+      $("#statusText").text(message);
+    }
+
+    // Convert canvas to downloadable data URL.
+    function canvasToImageData(canvas, format) {
+      if (format === "jpeg") {
+        return canvas.toDataURL("image/jpeg", 0.92);
+      }
+
+      return canvas.toDataURL("image/png");
+    }
+
+    // Convert data URL to Blob for ZIP download.
+    function dataUrlToBlob(dataUrl) {
+      const parts = dataUrl.split(",");
+      const mime = parts[0].match(/:(.*?);/)[1];
+      const binary = atob(parts[1]);
+      const array = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        array[i] = binary.charCodeAt(i);
+      }
+
+      return new Blob([array], { type: mime });
+    }
+
+    // Trigger file download.
+    function downloadFile(url, fileName) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Render all converted images to preview area.
+    function renderPreviewCards() {
+      const text = translations[currentLanguage];
+      const $grid = $("#previewGrid");
+      $grid.empty();
+
+      convertedPages.forEach((item) => {
+        const card = `
+          <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900">
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <h3 class="font-bold text-slate-900 dark:text-white">
+                ${text.page} ${item.pageNumber}
+              </h3>
+              <button
+                class="btnDownloadPage rounded-xl bg-blue-600 px-3 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
+                data-page="${item.pageNumber}"
+              >
+                <i class="fa-solid fa-download"></i>
+                ${text.download}
+              </button>
+            </div>
+
+            <img
+              src="${item.dataUrl}"
+              alt="${text.page} ${item.pageNumber}"
+              class="w-full rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
+            />
+          </div>
+        `;
+
+        $grid.append(card);
+      });
+    }
+
+    // Convert selected PDF file to image pages.
+    async function convertPdfToImages() {
+      const text = translations[currentLanguage];
+
+      if (!selectedFile) {
+        setStatus(text.choosePdfFirst, "red");
+        return;
+      }
+
+      convertedPages = [];
+      $("#previewGrid").empty();
+      $("#emptyState").addClass("hidden");
+      $("#loadingBox").removeClass("hidden");
+      $("#btnDownloadAll").addClass("hidden");
+      $("#btnConvert").prop("disabled", true);
+      setStatus(text.convertingText, "blue");
+
+      try {
+        const format = $("#imageFormat").val();
+        const scale = parseFloat($("#imageScale").val());
+        const fileBuffer = await selectedFile.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
+
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+          const page = await pdf.getPage(pageNumber);
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+
+          await page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise;
+
+          const dataUrl = canvasToImageData(canvas, format);
+          convertedPages.push({
+            pageNumber,
+            dataUrl,
+            fileName: `page-${pageNumber}.${format === "jpeg" ? "jpg" : "png"}`
+          });
+
+          const percent = Math.round((pageNumber / pdf.numPages) * 100);
+          $("#progressText").text(`${percent}%`);
+        }
+
+        renderPreviewCards();
+
+        $("#previewInfo").text(`${text.converted}: ${convertedPages.length} ${text.page}`);
+        $("#btnDownloadAll").removeClass("hidden").addClass("flex");
+        setStatus(`${text.converted}: ${convertedPages.length} ${text.page}`, "green");
+      } catch (error) {
+        console.error(error);
+        $("#emptyState").removeClass("hidden");
+        setStatus(text.convertFailed, "red");
+      } finally {
+        $("#loadingBox").addClass("hidden");
+        $("#btnConvert").prop("disabled", selectedFile ? false : true);
+      }
+    }
+
+    // Download all converted pages as ZIP.
+    async function downloadAllPages() {
+      const text = translations[currentLanguage];
+
+      if (convertedPages.length === 0) {
+        setStatus(text.downloadAllEmpty, "red");
+        return;
+      }
+
+      const zip = new JSZip();
+
+      convertedPages.forEach((item) => {
+        zip.file(item.fileName, dataUrlToBlob(item.dataUrl));
+      });
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+
+      downloadFile(url, "pdf-images.zip");
+      URL.revokeObjectURL(url);
+    }
+
+    // Reset tool data and preview.
+    function clearTool() {
+      selectedFile = null;
+      convertedPages = [];
+
+      $("#pdfFileInput").val("");
+      $("#selectedFileBox").addClass("hidden");
+      $("#selectedFileName").text("-");
+      $("#previewGrid").empty();
+      $("#emptyState").removeClass("hidden");
+      $("#loadingBox").addClass("hidden");
+      $("#btnDownloadAll").addClass("hidden").removeClass("flex");
+      $("#btnConvert").prop("disabled", true);
+      $("#previewInfo").text(translations[currentLanguage].previewEmpty);
+      $("#statusBadge").addClass("hidden");
+
+      localStorage.removeItem(STORAGE_KEYS.lastFileName);
+    }
+
+    // Handle PDF file selection.
+    $("#pdfFileInput").on("change", function () {
+      const file = this.files[0];
+      const text = translations[currentLanguage];
+
+      if (!file) return;
+
+      if (file.type !== "application/pdf") {
+        setStatus(text.invalidPdf, "red");
+        $(this).val("");
+        return;
+      }
+
+      selectedFile = file;
+      convertedPages = [];
+
+      $("#selectedFileBox").removeClass("hidden");
+      $("#selectedFileName").text(file.name);
+      $("#btnConvert").prop("disabled", false);
+      $("#previewGrid").empty();
+      $("#emptyState").removeClass("hidden");
+      $("#btnDownloadAll").addClass("hidden").removeClass("flex");
+      $("#previewInfo").text(text.previewEmpty);
+      setStatus(text.ready, "blue");
+
+      saveSettings();
+    });
+
+    $("#imageFormat, #imageScale").on("change", saveSettings);
+
+    $("#btnConvert").on("click", convertPdfToImages);
+
+    $("#btnDownloadAll").on("click", downloadAllPages);
+
+    $("#btnClear").on("click", clearTool);
+
+    $("#btnToggleLanguage").on("click", function () {
+      currentLanguage = currentLanguage === "km" ? "en" : "km";
+      applyLanguage();
+    });
+
+    $(document).on("click", ".btnDownloadPage", function () {
+      const pageNumber = parseInt($(this).data("page"), 10);
+      const page = convertedPages.find((item) => item.pageNumber === pageNumber);
+
+      if (page) {
+        downloadFile(page.dataUrl, page.fileName);
+      }
+    });
+
+    // Init app data, language, settings and theme.
+    $(document).ready(function () {
+      restoreSettings();
+      applyLanguage();
+      applyTheme();
+    });
+  </script>
+
+  <script>
+    const THEME_STORAGE_KEY = "app_theme";
+    const ALLOWED_THEMES = ["light", "dark"];
+    const DEFAULT_THEME = "light";
+
+    let currentTheme = getSavedTheme();
+
+    function getSavedTheme() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+      if (ALLOWED_THEMES.includes(savedTheme)) {
+        return savedTheme;
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, DEFAULT_THEME);
+      return DEFAULT_THEME;
+    }
+
+    function updateThemeButton() {
+      if (currentTheme === "dark") {
+        $("#btnToggleTheme").html("☀️ Light");
+      } else {
+        $("#btnToggleTheme").html("🌙 Dark");
+      }
+    }
+
+    function applyTheme() {
+      if (currentTheme === "dark") {
+        $("html").addClass("dark");
+      } else {
+        $("html").removeClass("dark");
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+      updateThemeButton();
+    }
+
+    $("#btnToggleTheme").on("click", function () {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme();
+    });
+  </script>
+</body>
+</html>
