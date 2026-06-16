@@ -6,267 +6,259 @@
   <title>Audio Frame Selector</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 dark:bg-slate-950 min-h-screen p-4">
+<body class="bg-gray-100 dark:bg-slate-950">
+<div class="min-h-screen p-6">
   <div class="max-w-2xl mx-auto">
-    <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6 flex flex-col gap-4">
+    <button id="backBtn" class="mb-4 px-4 py-2 text-sm bg-gray-300 dark:bg-slate-700 rounded-md hover:bg-gray-400 dark:hover:bg-slate-600 transition-colors text-gray-900 dark:text-white font-medium">← Back</button>
+    
+    <div class="w-full bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6 shadow-lg">
       
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Audio Frame Selector</h1>
-      
-      <div id="dropZone" class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-md p-8 text-center cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-slate-800">
+      <div id="dropZone" class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors mb-4">
         <input type="file" id="fileInput" accept=".wav" class="hidden" />
-        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">📁 Drop WAV file or click to browse</div>
-        <div id="fileName" class="text-xs text-gray-400 dark:text-gray-500">No file selected</div>
+        <div class="text-lg text-gray-600 dark:text-gray-400 mb-2">📁 Drop WAV file or click to browse</div>
+        <div id="fileName" class="text-sm text-gray-400">No file selected</div>
       </div>
 
-      <div id="controlsSection" class="hidden gap-4 flex-col">
-        <canvas id="waveformCanvas" width="640" height="200" class="border border-gray-200 dark:border-slate-700 rounded-md bg-gray-50 dark:bg-slate-800 w-full h-48 cursor-crosshair"></canvas>
+      <div id="controlsSection" class="hidden space-y-4">
+        <canvas id="waveformCanvas" width="640" height="200" class="w-full border border-gray-200 dark:border-slate-700 rounded-md bg-gray-50 dark:bg-slate-800"></canvas>
         
-        <div class="flex gap-4 text-xs">
-          <div>Start: <span id="startTime" class="font-semibold text-gray-900 dark:text-white">0.00s</span></div>
-          <div>End: <span id="endTime" class="font-semibold text-gray-900 dark:text-white">0.00s</span></div>
-          <div>Duration: <span id="selDuration" class="font-semibold text-gray-900 dark:text-white">0.00s</span></div>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+          <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-md">
+            <div class="text-gray-600 dark:text-gray-400">Start</div>
+            <div id="startTime" class="font-semibold text-lg text-gray-900 dark:text-white">0.00s</div>
+          </div>
+          <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-md">
+            <div class="text-gray-600 dark:text-gray-400">End</div>
+            <div id="endTime" class="font-semibold text-lg text-gray-900 dark:text-white">0.00s</div>
+          </div>
+          <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-md">
+            <div class="text-gray-600 dark:text-gray-400">Duration</div>
+            <div id="selDuration" class="font-semibold text-lg text-gray-900 dark:text-white">0.00s</div>
+          </div>
         </div>
 
-        <div class="flex gap-2">
-          <button id="playBtn" class="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">▶ Play</button>
-          <button id="stopBtn" class="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">⏹ Stop</button>
-          <button id="resetBtn" class="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">↻ Reset</button>
-          <button id="downloadBtn" class="flex-1 px-3 py-2 text-sm bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-blue-900 dark:text-blue-100 font-semibold">⬇ Download</button>
+        <div>
+          <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">File name (optional)</label>
+          <input type="text" id="outputFileName" placeholder="Leave empty for auto-generated name" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500">
+        </div>
+
+        <div class="grid grid-cols-4 gap-2">
+          <button id="playBtn" class="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">▶ Play</button>
+          <button id="stopBtn" class="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">⏹ Stop</button>
+          <button id="resetBtn" class="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">↻ Reset</button>
+          <button id="downloadBtn" class="px-4 py-2 text-sm bg-blue-500 dark:bg-blue-600 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors text-white font-semibold">⬇ Download</button>
         </div>
       </div>
 
     </div>
   </div>
+</div>
 
-  <script>
-    let audioBuffer = null;
-    let audioContext = null;
-    let sourceNode = null;
-    let selStart = 0;
-    let selEnd = 0;
-    let isDragging = false;
-    let isPlaying = false;
-    let originalArrayBuffer = null;
+<script>
+let audioBuffer = null, audioContext = null, sourceNode = null;
+let selStart = 0, selEnd = 0, isDragging = false, isPlaying = false;
+let originalFileName = '';
 
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const canvas = document.getElementById('waveformCanvas');
-    const ctx = canvas.getContext('2d');
-    const controlsSection = document.getElementById('controlsSection');
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const canvas = document.getElementById('waveformCanvas');
+const ctx = canvas.getContext('2d');
+const controlsSection = document.getElementById('controlsSection');
+const backBtn = document.getElementById('backBtn');
 
-    dropZone.onclick = () => fileInput.click();
-    dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
-    dropZone.ondragover = (e) => e.preventDefault();
-    fileInput.onchange = (e) => handleFiles(e.target.files);
+dropZone.onclick = () => fileInput.click();
+dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
+dropZone.ondragover = (e) => e.preventDefault();
+fileInput.onchange = (e) => handleFiles(e.target.files);
+backBtn.onclick = () => window.history.back();
 
-    function encodeWAV(audioBuffer, startTime, endTime) {
-      const sampleRate = audioBuffer.sampleRate;
-      const startSample = Math.floor(startTime * sampleRate);
-      const endSample = Math.floor(endTime * sampleRate);
-      const numChannels = audioBuffer.numberOfChannels;
-      const length = endSample - startSample;
-      const interleaved = new Float32Array(length * numChannels);
-      
-      for (let ch = 0; ch < numChannels; ch++) {
-        const channel = audioBuffer.getChannelData(ch);
-        let offset = ch;
-        for (let i = 0; i < length; i++) {
-          interleaved[offset] = channel[startSample + i];
-          offset += numChannels;
-        }
-      }
-      
-      const encoded = encodeWavData(interleaved, numChannels, sampleRate);
-      return new Blob([encoded], { type: 'audio/wav' });
+function encodeWavData(samples, channels, sampleRate) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const writeString = (offset, string) => {
+    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+  };
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, channels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * channels * 2, true);
+  view.setUint16(32, channels * 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buffer;
+}
+
+function encodeWAV(audioBuffer, startTime, endTime) {
+  const sampleRate = audioBuffer.sampleRate;
+  const startSample = Math.floor(startTime * sampleRate);
+  const endSample = Math.floor(endTime * sampleRate);
+  const numChannels = audioBuffer.numberOfChannels;
+  const length = endSample - startSample;
+  const interleaved = new Float32Array(length * numChannels);
+  for (let ch = 0; ch < numChannels; ch++) {
+    const channel = audioBuffer.getChannelData(ch);
+    let offset = ch;
+    for (let i = 0; i < length; i++) {
+      interleaved[offset] = channel[startSample + i];
+      offset += numChannels;
     }
+  }
+  const encoded = encodeWavData(interleaved, numChannels, sampleRate);
+  return new Blob([encoded], { type: 'audio/wav' });
+}
 
-    function encodeWavData(samples, channels, sampleRate) {
-      const buffer = new ArrayBuffer(44 + samples.length * 2);
-      const view = new DataView(buffer);
-      
-      const writeString = (offset, string) => {
-        for (let i = 0; i < string.length; i++) {
-          view.setUint8(offset + i, string.charCodeAt(i));
-        }
-      };
-      
-      writeString(0, 'RIFF');
-      view.setUint32(4, 36 + samples.length * 2, true);
-      writeString(8, 'WAVE');
-      writeString(12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, channels, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * channels * 2, true);
-      view.setUint16(32, channels * 2, true);
-      view.setUint16(34, 16, true);
-      writeString(36, 'data');
-      view.setUint32(40, samples.length * 2, true);
-      
-      let offset = 44;
-      for (let i = 0; i < samples.length; i++, offset += 2) {
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-      }
-      
-      return buffer;
+async function handleFiles(files) {
+  if (!files[0]) return;
+  const file = files[0];
+  originalFileName = file.name.replace('.wav', '');
+  document.getElementById('fileName').textContent = file.name;
+  const arrayBuffer = await file.arrayBuffer();
+  audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+  audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+  selEnd = audioBuffer.duration;
+  drawWaveform();
+  controlsSection.classList.remove('hidden');
+  updateDisplay();
+}
+
+function drawWaveform() {
+  if (!audioBuffer) return;
+  const data = audioBuffer.getChannelData(0);
+  const step = Math.ceil(data.length / canvas.width);
+  const amp = canvas.height / 2;
+  
+  ctx.fillStyle = '#f9fafb';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < canvas.width; i++) {
+    let max = 0;
+    for (let j = 0; j < step; j++) {
+      const idx = i * step + j;
+      if (idx < data.length && Math.abs(data[idx]) > Math.abs(max)) max = data[idx];
     }
-
-    async function handleFiles(files) {
-      if (!files[0]) return;
-      const file = files[0];
-      if (!file.type.includes('audio') && !file.name.endsWith('.wav')) {
-        alert('Please select a WAV file');
-        return;
-      }
-      
-      document.getElementById('fileName').textContent = file.name;
-      originalArrayBuffer = await file.arrayBuffer();
-      audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-      audioBuffer = await audioContext.decodeAudioData(originalArrayBuffer.slice(0));
-      
-      selEnd = audioBuffer.duration;
-      drawWaveform();
-      controlsSection.classList.remove('hidden');
-      controlsSection.classList.add('flex');
-      updateDisplay();
+    ctx.lineTo(i, amp - max * amp);
+  }
+  ctx.stroke();
+  
+  ctx.strokeStyle = '#d1d5db';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  for (let i = 0; i < canvas.width; i++) {
+    let min = 0;
+    for (let j = 0; j < step; j++) {
+      const idx = i * step + j;
+      if (idx < data.length && data[idx] < min) min = data[idx];
     }
+    ctx.lineTo(i, amp - min * amp);
+  }
+  ctx.stroke();
+  
+  drawSelection();
+}
 
-    function drawWaveform() {
-      if (!audioBuffer) return;
-      const data = audioBuffer.getChannelData(0);
-      const step = Math.ceil(data.length / canvas.width);
-      const amp = canvas.height / 2;
-      
-      const isDark = document.documentElement.classList.contains('dark');
-      const bgColor = isDark ? '#1e293b' : '#f9fafb';
-      const lineColor = isDark ? '#3b82f6' : '#2563eb';
-      const lineColorSecondary = isDark ? '#64748b' : '#9ca3af';
-      
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.strokeStyle = lineColor;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, amp);
-      
-      for (let i = 0; i < canvas.width; i++) {
-        let min = 0, max = 0;
-        for (let j = 0; j < step; j++) {
-          const idx = i * step + j;
-          if (idx < data.length) {
-            const val = data[idx];
-            if (val < min) min = val;
-            if (val > max) max = val;
-          }
-        }
-        ctx.lineTo(i, amp - max * amp);
-      }
-      ctx.stroke();
-      
-      ctx.strokeStyle = lineColorSecondary;
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      for (let i = 0; i < canvas.width; i++) {
-        let min = 0;
-        for (let j = 0; j < step; j++) {
-          const idx = i * step + j;
-          if (idx < data.length && data[idx] < min) min = data[idx];
-        }
-        ctx.lineTo(i, amp - min * amp);
-      }
-      ctx.stroke();
-      
-      drawSelection();
-    }
+function drawSelection() {
+  if (!audioBuffer) return;
+  const startPx = (selStart / audioBuffer.duration) * canvas.width;
+  const endPx = (selEnd / audioBuffer.duration) * canvas.width;
+  
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+  ctx.fillRect(startPx, 0, endPx - startPx, canvas.height);
+  
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4, 4]);
+  ctx.strokeRect(startPx, 0, endPx - startPx, canvas.height);
+  ctx.setLineDash([]);
+}
 
-    function drawSelection() {
-      if (!audioBuffer) return;
-      const startPx = (selStart / audioBuffer.duration) * canvas.width;
-      const endPx = (selEnd / audioBuffer.duration) * canvas.width;
-      
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
-      ctx.fillRect(startPx, 0, endPx - startPx, canvas.height);
-      
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.strokeRect(startPx, 0, endPx - startPx, canvas.height);
-      ctx.setLineDash([]);
-    }
+canvas.onmousedown = (e) => {
+  if (!audioBuffer) return;
+  isDragging = true;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  selStart = Math.max(0, x * audioBuffer.duration);
+  selEnd = selStart;
+  updateDisplay();
+};
 
-    canvas.onmousedown = (e) => {
-      if (!audioBuffer) return;
-      isDragging = true;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      selStart = Math.max(0, x * audioBuffer.duration);
-      selEnd = selStart;
-      updateDisplay();
-    };
+canvas.onmousemove = (e) => {
+  if (!isDragging || !audioBuffer) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  selEnd = Math.min(audioBuffer.duration, x * audioBuffer.duration);
+  if (selEnd < selStart) [selStart, selEnd] = [selEnd, selStart];
+  updateDisplay();
+};
 
-    canvas.onmousemove = (e) => {
-      if (!isDragging || !audioBuffer) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      selEnd = Math.min(audioBuffer.duration, x * audioBuffer.duration);
-      if (selEnd < selStart) [selStart, selEnd] = [selEnd, selStart];
-      updateDisplay();
-    };
+canvas.onmouseup = () => isDragging = false;
+canvas.onmouseleave = () => isDragging = false;
 
-    canvas.onmouseup = () => isDragging = false;
-    canvas.onmouseleave = () => isDragging = false;
+function updateDisplay() {
+  document.getElementById('startTime').textContent = selStart.toFixed(2) + 's';
+  document.getElementById('endTime').textContent = selEnd.toFixed(2) + 's';
+  document.getElementById('selDuration').textContent = (selEnd - selStart).toFixed(2) + 's';
+  drawWaveform();
+}
 
-    function updateDisplay() {
-      document.getElementById('startTime').textContent = selStart.toFixed(2) + 's';
-      document.getElementById('endTime').textContent = selEnd.toFixed(2) + 's';
-      document.getElementById('selDuration').textContent = (selEnd - selStart).toFixed(2) + 's';
-      drawWaveform();
-    }
+document.getElementById('playBtn').onclick = () => {
+  if (isPlaying) return;
+  isPlaying = true;
+  const src = audioContext.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(audioContext.destination);
+  src.start(0, selStart, selEnd - selStart);
+  src.onended = () => { isPlaying = false; };
+  sourceNode = src;
+};
 
-    document.getElementById('playBtn').onclick = () => {
-      if (isPlaying) return;
-      isPlaying = true;
-      const src = audioContext.createBufferSource();
-      src.buffer = audioBuffer;
-      src.connect(audioContext.destination);
-      src.start(0, selStart, selEnd - selStart);
-      src.onended = () => { isPlaying = false; };
-      sourceNode = src;
-    };
+document.getElementById('stopBtn').onclick = () => {
+  if (sourceNode) sourceNode.stop();
+  isPlaying = false;
+};
 
-    document.getElementById('stopBtn').onclick = () => {
-      if (sourceNode) {
-        sourceNode.stop();
-        sourceNode.disconnect();
-      }
-      isPlaying = false;
-    };
+document.getElementById('resetBtn').onclick = () => {
+  selStart = 0;
+  selEnd = audioBuffer.duration;
+  updateDisplay();
+};
 
-    document.getElementById('resetBtn').onclick = () => {
-      selStart = 0;
-      selEnd = audioBuffer.duration;
-      updateDisplay();
-    };
-
-    document.getElementById('downloadBtn').onclick = () => {
-      if (!audioBuffer || Math.abs(selEnd - selStart) < 0.01) {
-        alert('Select a portion to download');
-        return;
-      }
-      
-      const blob = encodeWAV(audioBuffer, selStart, selEnd);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'trimmed.wav';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-    };
-  </script>
+document.getElementById('downloadBtn').onclick = () => {
+  if (!audioBuffer || Math.abs(selEnd - selStart) < 0.01) {
+    alert('Select portion to download');
+    return;
+  }
+  
+  let fileName = document.getElementById('outputFileName').value.trim();
+  if (!fileName) {
+    const now = new Date();
+    const timestamp = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0') + String(now.getSeconds()).padStart(2,'0');
+    fileName = originalFileName ? originalFileName + '_' + timestamp : 'trimmed_' + timestamp;
+  }
+  
+  const blob = encodeWAV(audioBuffer, selStart, selEnd);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName + '.wav';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+</script>
 </body>
 </html>
