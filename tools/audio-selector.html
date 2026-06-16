@@ -1,264 +1,901 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Audio Frame Selector</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class"
+    };
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
+  <style>
+    * {
+      font-family: Arial, "Khmer OS Battambang", "Noto Sans Khmer", sans-serif;
+    }
+
+    body {
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    canvas {
+      touch-action: none;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 dark:bg-slate-950">
-<div class="min-h-screen p-6">
-  <div class="max-w-2xl mx-auto">
-    <button id="backBtn" class="mb-4 px-4 py-2 text-sm bg-gray-300 dark:bg-slate-700 rounded-md hover:bg-gray-400 dark:hover:bg-slate-600 transition-colors text-gray-900 dark:text-white font-medium">← Back</button>
-    
-    <div class="w-full bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6 shadow-lg">
-      
-      <div id="dropZone" class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors mb-4">
-        <input type="file" id="fileInput" accept=".wav" class="hidden" />
-        <div class="text-lg text-gray-600 dark:text-gray-400 mb-2">📁 Drop WAV file or click to browse</div>
-        <div id="fileName" class="text-sm text-gray-400">No file selected</div>
+
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen">
+
+  <div class="min-h-screen px-4 py-6 md:px-8">
+
+    <!-- Header -->
+    <header class="max-w-5xl mx-auto mb-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+        <div class="flex items-center gap-3">
+          <a
+            href="/"
+            class="w-11 h-11 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+
+          <div>
+            <h1
+              id="pageTitle"
+              class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white"
+            >
+              ជ្រើស Frame សម្លេង
+            </h1>
+            <p
+              id="pageSubtitle"
+              class="text-sm text-slate-500 dark:text-slate-400 mt-1"
+            >
+              ជ្រើស WAV, កាត់សម្លេង, ស្តាប់ និងទាញយក
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="btnToggleLang"
+            class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-semibold"
+          >
+            🇺🇸 English
+          </button>
+
+          <button
+            id="btnToggleTheme"
+            class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-semibold"
+          >
+            🌙 Dark
+          </button>
+        </div>
       </div>
+    </header>
 
-      <div id="controlsSection" class="hidden space-y-4">
-        <canvas id="waveformCanvas" width="640" height="200" class="w-full border border-gray-200 dark:border-slate-700 rounded-md bg-gray-50 dark:bg-slate-800"></canvas>
-        
-        <div class="grid grid-cols-3 gap-4 text-sm">
-          <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-md">
-            <div class="text-gray-600 dark:text-gray-400">Start</div>
-            <div id="startTime" class="font-semibold text-lg text-gray-900 dark:text-white">0.00s</div>
+    <!-- Main Card -->
+    <main class="max-w-5xl mx-auto">
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl p-5 md:p-7 transition-colors"
+      >
+
+        <!-- Upload Area -->
+        <div
+          id="dropZone"
+          class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-8 md:p-10 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+        >
+          <input type="file" id="fileInput" accept=".wav,audio/wav" class="hidden" />
+
+          <div
+            class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-4 text-3xl"
+          >
+            <i class="fa-solid fa-file-audio"></i>
           </div>
-          <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-md">
-            <div class="text-gray-600 dark:text-gray-400">End</div>
-            <div id="endTime" class="font-semibold text-lg text-gray-900 dark:text-white">0.00s</div>
-          </div>
-          <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-md">
-            <div class="text-gray-600 dark:text-gray-400">Duration</div>
-            <div id="selDuration" class="font-semibold text-lg text-gray-900 dark:text-white">0.00s</div>
+
+          <h2
+            id="uploadTitle"
+            class="text-lg md:text-xl font-bold text-slate-800 dark:text-white"
+          >
+            ទម្លាក់ WAV file ឬចុចដើម្បីជ្រើសរើស
+          </h2>
+
+          <p
+            id="uploadSubtitle"
+            class="text-sm text-slate-500 dark:text-slate-400 mt-2"
+          >
+            គាំទ្រ file ប្រភេទ .wav
+          </p>
+
+          <div
+            id="fileName"
+            class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm text-slate-500 dark:text-slate-400"
+          >
+            <i class="fa-solid fa-circle-info"></i>
+            <span id="fileNameText">មិនទាន់មាន file</span>
           </div>
         </div>
 
-        <div>
-          <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">File name (optional)</label>
-          <input type="text" id="outputFileName" placeholder="Leave empty for auto-generated name" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500">
-        </div>
+        <!-- Controls -->
+        <section id="controlsSection" class="hidden mt-6 space-y-5">
 
-        <div class="grid grid-cols-4 gap-2">
-          <button id="playBtn" class="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">▶ Play</button>
-          <button id="stopBtn" class="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">⏹ Stop</button>
-          <button id="resetBtn" class="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white font-medium">↻ Reset</button>
-          <button id="downloadBtn" class="px-4 py-2 text-sm bg-blue-500 dark:bg-blue-600 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors text-white font-semibold">⬇ Download</button>
-        </div>
+          <!-- Message -->
+          <div
+            id="messageBox"
+            class="hidden rounded-xl px-4 py-3 text-sm border"
+          ></div>
+
+          <!-- Waveform -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label
+                id="waveformLabel"
+                class="text-sm font-semibold text-slate-600 dark:text-slate-300"
+              >
+                Waveform
+              </label>
+
+              <span
+                id="totalDuration"
+                class="text-sm text-slate-500 dark:text-slate-400"
+              >
+                0.00s
+              </span>
+            </div>
+
+            <canvas
+              id="waveformCanvas"
+              width="900"
+              height="240"
+              class="w-full border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800"
+            ></canvas>
+
+            <p
+              id="waveformHelp"
+              class="text-xs text-slate-500 dark:text-slate-400 mt-2"
+            >
+              ចុចហើយអូសលើ waveform ដើម្បីជ្រើស frame
+            </p>
+          </div>
+
+          <!-- Info Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <div id="startLabel" class="text-sm text-slate-500 dark:text-slate-400">ចាប់ផ្តើម</div>
+              <div id="startTime" class="font-bold text-xl mt-1">0.00s</div>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <div id="endLabel" class="text-sm text-slate-500 dark:text-slate-400">បញ្ចប់</div>
+              <div id="endTime" class="font-bold text-xl mt-1">0.00s</div>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <div id="durationLabel" class="text-sm text-slate-500 dark:text-slate-400">រយៈពេលជ្រើស</div>
+              <div id="selDuration" class="font-bold text-xl mt-1">0.00s</div>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <div id="statusLabel" class="text-sm text-slate-500 dark:text-slate-400">ស្ថានភាព</div>
+              <div id="selectStatus" class="font-bold text-base mt-2 text-blue-600 dark:text-blue-400">
+                Full sound
+              </div>
+            </div>
+          </div>
+
+          <!-- File Name -->
+          <div>
+            <label
+              id="outputNameLabel"
+              class="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2"
+            >
+              ឈ្មោះ file សម្រាប់ទាញយក
+            </label>
+
+            <input
+              type="text"
+              id="outputFileName"
+              placeholder="ទុកទទេដើម្បីប្រើឈ្មោះ auto"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+
+          <!-- Buttons -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <button
+              id="playBtn"
+              class="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
+            >
+              <i class="fa-solid fa-play mr-1"></i>
+              <span id="playText">ចាក់ស្តាប់</span>
+            </button>
+
+            <button
+              id="stopBtn"
+              class="px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold transition-colors"
+            >
+              <i class="fa-solid fa-stop mr-1"></i>
+              <span id="stopText">បញ្ឈប់</span>
+            </button>
+
+            <button
+              id="resetBtn"
+              class="px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold transition-colors"
+            >
+              <i class="fa-solid fa-rotate-left mr-1"></i>
+              <span id="resetText">Reset</span>
+            </button>
+
+            <button
+              id="clearBtn"
+              class="px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold transition-colors"
+            >
+              <i class="fa-solid fa-broom mr-1"></i>
+              <span id="clearText">សម្អាត</span>
+            </button>
+
+            <button
+              id="downloadBtn"
+              class="px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors col-span-2 md:col-span-1"
+            >
+              <i class="fa-solid fa-download mr-1"></i>
+              <span id="downloadText">ទាញយក</span>
+            </button>
+          </div>
+
+        </section>
       </div>
-
-    </div>
+    </main>
   </div>
-</div>
 
-<script>
-let audioBuffer = null, audioContext = null, sourceNode = null;
-let selStart = 0, selEnd = 0, isDragging = false, isPlaying = false;
-let originalFileName = '';
+  <script>
+    const THEME_STORAGE_KEY = "app_theme";
+    const ALLOWED_THEMES = ["light", "dark"];
+    const DEFAULT_THEME = "light";
 
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-const canvas = document.getElementById('waveformCanvas');
-const ctx = canvas.getContext('2d');
-const controlsSection = document.getElementById('controlsSection');
-const backBtn = document.getElementById('backBtn');
+    let currentTheme = getSavedTheme();
 
-dropZone.onclick = () => fileInput.click();
-dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
-dropZone.ondragover = (e) => e.preventDefault();
-fileInput.onchange = (e) => handleFiles(e.target.files);
-backBtn.onclick = () => window.history.back();
+    function getSavedTheme() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
 
-function encodeWavData(samples, channels, sampleRate) {
-  const buffer = new ArrayBuffer(44 + samples.length * 2);
-  const view = new DataView(buffer);
-  const writeString = (offset, string) => {
-    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
-  };
-  writeString(0, 'RIFF');
-  view.setUint32(4, 36 + samples.length * 2, true);
-  writeString(8, 'WAVE');
-  writeString(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, channels, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * channels * 2, true);
-  view.setUint16(32, channels * 2, true);
-  view.setUint16(34, 16, true);
-  writeString(36, 'data');
-  view.setUint32(40, samples.length * 2, true);
-  let offset = 44;
-  for (let i = 0; i < samples.length; i++, offset += 2) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-  }
-  return buffer;
-}
+      if (ALLOWED_THEMES.includes(savedTheme)) {
+        return savedTheme;
+      }
 
-function encodeWAV(audioBuffer, startTime, endTime) {
-  const sampleRate = audioBuffer.sampleRate;
-  const startSample = Math.floor(startTime * sampleRate);
-  const endSample = Math.floor(endTime * sampleRate);
-  const numChannels = audioBuffer.numberOfChannels;
-  const length = endSample - startSample;
-  const interleaved = new Float32Array(length * numChannels);
-  for (let ch = 0; ch < numChannels; ch++) {
-    const channel = audioBuffer.getChannelData(ch);
-    let offset = ch;
-    for (let i = 0; i < length; i++) {
-      interleaved[offset] = channel[startSample + i];
-      offset += numChannels;
+      localStorage.setItem(THEME_STORAGE_KEY, DEFAULT_THEME);
+      return DEFAULT_THEME;
     }
-  }
-  const encoded = encodeWavData(interleaved, numChannels, sampleRate);
-  return new Blob([encoded], { type: 'audio/wav' });
-}
 
-async function handleFiles(files) {
-  if (!files[0]) return;
-  const file = files[0];
-  originalFileName = file.name.replace('.wav', '');
-  document.getElementById('fileName').textContent = file.name;
-  const arrayBuffer = await file.arrayBuffer();
-  audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-  audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
-  selEnd = audioBuffer.duration;
-  drawWaveform();
-  controlsSection.classList.remove('hidden');
-  updateDisplay();
-}
-
-function drawWaveform() {
-  if (!audioBuffer) return;
-  const data = audioBuffer.getChannelData(0);
-  const step = Math.ceil(data.length / canvas.width);
-  const amp = canvas.height / 2;
-  
-  ctx.fillStyle = '#f9fafb';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  ctx.strokeStyle = '#3b82f6';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  for (let i = 0; i < canvas.width; i++) {
-    let max = 0;
-    for (let j = 0; j < step; j++) {
-      const idx = i * step + j;
-      if (idx < data.length && Math.abs(data[idx]) > Math.abs(max)) max = data[idx];
+    function updateThemeButton() {
+      if (currentTheme === "dark") {
+        $("#btnToggleTheme").html("☀️ Light");
+      } else {
+        $("#btnToggleTheme").html("🌙 Dark");
+      }
     }
-    ctx.lineTo(i, amp - max * amp);
-  }
-  ctx.stroke();
-  
-  ctx.strokeStyle = '#d1d5db';
-  ctx.lineWidth = 0.5;
-  ctx.beginPath();
-  for (let i = 0; i < canvas.width; i++) {
-    let min = 0;
-    for (let j = 0; j < step; j++) {
-      const idx = i * step + j;
-      if (idx < data.length && data[idx] < min) min = data[idx];
+
+    function applyTheme() {
+      if (currentTheme === "dark") {
+        $("html").addClass("dark");
+      } else {
+        $("html").removeClass("dark");
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+      updateThemeButton();
+
+      if (audioBuffer) {
+        drawWaveform();
+      }
     }
-    ctx.lineTo(i, amp - min * amp);
-  }
-  ctx.stroke();
-  
-  drawSelection();
-}
 
-function drawSelection() {
-  if (!audioBuffer) return;
-  const startPx = (selStart / audioBuffer.duration) * canvas.width;
-  const endPx = (selEnd / audioBuffer.duration) * canvas.width;
-  
-  ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
-  ctx.fillRect(startPx, 0, endPx - startPx, canvas.height);
-  
-  ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([4, 4]);
-  ctx.strokeRect(startPx, 0, endPx - startPx, canvas.height);
-  ctx.setLineDash([]);
-}
+    $("#btnToggleTheme").on("click", function () {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme();
+    });
+  </script>
 
-canvas.onmousedown = (e) => {
-  if (!audioBuffer) return;
-  isDragging = true;
-  const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width;
-  selStart = Math.max(0, x * audioBuffer.duration);
-  selEnd = selStart;
-  updateDisplay();
-};
+  <script>
+    const LANGUAGE_STORAGE_KEY = "app_language";
+    const ALLOWED_LANGUAGES = ["km", "en"];
+    const DEFAULT_LANGUAGE = "km";
 
-canvas.onmousemove = (e) => {
-  if (!isDragging || !audioBuffer) return;
-  const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width;
-  selEnd = Math.min(audioBuffer.duration, x * audioBuffer.duration);
-  if (selEnd < selStart) [selStart, selEnd] = [selEnd, selStart];
-  updateDisplay();
-};
+    let currentLanguage = getSavedLanguage();
 
-canvas.onmouseup = () => isDragging = false;
-canvas.onmouseleave = () => isDragging = false;
+    const textData = {
+      km: {
+        pageTitle: "ជ្រើស Frame សម្លេង",
+        pageSubtitle: "ជ្រើស WAV, កាត់សម្លេង, ស្តាប់ និងទាញយក",
+        uploadTitle: "ទម្លាក់ WAV file ឬចុចដើម្បីជ្រើសរើស",
+        uploadSubtitle: "គាំទ្រ file ប្រភេទ .wav",
+        noFile: "មិនទាន់មាន file",
+        waveformLabel: "Waveform",
+        waveformHelp: "ចុចហើយអូសលើ waveform ដើម្បីជ្រើស frame",
+        startLabel: "ចាប់ផ្តើម",
+        endLabel: "បញ្ចប់",
+        durationLabel: "រយៈពេលជ្រើស",
+        statusLabel: "ស្ថានភាព",
+        outputNameLabel: "ឈ្មោះ file សម្រាប់ទាញយក",
+        outputPlaceholder: "ទុកទទេដើម្បីប្រើឈ្មោះ auto",
+        playText: "ចាក់ស្តាប់",
+        stopText: "បញ្ឈប់",
+        resetText: "Reset",
+        clearText: "សម្អាត",
+        downloadText: "ទាញយក",
+        fullSound: "Full sound",
+        selectedFrame: "Selected frame",
+        loadedSuccess: "បានបញ្ចូល file ជោគជ័យ",
+        wavOnly: "សូមជ្រើសរើស file ប្រភេទ WAV",
+        decodeError: "មិនអាចអាន file សម្លេងនេះបានទេ",
+        downloadError: "មិនមានសម្លេងសម្រាប់ទាញយកទេ",
+        cleared: "បានសម្អាតរួចរាល់"
+      },
+      en: {
+        pageTitle: "Audio Frame Selector",
+        pageSubtitle: "Select WAV, trim audio, play and download",
+        uploadTitle: "Drop WAV file or click to browse",
+        uploadSubtitle: "Support .wav file only",
+        noFile: "No file selected",
+        waveformLabel: "Waveform",
+        waveformHelp: "Click and drag on waveform to select frame",
+        startLabel: "Start",
+        endLabel: "End",
+        durationLabel: "Selected Duration",
+        statusLabel: "Status",
+        outputNameLabel: "Download file name",
+        outputPlaceholder: "Leave empty for auto-generated name",
+        playText: "Play",
+        stopText: "Stop",
+        resetText: "Reset",
+        clearText: "Clear",
+        downloadText: "Download",
+        fullSound: "Full sound",
+        selectedFrame: "Selected frame",
+        loadedSuccess: "File loaded successfully",
+        wavOnly: "Please select WAV file only",
+        decodeError: "Cannot read this audio file",
+        downloadError: "No audio to download",
+        cleared: "Cleared successfully"
+      }
+    };
 
-function updateDisplay() {
-  document.getElementById('startTime').textContent = selStart.toFixed(2) + 's';
-  document.getElementById('endTime').textContent = selEnd.toFixed(2) + 's';
-  document.getElementById('selDuration').textContent = (selEnd - selStart).toFixed(2) + 's';
-  drawWaveform();
-}
+    function getSavedLanguage() {
+      const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
 
-document.getElementById('playBtn').onclick = () => {
-  if (isPlaying) return;
-  isPlaying = true;
-  const src = audioContext.createBufferSource();
-  src.buffer = audioBuffer;
-  src.connect(audioContext.destination);
-  src.start(0, selStart, selEnd - selStart);
-  src.onended = () => { isPlaying = false; };
-  sourceNode = src;
-};
+      if (ALLOWED_LANGUAGES.includes(savedLanguage)) {
+        return savedLanguage;
+      }
 
-document.getElementById('stopBtn').onclick = () => {
-  if (sourceNode) sourceNode.stop();
-  isPlaying = false;
-};
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, DEFAULT_LANGUAGE);
+      return DEFAULT_LANGUAGE;
+    }
 
-document.getElementById('resetBtn').onclick = () => {
-  selStart = 0;
-  selEnd = audioBuffer.duration;
-  updateDisplay();
-};
+    function updateLanguageButton() {
+      if (currentLanguage === "km") {
+        $("#btnToggleLang").html("🇺🇸 English");
+      } else {
+        $("#btnToggleLang").html("🇰🇭 ខ្មែរ");
+      }
+    }
 
-document.getElementById('downloadBtn').onclick = () => {
-  if (!audioBuffer || Math.abs(selEnd - selStart) < 0.01) {
-    alert('Select portion to download');
-    return;
-  }
-  
-  let fileName = document.getElementById('outputFileName').value.trim();
-  if (!fileName) {
-    const now = new Date();
-    const timestamp = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0') + String(now.getSeconds()).padStart(2,'0');
-    fileName = originalFileName ? originalFileName + '_' + timestamp : 'trimmed_' + timestamp;
-  }
-  
-  const blob = encodeWAV(audioBuffer, selStart, selEnd);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName + '.wav';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 100);
-};
-</script>
+    function t(key) {
+      return textData[currentLanguage][key] || key;
+    }
+
+    function applyLanguage() {
+      $("html").attr("lang", currentLanguage);
+
+      $("#pageTitle").text(t("pageTitle"));
+      $("#pageSubtitle").text(t("pageSubtitle"));
+      $("#uploadTitle").text(t("uploadTitle"));
+      $("#uploadSubtitle").text(t("uploadSubtitle"));
+      $("#waveformLabel").text(t("waveformLabel"));
+      $("#waveformHelp").text(t("waveformHelp"));
+      $("#startLabel").text(t("startLabel"));
+      $("#endLabel").text(t("endLabel"));
+      $("#durationLabel").text(t("durationLabel"));
+      $("#statusLabel").text(t("statusLabel"));
+      $("#outputNameLabel").text(t("outputNameLabel"));
+      $("#outputFileName").attr("placeholder", t("outputPlaceholder"));
+      $("#playText").text(t("playText"));
+      $("#stopText").text(t("stopText"));
+      $("#resetText").text(t("resetText"));
+      $("#clearText").text(t("clearText"));
+      $("#downloadText").text(t("downloadText"));
+
+      if (!audioBuffer) {
+        $("#fileNameText").text(t("noFile"));
+      }
+
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+      updateLanguageButton();
+      updateDisplay();
+    }
+
+    $("#btnToggleLang").on("click", function () {
+      currentLanguage = currentLanguage === "km" ? "en" : "km";
+      applyLanguage();
+    });
+  </script>
+
+  <script>
+    let audioBuffer = null;
+    let audioContext = null;
+    let sourceNode = null;
+
+    let selStart = 0;
+    let selEnd = 0;
+    let hasSelection = false;
+
+    let isDragging = false;
+    let isPlaying = false;
+    let originalFileName = "";
+
+    const canvas = document.getElementById("waveformCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+
+    // Show small success/error message
+    function showMessage(message, type = "success") {
+      const isSuccess = type === "success";
+
+      $("#messageBox")
+        .removeClass()
+        .addClass(
+          "rounded-xl px-4 py-3 text-sm border " +
+          (isSuccess
+            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+            : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800")
+        )
+        .text(message)
+        .removeClass("hidden");
+
+      setTimeout(function () {
+        $("#messageBox").addClass("hidden");
+      }, 2500);
+    }
+
+    // Convert Float32 audio samples to WAV data
+    function encodeWavData(samples, channels, sampleRate) {
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+
+      const writeString = function (offset, string) {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      };
+
+      writeString(0, "RIFF");
+      view.setUint32(4, 36 + samples.length * 2, true);
+      writeString(8, "WAVE");
+      writeString(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, channels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * channels * 2, true);
+      view.setUint16(32, channels * 2, true);
+      view.setUint16(34, 16, true);
+      writeString(36, "data");
+      view.setUint32(40, samples.length * 2, true);
+
+      let offset = 44;
+
+      for (let i = 0; i < samples.length; i++, offset += 2) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      }
+
+      return buffer;
+    }
+
+    // Encode selected audio frame to WAV Blob
+    function encodeWAV(audioBuffer, startTime, endTime) {
+      const sampleRate = audioBuffer.sampleRate;
+      const startSample = Math.floor(startTime * sampleRate);
+      const endSample = Math.floor(endTime * sampleRate);
+      const numChannels = audioBuffer.numberOfChannels;
+      const length = Math.max(0, endSample - startSample);
+
+      const interleaved = new Float32Array(length * numChannels);
+
+      for (let ch = 0; ch < numChannels; ch++) {
+        const channel = audioBuffer.getChannelData(ch);
+        let offset = ch;
+
+        for (let i = 0; i < length; i++) {
+          interleaved[offset] = channel[startSample + i] || 0;
+          offset += numChannels;
+        }
+      }
+
+      const encoded = encodeWavData(interleaved, numChannels, sampleRate);
+      return new Blob([encoded], { type: "audio/wav" });
+    }
+
+    // Load and decode WAV file
+    async function handleFiles(files) {
+      if (!files || !files[0]) return;
+
+      const file = files[0];
+      const isWav = file.name.toLowerCase().endsWith(".wav") || file.type === "audio/wav";
+
+      if (!isWav) {
+        showMessage(t("wavOnly"), "error");
+        return;
+      }
+
+      try {
+        stopAudio();
+
+        originalFileName = file.name.replace(/\.[^/.]+$/, "");
+        $("#fileNameText").text(file.name);
+
+        const arrayBuffer = await file.arrayBuffer();
+
+        audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+
+        selStart = 0;
+        selEnd = audioBuffer.duration;
+        hasSelection = false;
+
+        $("#controlsSection").removeClass("hidden");
+        $("#totalDuration").text(audioBuffer.duration.toFixed(2) + "s");
+
+        drawWaveform();
+        updateDisplay();
+        showMessage(t("loadedSuccess"), "success");
+      } catch (error) {
+        console.error(error);
+        showMessage(t("decodeError"), "error");
+      }
+    }
+
+    // Draw audio waveform
+    function drawWaveform() {
+      if (!audioBuffer) return;
+
+      const isDark = $("html").hasClass("dark");
+      const data = audioBuffer.getChannelData(0);
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const amp = height / 2;
+      const step = Math.ceil(data.length / width);
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = isDark ? "#1e293b" : "#f8fafc";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = isDark ? "#64748b" : "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, amp);
+      ctx.lineTo(width, amp);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+
+      for (let i = 0; i < width; i++) {
+        let min = 1;
+        let max = -1;
+
+        for (let j = 0; j < step; j++) {
+          const index = i * step + j;
+
+          if (index < data.length) {
+            const value = data[index];
+            if (value < min) min = value;
+            if (value > max) max = value;
+          }
+        }
+
+        ctx.moveTo(i, amp - min * amp);
+        ctx.lineTo(i, amp - max * amp);
+      }
+
+      ctx.stroke();
+
+      if (hasSelection) {
+        drawSelection();
+      }
+    }
+
+    // Draw selected frame area
+    function drawSelection() {
+      if (!audioBuffer || !hasSelection) return;
+
+      const startPx = (selStart / audioBuffer.duration) * canvas.width;
+      const endPx = (selEnd / audioBuffer.duration) * canvas.width;
+      const width = endPx - startPx;
+
+      ctx.fillStyle = "rgba(59, 130, 246, 0.18)";
+      ctx.fillRect(startPx, 0, width, canvas.height);
+
+      ctx.strokeStyle = "rgba(37, 99, 235, 0.9)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(startPx, 0, width, canvas.height);
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "rgba(37, 99, 235, 0.95)";
+      ctx.fillRect(startPx - 2, 0, 4, canvas.height);
+      ctx.fillRect(endPx - 2, 0, 4, canvas.height);
+    }
+
+    // Update selected time text
+    function updateDisplay() {
+      if (!audioBuffer) {
+        $("#startTime").text("0.00s");
+        $("#endTime").text("0.00s");
+        $("#selDuration").text("0.00s");
+        $("#selectStatus").text(t("fullSound"));
+        return;
+      }
+
+      const displayStart = hasSelection ? selStart : 0;
+      const displayEnd = hasSelection ? selEnd : audioBuffer.duration;
+      const duration = displayEnd - displayStart;
+
+      $("#startTime").text(displayStart.toFixed(2) + "s");
+      $("#endTime").text(displayEnd.toFixed(2) + "s");
+      $("#selDuration").text(duration.toFixed(2) + "s");
+
+      if (hasSelection) {
+        $("#selectStatus").text(t("selectedFrame"));
+      } else {
+        $("#selectStatus").text(t("fullSound"));
+      }
+
+      drawWaveform();
+    }
+
+    // Get canvas x position for mouse/touch
+    function getCanvasPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      const x = (clientX - rect.left) / rect.width;
+      return Math.max(0, Math.min(1, x));
+    }
+
+    // Start selecting frame
+    function startSelect(event) {
+      if (!audioBuffer) return;
+
+      event.preventDefault();
+
+      stopAudio();
+      isDragging = true;
+      hasSelection = true;
+
+      const x = getCanvasPosition(event);
+
+      selStart = x * audioBuffer.duration;
+      selEnd = selStart;
+
+      updateDisplay();
+    }
+
+    // Update selecting frame
+    function moveSelect(event) {
+      if (!isDragging || !audioBuffer) return;
+
+      event.preventDefault();
+
+      const x = getCanvasPosition(event);
+      const currentTime = x * audioBuffer.duration;
+
+      selEnd = Math.max(0, Math.min(audioBuffer.duration, currentTime));
+
+      if (selEnd < selStart) {
+        const temp = selStart;
+        selStart = selEnd;
+        selEnd = temp;
+      }
+
+      updateDisplay();
+    }
+
+    // End selecting frame
+    function endSelect() {
+      if (!audioBuffer) return;
+
+      isDragging = false;
+
+      if (Math.abs(selEnd - selStart) < 0.03) {
+        hasSelection = false;
+        selStart = 0;
+        selEnd = audioBuffer.duration;
+      }
+
+      updateDisplay();
+    }
+
+    // Play full sound when no frame selected, otherwise play selected frame
+    function playAudio() {
+      if (!audioBuffer || isPlaying) return;
+
+      const playStart = hasSelection ? selStart : 0;
+      const playDuration = hasSelection ? selEnd - selStart : audioBuffer.duration;
+
+      if (playDuration <= 0) return;
+
+      audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+
+      const src = audioContext.createBufferSource();
+      src.buffer = audioBuffer;
+      src.connect(audioContext.destination);
+      src.start(0, playStart, playDuration);
+
+      src.onended = function () {
+        isPlaying = false;
+      };
+
+      sourceNode = src;
+      isPlaying = true;
+    }
+
+    // Stop current playing sound
+    function stopAudio() {
+      if (sourceNode) {
+        try {
+          sourceNode.stop();
+        } catch (e) {}
+      }
+
+      sourceNode = null;
+      isPlaying = false;
+    }
+
+    // Reset selection to full sound
+    function resetSelection() {
+      if (!audioBuffer) return;
+
+      stopAudio();
+
+      selStart = 0;
+      selEnd = audioBuffer.duration;
+      hasSelection = false;
+
+      updateDisplay();
+    }
+
+    // Clear all data
+    function clearAll() {
+      stopAudio();
+
+      audioBuffer = null;
+      selStart = 0;
+      selEnd = 0;
+      hasSelection = false;
+      originalFileName = "";
+
+      fileInput.value = "";
+      $("#outputFileName").val("");
+      $("#fileNameText").text(t("noFile"));
+      $("#controlsSection").addClass("hidden");
+      $("#totalDuration").text("0.00s");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      showMessage(t("cleared"), "success");
+    }
+
+    // Download selected frame or full sound
+    function downloadAudio() {
+      if (!audioBuffer) {
+        showMessage(t("downloadError"), "error");
+        return;
+      }
+
+      const start = hasSelection ? selStart : 0;
+      const end = hasSelection ? selEnd : audioBuffer.duration;
+
+      if (end - start <= 0) {
+        showMessage(t("downloadError"), "error");
+        return;
+      }
+
+      let fileName = $("#outputFileName").val().trim();
+
+      if (!fileName) {
+        const now = new Date();
+        const timestamp =
+          now.getFullYear() +
+          "-" +
+          String(now.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(now.getDate()).padStart(2, "0") +
+          "_" +
+          String(now.getHours()).padStart(2, "0") +
+          String(now.getMinutes()).padStart(2, "0") +
+          String(now.getSeconds()).padStart(2, "0");
+
+        fileName = originalFileName
+          ? originalFileName + "_" + timestamp
+          : "audio_frame_" + timestamp;
+      }
+
+      const blob = encodeWAV(audioBuffer, start, end);
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName + ".wav";
+
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+
+    // Register all events
+    function initEvents() {
+      $("#dropZone").on("click", function () {
+        fileInput.click();
+      });
+
+      $("#fileInput").on("change", function (event) {
+        handleFiles(event.target.files);
+      });
+
+      $("#dropZone").on("dragover", function (event) {
+        event.preventDefault();
+        $(this).addClass("bg-blue-50 dark:bg-blue-950/20");
+      });
+
+      $("#dropZone").on("dragleave", function () {
+        $(this).removeClass("bg-blue-50 dark:bg-blue-950/20");
+      });
+
+      $("#dropZone").on("drop", function (event) {
+        event.preventDefault();
+        $(this).removeClass("bg-blue-50 dark:bg-blue-950/20");
+        handleFiles(event.originalEvent.dataTransfer.files);
+      });
+
+      canvas.addEventListener("mousedown", startSelect);
+      canvas.addEventListener("mousemove", moveSelect);
+      canvas.addEventListener("mouseup", endSelect);
+      canvas.addEventListener("mouseleave", endSelect);
+
+      canvas.addEventListener("touchstart", startSelect, { passive: false });
+      canvas.addEventListener("touchmove", moveSelect, { passive: false });
+      canvas.addEventListener("touchend", endSelect);
+
+      $("#playBtn").on("click", playAudio);
+      $("#stopBtn").on("click", stopAudio);
+      $("#resetBtn").on("click", resetSelection);
+      $("#clearBtn").on("click", clearAll);
+      $("#downloadBtn").on("click", downloadAudio);
+    }
+
+    // Init app
+    $(document).ready(function () {
+      applyTheme();
+      applyLanguage();
+      initEvents();
+    });
+  </script>
 </body>
 </html>
