@@ -28,6 +28,11 @@
     .clip-box {
       user-select: none;
       touch-action: none;
+      cursor: grab;
+    }
+
+    .clip-box:active {
+      cursor: grabbing;
     }
 
     .clip-box.selected {
@@ -37,7 +42,7 @@
 
     .audio-track {
       background-image:
-        linear-gradient(to right, rgba(148, 163, 184, 0.25) 1px, transparent 1px),
+        linear-gradient(to right, rgba(148, 163, 184, 0.28) 1px, transparent 1px),
         linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
       background-size: 100px 100%, 20px 100%;
     }
@@ -59,6 +64,17 @@
 
     .timeline-scroll::-webkit-scrollbar-track {
       background: transparent;
+    }
+
+    .frame-selection {
+      background: rgba(59, 130, 246, 0.18);
+      border-left: 2px solid #3b82f6;
+      border-right: 2px solid #3b82f6;
+    }
+
+    .selection-handle {
+      width: 8px;
+      margin-left: -4px;
     }
   </style>
 </head>
@@ -109,69 +125,94 @@
         </div>
       </section>
 
-      <section class="mt-6 grid gap-4 lg:grid-cols-[1fr_360px]">
-        <div class="rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-900">
-          <div class="flex flex-wrap items-center gap-2">
-            <button id="btnPlayAll" class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">
-              <i class="fa-solid fa-play mr-2"></i><span data-i18n="playAll">Play mix</span>
-            </button>
-
-            <button id="btnPlaySelection" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700">
-              <i class="fa-solid fa-headphones mr-2"></i><span data-i18n="playSelection">Play selected duration</span>
-            </button>
-
-            <button id="btnStop" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
-              <i class="fa-solid fa-stop mr-2"></i><span data-i18n="stop">Stop</span>
-            </button>
-
-            <button id="btnOpenExport" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700">
-              <i class="fa-solid fa-file-export mr-2"></i><span data-i18n="export">Export</span>
-            </button>
-
-            <button id="btnSaveProject" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-900">
-              <i class="fa-solid fa-floppy-disk mr-2"></i><span data-i18n="saveProject">Save project</span>
-            </button>
-          </div>
-
-          <div class="mt-4 grid gap-3 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950 md:grid-cols-4">
-            <label class="block">
-              <span class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="startTime">Start time</span>
-              <input id="selectionStart" type="number" min="0" step="0.01" value="0" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white" />
-            </label>
-
-            <label class="block">
-              <span class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="endTime">End time</span>
-              <input id="selectionEnd" type="number" min="0" step="0.01" value="0" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white" />
-            </label>
-
-            <label class="block">
-              <span class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="zoom">Zoom</span>
-              <input id="zoomRange" type="range" min="50" max="180" value="100" class="mt-3 w-full accent-emerald-600" />
-            </label>
-
-            <div class="flex items-end gap-2">
-              <button id="btnUseAll" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" data-i18n="useAll">Use all</button>
-              <button id="btnSplit" class="w-full rounded-xl bg-orange-500 px-3 py-2 text-sm font-bold text-white transition hover:bg-orange-600">
-                <i class="fa-solid fa-scissors mr-1"></i><span data-i18n="split">Split</span>
-              </button>
+      <section class="mt-6 grid gap-4 xl:grid-cols-[1fr_360px]">
+        <section class="rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-900">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-bold text-slate-950 dark:text-white" data-i18n="timeline">Timeline</h2>
+              <p id="statusText" class="mt-1 text-sm text-slate-500 dark:text-slate-400" data-i18n="ready">Ready.</p>
+            </div>
+            <div class="text-sm font-bold text-slate-500 dark:text-slate-400">
+              <span data-i18n="duration">Duration</span>: <span id="durationText">0.00s</span>
             </div>
           </div>
 
-          <div id="exportPanel" class="mt-4 hidden rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/60">
-            <div class="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
-              <label>
-                <span class="text-sm font-bold text-blue-900 dark:text-blue-200" data-i18n="fileName">File name</span>
-                <input id="exportFileName" type="text" class="mt-1 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-white" />
-              </label>
-              <button id="btnExportWav" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700">
-                <i class="fa-solid fa-download mr-2"></i><span data-i18n="downloadWav">Download WAV</span>
-              </button>
-              <button id="btnCloseExport" class="rounded-xl border border-blue-200 bg-white px-5 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800">
-                <span data-i18n="cancel">Cancel</span>
-              </button>
+          <div id="timelineBox" class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+            <div id="timelineToolbar" class="sticky top-0 z-30 flex flex-col gap-3 border-b border-slate-200 bg-white/95 p-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 xl:flex-row xl:items-start xl:justify-between">
+              <div class="flex flex-wrap items-start gap-2">
+                <button id="btnPlayAll" title="Space" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 text-sm font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">
+                  <i class="fa-solid fa-play"></i><span class="hidden 2xl:inline" data-i18n="playAll">Play / Stop</span>
+                </button>
+
+                <button id="btnStop" title="Stop" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <i class="fa-solid fa-stop"></i><span class="hidden 2xl:inline" data-i18n="stop">Stop</span>
+                </button>
+
+                <button id="btnSplit" title="Split" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-orange-500 px-3 text-sm font-bold text-white transition hover:bg-orange-600">
+                  <i class="fa-solid fa-scissors"></i><span class="hidden 2xl:inline" data-i18n="split">Split</span>
+                </button>
+
+                <button id="btnUseAll" title="Use all" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <i class="fa-solid fa-expand"></i><span class="hidden 2xl:inline" data-i18n="useAll">Use all</span>
+                </button>
+
+                <button id="btnOpenExport" title="Export" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-bold text-white transition hover:bg-blue-700">
+                  <i class="fa-solid fa-file-export"></i><span class="hidden 2xl:inline" data-i18n="export">Export</span>
+                </button>
+
+                <button id="btnSaveProject" title="Save project" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-900">
+                  <i class="fa-solid fa-floppy-disk"></i><span class="hidden 2xl:inline" data-i18n="saveProject">Save project</span>
+                </button>
+              </div>
+
+              <div class="grid w-full gap-2 sm:grid-cols-[120px_120px_minmax(160px,1fr)] xl:w-[520px]">
+                <label class="block">
+                  <span class="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="startTime">Frame start</span>
+                  <input id="selectionStart" type="number" min="0" step="0.01" value="0" class="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white" />
+                </label>
+
+                <label class="block">
+                  <span class="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="endTime">Frame end</span>
+                  <input id="selectionEnd" type="number" min="0" step="0.01" value="0" class="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white" />
+                </label>
+
+                <label class="block">
+                  <span class="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" data-i18n="zoom">Zoom</span>
+                  <input id="zoomRange" type="range" min="40" max="520" value="100" class="mt-4 w-full accent-emerald-600" />
+                </label>
+              </div>
+            </div>
+
+            <div id="exportPanel" class="hidden border-b border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/60">
+              <div class="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                <label>
+                  <span class="text-sm font-bold text-blue-900 dark:text-blue-200" data-i18n="fileName">File name</span>
+                  <input id="exportFileName" type="text" class="mt-1 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-white" />
+                </label>
+                <button id="btnExportWav" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700">
+                  <i class="fa-solid fa-download mr-2"></i><span data-i18n="downloadWav">Download WAV</span>
+                </button>
+                <button id="btnCloseExport" class="rounded-xl border border-blue-200 bg-white px-5 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800">
+                  <span data-i18n="cancel">Cancel</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="timelineScroll" class="timeline-scroll overflow-x-auto bg-slate-50 p-3 dark:bg-slate-950">
+              <div id="timelineInner" class="min-h-[240px]">
+                <div id="ruler" class="relative mb-2 h-8"></div>
+                <div id="rowsContainer" class="space-y-3"></div>
+                <div id="emptyState" class="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                  <div>
+                    <i class="fa-solid fa-wave-square mb-3 text-4xl text-slate-300 dark:text-slate-700"></i>
+                    <p class="font-bold" data-i18n="emptyTitle">No sound yet</p>
+                    <p class="text-sm" data-i18n="emptyDesc">Drop sound files to start editing.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <aside class="rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <h3 class="text-base font-bold text-slate-950 dark:text-white" data-i18n="clipActions">Selected sound</h3>
@@ -200,38 +241,12 @@
 
           <div class="mt-4 rounded-2xl bg-emerald-50 p-4 text-sm leading-7 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
             <p class="font-bold" data-i18n="tipsTitle">How to use</p>
-            <p data-i18n="tip1">Double click on a sound to add volume point.</p>
-            <p data-i18n="tip2">Drag point up/down to change volume.</p>
-            <p data-i18n="tip3">Hold Shift and drag point left/right to curve line.</p>
-            <p data-i18n="tip4">Right click sound to delete with confirm.</p>
+            <p data-i18n="tip1">Space = play/stop selected frame.</p>
+            <p data-i18n="tip2">Hold left click on timeline to select frame.</p>
+            <p data-i18n="tip3">Double click orange volume line to add point.</p>
+            <p data-i18n="tip4">Ctrl + scroll = zoom. Command + scroll = left/right.</p>
           </div>
         </aside>
-      </section>
-
-      <section class="mt-6 rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-900">
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-950 dark:text-white" data-i18n="timeline">Timeline</h2>
-            <p id="statusText" class="mt-1 text-sm text-slate-500 dark:text-slate-400" data-i18n="ready">Ready.</p>
-          </div>
-          <div class="text-sm font-bold text-slate-500 dark:text-slate-400">
-            <span data-i18n="duration">Duration</span>: <span id="durationText">0.00s</span>
-          </div>
-        </div>
-
-        <div id="timelineScroll" class="timeline-scroll overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-          <div id="timelineInner" class="min-h-[240px]">
-            <div id="ruler" class="relative mb-2 h-8"></div>
-            <div id="rowsContainer" class="space-y-3"></div>
-            <div id="emptyState" class="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-              <div>
-                <i class="fa-solid fa-wave-square mb-3 text-4xl text-slate-300 dark:text-slate-700"></i>
-                <p class="font-bold" data-i18n="emptyTitle">No sound yet</p>
-                <p class="text-sm" data-i18n="emptyDesc">Drop sound files to start editing.</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
     </main>
   </div>
@@ -281,7 +296,8 @@
 
   <script>
     const LANG_STORAGE_KEY = "app_language";
-    const PROJECT_STORAGE_KEY = "sound_editor_project_v1";
+    const PROJECT_STORAGE_KEY = "sound_editor_project_v2";
+    const ROW_HEADER_WIDTH = 120;
 
     const translations = {
       en: {
@@ -291,13 +307,12 @@
         dropDesc: "Support mp3, wav, m4a, ogg. Each sound will create one row.",
         chooseFiles: "Choose sounds",
         reset: "Reset",
-        playAll: "Play mix",
-        playSelection: "Play selected duration",
+        playAll: "Play / Stop",
         stop: "Stop",
         export: "Export",
         saveProject: "Save project",
-        startTime: "Start time",
-        endTime: "End time",
+        startTime: "Frame start",
+        endTime: "Frame end",
         zoom: "Zoom",
         useAll: "Use all",
         split: "Split",
@@ -310,11 +325,11 @@
         newRow: "New row",
         rowUp: "Row up",
         rowDown: "Row down",
-        tipsTitle: "How to use",
-        tip1: "Double click on a sound to add volume point.",
-        tip2: "Drag point up/down to change volume.",
-        tip3: "Hold Shift and drag point left/right to curve line.",
-        tip4: "Right click sound to delete with confirm.",
+        tipsTitle: "Short keys",
+        tip1: "Space = play/stop selected frame.",
+        tip2: "Hold left click on timeline to select frame.",
+        tip3: "Double click orange volume line to add point.",
+        tip4: "Ctrl + scroll = zoom. Command + scroll = left/right.",
         timeline: "Timeline",
         ready: "Ready.",
         duration: "Duration",
@@ -336,7 +351,12 @@
         start: "Start",
         length: "Length",
         volume: "Volume points",
-        processing: "Processing..."
+        processing: "Processing...",
+        lineOnly: "Double click on the orange volume line only.",
+        selectedFrame: "Selected frame",
+        zoomHint: "Zoom changed.",
+        playRange: "Playing selected frame.",
+        playAllRange: "Playing full timeline."
       },
       km: {
         title: "កែសំឡេង",
@@ -345,13 +365,12 @@
         dropDesc: "គាំទ្រ mp3, wav, m4a, ogg។ សំឡេងមួយនឹងបង្កើតជួរមួយ។",
         chooseFiles: "ជ្រើសសំឡេង",
         reset: "សម្អាត",
-        playAll: "ចាក់សំឡេងលាយ",
-        playSelection: "ចាក់តាមរយៈពេល",
+        playAll: "ចាក់ / បញ្ឈប់",
         stop: "បញ្ឈប់",
         export: "ទាញយក",
         saveProject: "រក្សាទុកគម្រោង",
-        startTime: "ពេលចាប់ផ្ដើម",
-        endTime: "ពេលបញ្ចប់",
+        startTime: "ចាប់ផ្តើម Frame",
+        endTime: "បញ្ចប់ Frame",
         zoom: "ពង្រីក",
         useAll: "ប្រើទាំងអស់",
         split: "កាត់",
@@ -364,11 +383,11 @@
         newRow: "ជួរថ្មី",
         rowUp: "ជួរឡើងលើ",
         rowDown: "ជួរចុះក្រោម",
-        tipsTitle: "របៀបប្រើ",
-        tip1: "ចុចពីរដងលើសំឡេង ដើម្បីបន្ថែមចំណុចកម្រិតសំឡេង។",
-        tip2: "អូសចំណុចឡើង/ចុះ ដើម្បីប្ដូរកម្រិតសំឡេង។",
-        tip3: "ចុច Shift ហើយអូសឆ្វេង/ស្ដាំ ដើម្បីធ្វើឱ្យបន្ទាត់កោង។",
-        tip4: "ចុចស្ដាំលើសំឡេង ដើម្បីលុបជាមួយការបញ្ជាក់។",
+        tipsTitle: "Short keys",
+        tip1: "Space = ចាក់/បញ្ឈប់ Frame ដែលបានជ្រើស។",
+        tip2: "ចុចឆ្វេងជាប់លើ Timeline ដើម្បីជ្រើស Frame។",
+        tip3: "ចុចពីរដងលើបន្ទាត់ពណ៌ទឹកក្រូច ដើម្បីបន្ថែមចំណុចសំឡេង។",
+        tip4: "Ctrl + Scroll = Zoom។ Command + Scroll = រំកិលឆ្វេង/ស្តាំ។",
         timeline: "បន្ទាត់ពេលវេលា",
         ready: "រួចរាល់។",
         duration: "រយៈពេល",
@@ -389,8 +408,13 @@
         saveFail: "រក្សាទុកមិនបាន។ គម្រោងសំឡេងអាចធំពេកសម្រាប់ localStorage។",
         start: "ចាប់ផ្ដើម",
         length: "ប្រវែង",
-        volume: "ចំណុចកម្រិត",
-        processing: "កំពុងដំណើរការ..."
+        volume: "ចំណុចកម្រិតសំឡេង",
+        processing: "កំពុងដំណើរការ...",
+        lineOnly: "សូមចុចពីរដងលើបន្ទាត់កម្រិតសំឡេងពណ៌ទឹកក្រូចតែប៉ុណ្ណោះ។",
+        selectedFrame: "Frame ដែលបានជ្រើស",
+        zoomHint: "បានប្ដូរ Zoom។",
+        playRange: "កំពុងចាក់ Frame ដែលបានជ្រើស។",
+        playAllRange: "កំពុងចាក់ Timeline ទាំងមូល។"
       }
     };
 
@@ -406,10 +430,13 @@
       audios: {},
       selectedClipId: null,
       playheadTime: 0,
+      selectionStart: null,
+      selectionEnd: null,
       pxPerSecond: 100,
       audioContext: null,
       playingNodes: [],
       playTimer: null,
+      isPlaying: false,
       saveTimer: null,
       drag: null
     };
@@ -453,6 +480,14 @@
       $("#statusText").text(message);
     }
 
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
     function getTotalDuration() {
       let max = 0;
       Object.values(state.clips).forEach(clip => {
@@ -473,6 +508,27 @@
       return state.rows.find(row => row.id === rowId);
     }
 
+    // Return selected frame. If no frame selected, return full timeline.
+    function getActiveRange() {
+      const total = getTotalDuration();
+      const hasFrame = state.selectionStart !== null && state.selectionEnd !== null && Math.abs(state.selectionEnd - state.selectionStart) > 0.02;
+
+      if (!hasFrame) {
+        return { start: 0, end: total, hasFrame: false };
+      }
+
+      const start = clamp(Math.min(state.selectionStart, state.selectionEnd), 0, total);
+      const end = clamp(Math.max(state.selectionStart, state.selectionEnd), start, total);
+      return { start, end, hasFrame: true };
+    }
+
+    // Update input fields from selected frame data.
+    function syncSelectionInputs() {
+      const range = getActiveRange();
+      $("#selectionStart").val(range.start.toFixed(2));
+      $("#selectionEnd").val(range.end.toFixed(2));
+    }
+
     // Save project data into localStorage.
     function saveProject(showMessage = false) {
       try {
@@ -480,7 +536,9 @@
           rows: state.rows,
           clips: state.clips,
           audios: state.audios,
-          pxPerSecond: state.pxPerSecond
+          pxPerSecond: state.pxPerSecond,
+          selectionStart: state.selectionStart,
+          selectionEnd: state.selectionEnd
         }));
 
         if (showMessage) setStatus(t("saved"));
@@ -505,6 +563,8 @@
         state.clips = saved.clips || {};
         state.audios = saved.audios || {};
         state.pxPerSecond = saved.pxPerSecond || 100;
+        state.selectionStart = typeof saved.selectionStart === "number" ? saved.selectionStart : null;
+        state.selectionEnd = typeof saved.selectionEnd === "number" ? saved.selectionEnd : null;
         $("#zoomRange").val(state.pxPerSecond);
 
         for (const audio of Object.values(state.audios)) {
@@ -637,15 +697,7 @@
       `);
     }
 
-    function escapeHtml(text) {
-      return String(text || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;");
-    }
-
-    // Render full timeline, rows, clips, ruler, and playhead.
+    // Render full timeline, rows, clips, ruler, frame selection, and playhead.
     function render() {
       cleanupRows();
 
@@ -654,9 +706,10 @@
       $("#durationText").text(formatTime(total));
       $("#selectionEnd").attr("max", total);
 
-      if (Number($("#selectionEnd").val()) <= 0 || Number($("#selectionEnd").val()) > total) {
-        $("#selectionEnd").val(total.toFixed(2));
-      }
+      if (state.selectionStart !== null) state.selectionStart = clamp(state.selectionStart, 0, total);
+      if (state.selectionEnd !== null) state.selectionEnd = clamp(state.selectionEnd, 0, total);
+
+      syncSelectionInputs();
 
       $("#emptyState").toggleClass("hidden", state.rows.length > 0);
       $("#rowsContainer").toggleClass("hidden", state.rows.length === 0);
@@ -665,17 +718,25 @@
       renderRows(width);
       updateSelectedInfo();
       drawAllClips();
+      updatePlayButton();
     }
 
     function renderRuler(width) {
       const total = Math.max(1, getTotalDuration());
       const ruler = $("#ruler");
-      ruler.css({ width: (width + 130) + "px" }).empty();
+      ruler.css({ width: (width + ROW_HEADER_WIDTH + 10) + "px" }).empty();
 
       ruler.append(`<div class="absolute left-0 top-0 h-full w-[120px]"></div>`);
 
+      const range = getActiveRange();
+      if (range.hasFrame) {
+        const left = ROW_HEADER_WIDTH + range.start * state.pxPerSecond;
+        const selWidth = Math.max(2, (range.end - range.start) * state.pxPerSecond);
+        ruler.append(`<div class="frame-selection pointer-events-none absolute top-0 h-8 rounded-md" style="left:${left}px;width:${selWidth}px"></div>`);
+      }
+
       for (let sec = 0; sec <= Math.ceil(total) + 2; sec++) {
-        const left = 120 + sec * state.pxPerSecond;
+        const left = ROW_HEADER_WIDTH + sec * state.pxPerSecond;
         ruler.append(`
           <div class="absolute top-0 h-8 border-l border-slate-300 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400" style="left:${left}px">
             <span class="ml-1">${sec}s</span>
@@ -683,7 +744,7 @@
         `);
       }
 
-      const ph = 120 + state.playheadTime * state.pxPerSecond;
+      const ph = ROW_HEADER_WIDTH + state.playheadTime * state.pxPerSecond;
       ruler.append(`<div class="absolute top-0 h-8 w-0.5 bg-emerald-500" style="left:${ph}px"></div>`);
     }
 
@@ -703,6 +764,15 @@
         `);
 
         const track = rowEl.find(".audio-track");
+        const range = getActiveRange();
+
+        if (range.hasFrame) {
+          const left = range.start * state.pxPerSecond;
+          const selWidth = Math.max(2, (range.end - range.start) * state.pxPerSecond);
+          track.append(`<div class="frame-selection pointer-events-none absolute top-0 z-10 h-full rounded-xl" style="left:${left}px;width:${selWidth}px"></div>`);
+          track.append(`<div class="selection-handle pointer-events-none absolute top-0 z-20 h-full bg-blue-500" style="left:${left}px"></div>`);
+          track.append(`<div class="selection-handle pointer-events-none absolute top-0 z-20 h-full bg-blue-500" style="left:${left + selWidth}px"></div>`);
+        }
 
         row.clips.forEach(clipId => {
           const clip = state.clips[clipId];
@@ -713,7 +783,7 @@
           const isSelected = clip.id === state.selectedClipId ? "selected" : "";
 
           track.append(`
-            <div class="clip-box ${isSelected} absolute top-2 h-20 overflow-hidden rounded-2xl border border-emerald-300 bg-emerald-100 shadow-sm dark:border-emerald-700 dark:bg-emerald-950"
+            <div class="clip-box ${isSelected} absolute top-2 z-30 h-20 overflow-hidden rounded-2xl border border-emerald-300 bg-emerald-100 shadow-sm dark:border-emerald-700 dark:bg-emerald-950"
                  style="left:${left}px;width:${clipWidth}px"
                  data-clip-id="${clip.id}">
               <div class="pointer-events-none absolute left-0 top-0 z-10 w-full truncate bg-emerald-600/90 px-2 py-1 text-xs font-bold text-white">
@@ -725,7 +795,7 @@
         });
 
         const phLeft = state.playheadTime * state.pxPerSecond;
-        track.append(`<div class="playhead pointer-events-none absolute top-0 z-30 h-full w-0.5 bg-emerald-500" style="left:${phLeft}px"></div>`);
+        track.append(`<div class="playhead pointer-events-none absolute top-0 z-40 h-full w-0.5 bg-emerald-500" style="left:${phLeft}px"></div>`);
 
         container.append(rowEl);
       });
@@ -829,6 +899,16 @@
         ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
+
+        if (Math.abs(point.curve || 0) > 0.02) {
+          ctx.beginPath();
+          ctx.strokeStyle = "#fb923c";
+          ctx.setLineDash([5, 4]);
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + (point.curve * 40), y - (point.curve * 35));
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
       });
     }
 
@@ -854,10 +934,25 @@
       return -1;
     }
 
+    // Check if double click is close enough to orange volume line.
+    function isNearVolumeLine(clip, point) {
+      const ratio = clamp(point.x / point.width, 0, 1);
+      const volume = getVolumeAtRatio(clip, ratio);
+      const lineY = point.height - clamp(volume / 1.5, 0, 1) * point.height;
+      return Math.abs(point.y - lineY) <= 12;
+    }
+
+    // Add volume point only on the orange line.
     function addVolumePoint(clip, point) {
+      if (!isNearVolumeLine(clip, point)) {
+        setStatus(t("lineOnly"));
+        return;
+      }
+
+      const ratio = clamp(point.x / point.width, 0, 1);
       const newPoint = {
-        t: clamp(point.x / point.width, 0, 1),
-        v: clamp((1 - point.y / point.height) * 1.5, 0, 1.5),
+        t: ratio,
+        v: getVolumeAtRatio(clip, ratio),
         curve: 0
       };
 
@@ -954,15 +1049,15 @@
       return source;
     }
 
-    // Play mixed sound from selected range.
-    async function playRange(start, end) {
+    // Play mixed sound from selected frame or full timeline.
+    async function playRange(start, end, hasFrame = false) {
       const total = getTotalDuration();
       start = clamp(Number(start) || 0, 0, total);
       end = clamp(Number(end) || total, start, total);
 
       if (end <= start) return;
 
-      stopPlayback();
+      stopPlayback(false);
 
       const ctx = getAudioContext();
       if (ctx.state === "suspended") await ctx.resume();
@@ -972,8 +1067,11 @@
         if (node) state.playingNodes.push(node);
       });
 
+      state.isPlaying = true;
       state.playheadTime = start;
+      updatePlayButton();
       render();
+      setStatus(hasFrame ? t("playRange") : t("playAllRange"));
 
       const startedAt = performance.now();
       state.playTimer = setInterval(() => {
@@ -986,6 +1084,14 @@
       }, 60);
     }
 
+    function updatePlayButton() {
+      if (state.isPlaying) {
+        $("#btnPlayAll").html(`<i class="fa-solid fa-pause"></i><span class="hidden 2xl:inline">${t("stop")}</span>`);
+      } else {
+        $("#btnPlayAll").html(`<i class="fa-solid fa-play"></i><span class="hidden 2xl:inline">${t("playAll")}</span>`);
+      }
+    }
+
     function stopPlayback(resetStatus = true) {
       state.playingNodes.forEach(node => {
         try { node.stop(); } catch (error) {}
@@ -994,19 +1100,29 @@
       state.playingNodes = [];
       clearInterval(state.playTimer);
       state.playTimer = null;
+      state.isPlaying = false;
+      updatePlayButton();
 
       if (resetStatus) setStatus(t("ready"));
     }
 
-    // Export selected range as WAV by using OfflineAudioContext.
+    function togglePlayback() {
+      if (state.isPlaying) {
+        stopPlayback(true);
+        return;
+      }
+
+      const range = getActiveRange();
+      playRange(range.start, range.end, range.hasFrame);
+    }
+
+    // Export selected frame as WAV. If no selected frame, export full timeline.
     async function exportWav() {
       try {
         setStatus(t("processing"));
 
-        const total = getTotalDuration();
-        const start = clamp(Number($("#selectionStart").val()) || 0, 0, total);
-        const end = clamp(Number($("#selectionEnd").val()) || total, start, total);
-        const duration = end - start;
+        const range = getActiveRangeFromInputs();
+        const duration = range.end - range.start;
 
         if (duration <= 0) return;
 
@@ -1014,7 +1130,7 @@
         const offline = new OfflineAudioContext(2, Math.ceil(duration * sampleRate), sampleRate);
 
         Object.values(state.clips).forEach(clip => {
-          scheduleClip(offline, clip, start, end, offline.destination);
+          scheduleClip(offline, clip, range.start, range.end, offline.destination);
         });
 
         const rendered = await offline.startRendering();
@@ -1035,6 +1151,17 @@
         console.error(error);
         setStatus(t("exportFail"));
       }
+    }
+
+    function getActiveRangeFromInputs() {
+      const total = getTotalDuration();
+      const inputStart = Number($("#selectionStart").val());
+      const inputEnd = Number($("#selectionEnd").val());
+
+      const start = clamp(Number.isFinite(inputStart) ? inputStart : 0, 0, total);
+      const end = clamp(Number.isFinite(inputEnd) ? inputEnd : total, start, total);
+
+      return { start, end, hasFrame: end - start > 0.02 && (start > 0 || end < total) };
     }
 
     function sanitizeFileName(name) {
@@ -1224,14 +1351,90 @@
       autoSave();
     }
 
-    function setPlayheadFromTrack(event, track) {
+    function getTrackTimeFromEvent(event, track) {
       const rect = track.getBoundingClientRect();
       const x = event.clientX - rect.left;
-      state.playheadTime = clamp(x / state.pxPerSecond, 0, getTotalDuration());
+      return clamp(x / state.pxPerSecond, 0, getTotalDuration());
+    }
+
+    function setPlayheadFromTrack(event, track) {
+      state.playheadTime = getTrackTimeFromEvent(event, track);
       render();
     }
 
-    // Bind drag/drop, buttons, clip dragging, point editing.
+    // Select a frame across all rows by dragging timeline background.
+    function beginFrameSelection(event, track) {
+      const time = getTrackTimeFromEvent(event, track);
+      state.selectionStart = time;
+      state.selectionEnd = time;
+      state.playheadTime = time;
+      state.drag = {
+        type: "frame",
+        track: track
+      };
+      render();
+    }
+
+    function updateFrameSelection(event) {
+      const track = $(event.target).closest(".audio-track")[0] || state.drag.track;
+      if (!track) return;
+
+      const time = getTrackTimeFromEvent(event, track);
+      state.selectionEnd = time;
+      state.playheadTime = time;
+      render();
+    }
+
+    function finishFrameSelection() {
+      if (state.selectionStart === null || state.selectionEnd === null) return;
+
+      if (Math.abs(state.selectionEnd - state.selectionStart) < 0.03) {
+        state.playheadTime = state.selectionStart;
+        state.selectionStart = null;
+        state.selectionEnd = null;
+      } else {
+        const start = Math.min(state.selectionStart, state.selectionEnd);
+        const end = Math.max(state.selectionStart, state.selectionEnd);
+        state.selectionStart = start;
+        state.selectionEnd = end;
+        setStatus(`${t("selectedFrame")}: ${formatTime(start)} - ${formatTime(end)}`);
+      }
+
+      syncSelectionInputs();
+      render();
+      autoSave();
+    }
+
+    // Ctrl + wheel zoom around mouse pointer. Command + wheel scrolls left/right.
+    function handleTimelineWheel(event) {
+      const original = event.originalEvent;
+      const scroller = $("#timelineScroll")[0];
+
+      if (original.metaKey) {
+        event.preventDefault();
+        scroller.scrollLeft += original.deltaY + original.deltaX;
+        return;
+      }
+
+      if (original.ctrlKey) {
+        event.preventDefault();
+        const rect = scroller.getBoundingClientRect();
+        const mouseX = original.clientX - rect.left;
+        const oldPx = state.pxPerSecond;
+        const oldTime = Math.max(0, (scroller.scrollLeft + mouseX - ROW_HEADER_WIDTH) / oldPx);
+        const delta = original.deltaY < 0 ? 1.12 : 0.88;
+
+        state.pxPerSecond = clamp(Math.round(state.pxPerSecond * delta), 40, 520);
+        $("#zoomRange").val(state.pxPerSecond);
+        render();
+
+        scroller.scrollLeft = Math.max(0, oldTime * state.pxPerSecond - mouseX + ROW_HEADER_WIDTH);
+        setStatus(t("zoomHint"));
+        autoSave();
+      }
+    }
+
+    // Bind drag/drop, buttons, shortcuts, clip dragging, frame selection, and point editing.
     function bindEvents() {
       $("#btnToggleLanguage").on("click", function () {
         currentLanguage = currentLanguage === "km" ? "en" : "km";
@@ -1265,28 +1468,34 @@
 
         const track = $(event.target).closest(".audio-track")[0];
         if (track) {
-          const rect = track.getBoundingClientRect();
-          startTime = clamp((event.originalEvent.clientX - rect.left) / state.pxPerSecond, 0, getTotalDuration());
+          startTime = getTrackTimeFromEvent(event.originalEvent, track);
         }
 
         await handleFiles(files, startTime);
       });
 
-      $("#btnPlayAll").on("click", function () {
-        $("#selectionStart").val("0");
-        $("#selectionEnd").val(getTotalDuration().toFixed(2));
-        playRange(0, getTotalDuration());
-      });
-
-      $("#btnPlaySelection").on("click", function () {
-        playRange($("#selectionStart").val(), $("#selectionEnd").val());
-      });
-
+      $("#btnPlayAll").on("click", togglePlayback);
       $("#btnStop").on("click", () => stopPlayback(true));
 
       $("#btnUseAll").on("click", function () {
-        $("#selectionStart").val("0");
-        $("#selectionEnd").val(getTotalDuration().toFixed(2));
+        state.selectionStart = null;
+        state.selectionEnd = null;
+        state.playheadTime = 0;
+        render();
+        autoSave();
+      });
+
+      $("#selectionStart, #selectionEnd").on("change", function () {
+        const total = getTotalDuration();
+        let start = clamp(Number($("#selectionStart").val()) || 0, 0, total);
+        let end = clamp(Number($("#selectionEnd").val()) || total, 0, total);
+        if (end < start) [start, end] = [end, start];
+
+        state.selectionStart = start;
+        state.selectionEnd = end;
+        state.playheadTime = start;
+        render();
+        autoSave();
       });
 
       $("#btnSplit").on("click", splitSelectedClip);
@@ -1309,7 +1518,6 @@
       });
 
       $("#btnExportWav").on("click", exportWav);
-
       $("#btnSaveProject").on("click", () => saveProject(true));
 
       $("#btnResetProject").on("click", function () {
@@ -1320,6 +1528,8 @@
         state.clips = {};
         state.audios = {};
         state.selectedClipId = null;
+        state.selectionStart = null;
+        state.selectionEnd = null;
 
         Object.keys(audioBuffers).forEach(key => delete audioBuffers[key]);
         localStorage.removeItem(PROJECT_STORAGE_KEY);
@@ -1334,9 +1544,23 @@
         autoSave();
       });
 
-      $("#rowsContainer").on("click", ".audio-track", function (event) {
+      $("#timelineScroll").on("wheel", handleTimelineWheel);
+
+      $(document).on("keydown", function (event) {
+        const tag = String(event.target.tagName || "").toLowerCase();
+        if (["input", "textarea", "select"].includes(tag)) return;
+
+        if (event.code === "Space") {
+          event.preventDefault();
+          togglePlayback();
+        }
+      });
+
+      $("#rowsContainer").on("mousedown", ".audio-track", function (event) {
+        if (event.button !== 0) return;
         if ($(event.target).closest(".clip-box").length) return;
-        setPlayheadFromTrack(event, this);
+        beginFrameSelection(event, this);
+        event.preventDefault();
       });
 
       $("#rowsContainer").on("mousedown", ".clip-box", function (event) {
@@ -1396,6 +1620,11 @@
     function handleDragMove(event) {
       if (!state.drag) return;
 
+      if (state.drag.type === "frame") {
+        updateFrameSelection(event);
+        return;
+      }
+
       if (state.drag.type === "clip") {
         const clip = state.clips[state.drag.clipId];
         if (!clip) return;
@@ -1448,6 +1677,12 @@
 
     function handleDragEnd() {
       if (!state.drag) return;
+
+      if (state.drag.type === "frame") {
+        state.drag = null;
+        finishFrameSelection();
+        return;
+      }
 
       state.drag = null;
       cleanupRows();
