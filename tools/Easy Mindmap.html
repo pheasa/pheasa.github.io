@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Mindmap - Advanced Visual Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        lightBg: '#f8fafc',
+                        lightCard: '#ffffff'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        .map-container {
+            position: relative;
+            min-width: 2000px;
+            min-height: 2000px;
+        }
+        #svgCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .mindmap-node {
+            z-index: 10;
+            cursor: grab;
+            user-select: none;
+        }
+        .mindmap-node:active {
+            cursor: grabbing;
+        }
+        .node-input {
+            pointer-events: none; /* Prevents raw single-clicks from hijacking drag focus */
+        }
+        .node-input.editing {
+            pointer-events: auto;
+            cursor: text;
+        }
+        /* Pastel Color Themes */
+        .color-root { background-color: #b0a4de !important; color: #1e1b4b !important; }
+        .color-branch-0 { background-color: #fca5a5 !important; color: #451a1a !important; }
+        .color-branch-1 { background-color: #fed7aa !important; color: #431407 !important; }
+        .color-branch-2 { background-color: #a7f3d0 !important; color: #022c22 !important; }
+        .color-branch-3 { background-color: #ddd6fe !important; color: #2e1065 !important; }
+    </style>
+</head>
+<body class="bg-lightBg text-slate-800 dark:bg-darkBg dark:text-slate-100 min-h-screen font-sans transition-colors duration-200 overflow-hidden">
+
+    <header class="border-b border-slate-200 dark:border-slate-700 bg-lightCard dark:bg-darkCard px-6 py-4 flex flex-wrap justify-between items-center gap-4 z-20 relative">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md">
+                <i class="fas fa-brain text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">Easy Mindmap</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="tool-purpose">Split sound, mix sounds, delete sound</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button id="langToggle" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition">EN</button>
+            <button id="themeToggle" class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                <i class="fas fa-sun block dark:hidden"></i>
+                <i class="fas fa-moon hidden dark:block"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex h-[calc(100vh-73px)] overflow-hidden">
+        <aside class="w-64 border-r border-slate-200 dark:border-slate-700 bg-lightCard dark:bg-darkCard p-4 flex flex-col justify-between flex-shrink-0 z-10">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-semibold text-xs uppercase tracking-wider text-slate-400" data-i18n="projects">Projects</h2>
+                    <button id="newProjectBtn" class="text-indigo-500 hover:text-indigo-600 p-1">
+                        <i class="fas fa-plus-circle text-lg"></i>
+                    </button>
+                </div>
+                <ul id="projectList" class="space-y-1 max-h-[65vh] overflow-y-auto"></ul>
+            </div>
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-400 flex items-center gap-2">
+                <i class="fas fa-info-circle"></i> <span data-i18n="hint">Double-click node to edit</span>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-auto relative p-4 bg-slate-50 dark:bg-slate-900/40">
+            <div class="absolute top-4 left-4 right-4 flex justify-between items-center bg-lightCard/90 dark:bg-darkCard/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg z-20">
+                <input id="currentProjectName" type="text" class="bg-transparent font-bold text-lg border-b border-transparent hover:border-slate-400 focus:border-indigo-500 focus:outline-none px-1" value="Loading...">
+                <button id="saveProjectBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 shadow transition">
+                    <i class="fas fa-save"></i> <span data-i18n="save">Save</span>
+                </button>
+            </div>
+
+            <div class="map-container w-full h-full" id="mapWorkspace">
+                <svg id="svgCanvas"></svg>
+                <div id="nodesContainer" class="w-full h-full"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const dictionary = {
+            en: {
+                "tool-purpose": "Split sound, mix sounds, delete sound",
+                "projects": "Projects",
+                "save": "Save",
+                "hint": "Double-click node to edit",
+                "root-default": "MIND MAPPING",
+                "new-node": "New Node"
+            },
+            km: {
+                "tool-purpose": "បំបែកសំឡេង, លាយសំឡេង, លុបសំឡេង",
+                "projects": "គម្រោង",
+                "save": "រក្សាទុក",
+                "hint": "ចុចពីរដងលើថ្នាំងដើម្បីកែសម្រួល",
+                "root-default": "គំនិតចម្បង",
+                "new-node": "ថ្នាំងថ្មី"
+            }
+        };
+        let currentLang = 'en';
+
+        // Memory State coordinates management architecture 
+        let projects = JSON.parse(localStorage.getItem('VM_projects_v2')) || [
+            {
+                id: 'p1',
+                name: 'Audio Production Map',
+                tree: {
+                    text: 'MIND MAPPING', x: 500, y: 300, isRoot: true,
+                    children: [
+                        { 
+                            text: 'Habits', x: 260, y: 160, 
+                            children: [{ text: 'Plan', x: 80, y: 80 }, { text: 'Study', x: 80, y: 150 }, { text: 'System', x: 80, y: 220 }] 
+                        },
+                        { 
+                            text: 'Organization', x: 240, y: 360, 
+                            children: [{ text: 'Breaks', x: 60, y: 360 }] 
+                        },
+                        { 
+                            text: 'Goals', x: 740, y: 160, 
+                            children: [{ text: 'Research', x: 940, y: 80 }, { text: 'Lecture', x: 940, y: 150 }, { text: 'Conclusions', x: 940, y: 220 }] 
+                        },
+                        { 
+                            text: 'Motivation', x: 740, y: 360, 
+                            children: [{ text: 'Tips', x: 940, y: 320 }, { text: 'Roadmap', x: 940, y: 400 }] 
+                        }
+                    ]
+                }
+            }
+        ];
+        let currentProjectIndex = 0;
+
+        function updateLanguageUI() {
+            $('[data-i18n]').each(function() {
+                const key = $(this).attr('data-i18n');
+                if (dictionary[currentLang][key]) $(this).text(dictionary[currentLang][key]);
+            });
+            $('#langToggle').text(currentLang === 'en' ? 'KH' : 'EN');
+        }
+
+        function renderMindmap() {
+            const container = $('#nodesContainer').empty();
+            const project = projects[currentProjectIndex];
+            $('#currentProjectName').val(project.name);
+
+            // Recursively flat-render internal nodes matching structural configurations
+            function renderNode(node, isRoot = false, pathId = 'root', branchIndex = 0) {
+                const colorClass = isRoot ? 'color-root' : `color-branch-${branchIndex % 4}`;
+                const finalColor = pathId.split('-').length > 2 ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100' : colorClass;
+                
+                const $el = $(`
+                    <div class="mindmap-node absolute shadow-md px-4 py-2 rounded-2xl border border-slate-300/30 text-center font-medium min-w-[130px] flex flex-col justify-center items-center group ${finalColor}" 
+                         style="left: ${node.x}px; top: ${node.y}px;" data-path="${pathId}">
+                        <span class="node-input w-full rounded px-1 select-none focus:outline-none" contenteditable="false">${node.text}</span>
+                        <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition z-30 pointer-events-auto">
+                            <button class="add-btn bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow hover:bg-emerald-700" title="Add"><i class="fas fa-plus"></i></button>
+                            ${!isRoot ? '<button class="del-btn bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow hover:bg-rose-700" title="Delete"><i class="fas fa-trash"></i></button>' : ''}
+                        </div>
+                    </div>
+                `);
+                container.append($el);
+
+                node.children?.forEach((child, idx) => {
+                    renderNode(child, false, `${pathId}-${idx}`, isRoot ? idx : branchIndex);
+                });
+            }
+
+            renderNode(project.tree, true);
+            setupInteractions();
+            drawConnections();
+        }
+
+        function drawConnections() {
+            const svg = $('#svgCanvas').empty();
+            const project = projects[currentProjectIndex];
+
+            function connect(parentNode, node, pathId) {
+                const parentEl = $(`[data-path="${pathId.substring(0, pathId.lastIndexOf('-')) || 'root'}"]`);
+                const nodeEl = $(`[data-path="${pathId}"]`);
+                if (parentEl.length && nodeEl.length) {
+                    const x1 = parentEl.position().left + parentEl.outerWidth() / 2;
+                    const y1 = parentEl.position().top + parentEl.outerHeight() / 2;
+                    const x2 = nodeEl.position().left + nodeEl.outerWidth() / 2;
+                    const y2 = nodeEl.position().top + nodeEl.outerHeight() / 2;
+
+                    const cpX1 = x1 + (x2 - x1) / 2;
+                    const cpY2 = y2;
+                    const pathD = `M ${x1} ${y1} C ${cpX1} ${y1}, ${cpX1} ${cpY2}, ${x2} ${y2}`;
+                    svg.append(`<path d="${pathD}" stroke="#64748b" stroke-width="2.5" fill="transparent" />`);
+                }
+                node.children?.forEach((child, idx) => connect(node, child, `${pathId}-${idx}`));
+            }
+
+            project.tree.children?.forEach((child, idx) => connect(project.tree, child, `root-${idx}`));
+            $('#svgCanvas').html($('#svgCanvas').html()); // SVG refresh force render trigger
+        }
+
+        // Return pointers straight into functional nodes using structural dynamic string lookup paths
+        function getNodeByPath(path) {
+            const tree = projects[currentProjectIndex].tree;
+            if (path === 'root') return tree;
+            const parts = path.split('-').slice(1);
+            let current = tree;
+            parts.forEach(idx => { current = current.children[parseInt(idx)]; });
+            return current;
+        }
+
+        // Advanced Item Movement tracking architecture engine (moves element along with entire nested children trees)
+        function setupInteractions() {
+            let isDragging = false;
+            let dragTarget = null;
+            let targetNodeObj = null;
+            let startX, startY, origX, origY;
+
+            $('.mindmap-node').on('mousedown', function(e) {
+                if ($(e.target).closest('button, .editing').length) return; // Prevent control collisions
+                isDragging = true;
+                dragTarget = $(this);
+                const path = dragTarget.data('path');
+                targetNodeObj = getNodeByPath(path);
+
+                startX = e.pageX;
+                startY = e.pageY;
+                origX = targetNodeObj.x;
+                origY = targetNodeObj.y;
+
+                $(document).on('mousemove.drag', function(e) {
+                    if (!isDragging) return;
+                    const dx = e.pageX - startX;
+                    const dy = e.pageY - startY;
+
+                    // Compute current translation positioning change metrics inside the tree structure recursively
+                    function moveSubtree(node, deltaX, deltaY) {
+                        node.x += deltaX;
+                        node.y += deltaY;
+                        node.children?.forEach(c => moveSubtree(c, deltaX, deltaY));
+                    }
+
+                    const currentDeltaX = (origX + dx) - targetNodeObj.x;
+                    const currentDeltaY = (origY + dy) - targetNodeObj.y;
+                    
+                    moveSubtree(targetNodeObj, currentDeltaX, currentDeltaY);
+                    
+                    // Reposition node instances within the DOM map layer realtime
+                    function updateDOMPositions(node, pathId) {
+                        $(`[data-path="${pathId}"]`).css({ left: node.x + 'px', top: node.y + 'px' });
+                        node.children?.forEach((c, idx) => updateDOMPositions(c, `${pathId}-${idx}`));
+                    }
+                    updateDOMPositions(targetNodeObj, path);
+                    drawConnections();
+                });
+
+                $(document).on('mouseup.drag', function() {
+                    isDragging = false;
+                    $(document).off('.drag');
+                    localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                });
+            });
+
+            // Double click interaction pipeline definition structure
+            $('.mindmap-node').on('dblclick', function(e) {
+                e.stopPropagation();
+                const $input = $(this).find('.node-input');
+                $input.addClass('editing').attr('contenteditable', 'true').focus();
+                
+                // Select internal text segments natively inline
+                const range = document.createRange();
+                range.selectNodeContents($input[0]);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            });
+
+            // Save state updates dynamically upon focus exit
+            $(document).on('blur', '.node-input.editing', function() {
+                const $input = $(this);
+                $input.removeClass('editing').attr('contenteditable', 'false');
+                window.getSelection().removeAllRanges();
+                
+                const path = $input.closest('.mindmap-node').data('path');
+                const nodeObj = getNodeByPath(path);
+                nodeObj.text = $input.text();
+                
+                localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                drawConnections();
+            });
+        }
+
+        function renderProjectList() {
+            const $list = $('#projectList').empty();
+            projects.forEach((proj, index) => {
+                const active = index === currentProjectIndex ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold border-l-4 border-indigo-500' : 'hover:bg-slate-100 dark:hover:bg-slate-800/60';
+                $list.append(`
+                    <li class="group flex justify-between items-center p-2.5 rounded-xl cursor-pointer transition ${active}" data-index="${index}">
+                        <span class="truncate pr-2"><i class="fas fa-project-diagram mr-2 text-slate-400"></i>${proj.name}</span>
+                        ${projects.length > 1 ? '<button class="del-proj text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 p-1"><i class="fas fa-trash-alt text-xs"></i></button>' : ''}
+                    </li>
+                `);
+            });
+        }
+
+        $(document).ready(function() {
+            renderProjectList();
+            renderMindmap();
+            updateLanguageUI();
+
+            $('#saveProjectBtn').on('click', function() {
+                localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                alert(currentLang === 'en' ? "Map explicitly saved!" : "ផែនទីត្រូវបានរក្សាទុក!");
+            });
+
+            $(document).on('click', '.add-btn', function(e) {
+                e.stopPropagation();
+                const path = $(this).closest('.mindmap-node').data('path');
+                const nodeObj = getNodeByPath(path);
+                if (!nodeObj.children) nodeObj.children = [];
+                
+                // Position offset relative to original node
+                nodeObj.children.push({
+                    text: dictionary[currentLang]['new-node'],
+                    x: nodeObj.x + 160,
+                    y: nodeObj.y + (nodeObj.children.length * 60) - 30
+                });
+
+                localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                renderMindmap();
+            });
+
+            $(document).on('click', '.del-btn', function(e) {
+                e.stopPropagation();
+                if (!confirm(currentLang === 'en' ? "Delete node?" : "លុបថ្នាំងនេះ?")) return;
+                const path = $(this).closest('.mindmap-node').data('path');
+                const parts = path.split('-');
+                const targetIdx = parseInt(parts.pop());
+                const parentPath = parts.join('-');
+                const parentObj = getNodeByPath(parentPath);
+
+                parentObj.children.splice(targetIdx, 1);
+                localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                renderMindmap();
+            });
+
+            $(document).on('click', '#projectList li', function(e) {
+                if ($(e.target).closest('.del-proj').length) return;
+                currentProjectIndex = $(this).data('index');
+                renderProjectList();
+                renderMindmap();
+            });
+
+            $('#newProjectBtn').on('click', function() {
+                const name = prompt("Project Name:");
+                if (name) {
+                    projects.push({
+                        id: 'p_' + Date.now(),
+                        name: name,
+                        tree: { text: dictionary[currentLang]['root-default'], x: 500, y: 300, children: [] }
+                    });
+                    currentProjectIndex = projects.length - 1;
+                    localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                    renderProjectList();
+                    renderMindmap();
+                }
+            });
+
+            $(document).on('click', '.del-proj', function(e) {
+                e.stopPropagation();
+                if(confirm("Delete project?")) {
+                    const idx = $(this).closest('li').data('index');
+                    projects.splice(idx, 1);
+                    if (currentProjectIndex >= projects.length) currentProjectIndex = projects.length - 1;
+                    localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                    renderProjectList();
+                    renderMindmap();
+                }
+            });
+
+            $('#themeToggle').on('click', function() { $('html').toggleClass('dark'); });
+            $('#langToggle').on('click', function() {
+                currentLang = currentLang === 'en' ? 'km' : 'en';
+                updateLanguageUI();
+                renderMindmap();
+            });
+            $('#currentProjectName').on('input blur', function() {
+                projects[currentProjectIndex].name = $(this).val();
+                localStorage.setItem('VM_projects_v2', JSON.stringify(projects));
+                renderProjectList();
+            });
+        });
+    </script>
+</body>
+</html>
