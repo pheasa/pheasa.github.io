@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mental Math 1000 — Fast Multiplication Trainer</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class"
+    };
+  </script>
+
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    body {
+      font-family: Arial, "Khmer OS Battambang", "Noto Sans Khmer", sans-serif;
+    }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Header -->
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-30 transition-colors duration-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      
+      <!-- Back Button & Brand -->
+      <div class="flex items-center gap-3">
+        <button id="btnBack" type="button" aria-label="Go to home" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span data-i18n="back">ត្រឡប់</span>
+        </button>
+
+        <div class="h-5 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
+
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-brain text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight text-slate-900 dark:text-white" data-i18n="appTitle">Mental Math 1000</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block" data-i18n="subtitle">Fast Multiplication Trainer</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons: Language & Theme -->
+      <div class="flex items-center gap-2">
+        <button id="btnToggleLanguage" type="button" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm">
+          🇺🇸 English
+        </button>
+        <button id="btnToggleTheme" type="button" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm">
+          🌙 Dark
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 flex flex-col gap-6">
+
+    <!-- Dashboard Statistics Grid -->
+    <section aria-label="Statistics Dashboard" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      
+      <!-- Score -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <div class="flex items-center justify-between text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-1">
+          <span data-i18n="score">ពិន្ទុ</span>
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          <span id="statScore">0.0</span><span class="text-xs text-slate-400 font-semibold"> / 100</span>
+        </div>
+      </div>
+
+      <!-- Progress / Answered -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <div class="flex items-center justify-between text-blue-600 dark:text-blue-400 text-xs font-semibold mb-1">
+          <span data-i18n="answered">បានឆ្លើយ</span>
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          <span id="statAnswered">0</span><span class="text-xs text-slate-400 font-semibold"> / 1000</span>
+        </div>
+      </div>
+
+      <!-- Correct -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <div class="flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-semibold mb-1">
+          <span data-i18n="correct">ត្រឹមត្រូវ</span>
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
+          <span id="statCorrect">0</span>
+        </div>
+      </div>
+
+      <!-- Wrong -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <div class="flex items-center justify-between text-rose-600 dark:text-rose-400 text-xs font-semibold mb-1">
+          <span data-i18n="wrong">ខុស</span>
+          <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <div class="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400">
+          <span id="statWrong">0</span>
+        </div>
+      </div>
+
+      <!-- Accuracy -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <div class="flex items-center justify-between text-violet-600 dark:text-violet-400 text-xs font-semibold mb-1">
+          <span data-i18n="accuracy">ភាពសុក្រឹត</span>
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          <span id="statAccuracy">0.0</span><span class="text-xs text-slate-400 font-semibold">%</span>
+        </div>
+      </div>
+
+      <!-- Remaining -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <div class="flex items-center justify-between text-amber-600 dark:text-amber-400 text-xs font-semibold mb-1">
+          <span data-i18n="remaining">នៅសល់</span>
+          <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+        <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          <span id="statRemaining">1000</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Overall Progress Bar -->
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+      <div class="flex items-center justify-between text-xs sm:text-sm font-semibold mb-2">
+        <span class="text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-chart-line text-indigo-500 mr-1.5"></i>
+          <span data-i18n="progress">វឌ្ឍនភាពសរុប</span>
+        </span>
+        <span class="text-indigo-600 dark:text-indigo-400 font-bold" id="progressPercentText">0.0%</span>
+      </div>
+      <div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
+        <div id="progressBar" class="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+      </div>
+    </section>
+
+    <!-- Central Exercise Card -->
+    <section aria-label="Exercise Area" class="w-full max-w-2xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl p-6 sm:p-10 transition-colors relative">
+      
+      <!-- Top Card Header: ID, Level, Status -->
+      <div class="flex flex-wrap items-center justify-between gap-2.5 pb-5 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800" id="exerciseIdBadge">
+            Exercise 1 / 1000
+          </span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" id="difficultyBadge">
+            Beginner
+          </span>
+        </div>
+
+        <!-- Status Badge -->
+        <div id="statusBadge" class="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+          <i class="fa-regular fa-circle-dot"></i>
+          <span id="statusBadgeText" data-i18n="notAnswered">មិនទាន់ឆ្លើយ</span>
+        </div>
+      </div>
+
+      <!-- Mental Math Pattern Tag -->
+      <div class="mt-4 flex items-center justify-center">
+        <span id="patternTag" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800">
+          <i class="fa-solid fa-lightbulb text-amber-500"></i>
+          <span id="patternTagText">Pattern: ×2 (Double)</span>
+        </span>
+      </div>
+
+      <!-- Multiplication Expression -->
+      <div class="my-8 sm:my-10 text-center">
+        <div id="questionText" class="text-5xl sm:text-6xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight select-none">
+          -- × --
+        </div>
+      </div>
+
+      <!-- Input & Submit Form -->
+      <form id="exerciseForm" class="max-w-xs mx-auto flex flex-col gap-4" onsubmit="return false;">
+        <div>
+          <label for="answerInput" class="sr-only" data-i18n="yourAnswer">ចម្លើយរបស់អ្នក</label>
+          <input 
+            type="number" 
+            id="answerInput" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            placeholder="?" 
+            autocomplete="off" 
+            class="w-full text-3xl sm:text-4xl font-extrabold text-center py-3.5 px-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-inner"
+          >
+        </div>
+
+        <button 
+          id="btnCheckAnswer" 
+          type="button" 
+          class="w-full py-3.5 px-6 rounded-2xl font-bold text-base sm:text-lg text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-check"></i>
+          <span id="btnCheckAnswerText" data-i18n="checkAnswer">ផ្ទៀងផ្ទាត់ចម្លើយ</span>
+        </button>
+      </form>
+
+      <!-- Feedback / Result Area -->
+      <div id="feedbackContainer" class="mt-5 min-h-[52px] flex items-center justify-center">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Navigation & Jump Toolbar -->
+      <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <button id="btnPrev" type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm font-semibold flex items-center gap-2">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+          <span data-i18n="previous">ថយក្រោយ</span>
+        </button>
+
+        <!-- Jump to Specific Exercise -->
+        <div class="flex items-center gap-1.5 text-xs sm:text-sm">
+          <span class="text-slate-500 dark:text-slate-400" data-i18n="jumpTo">រំលងទៅ:</span>
+          <input 
+            type="number" 
+            id="jumpInput" 
+            min="1" 
+            max="1000" 
+            class="w-16 text-center py-1.5 px-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:border-indigo-600"
+          >
+          <button id="btnJump" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 font-semibold text-xs transition-colors">
+            Go
+          </button>
+        </div>
+
+        <button id="btnNext" type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm font-semibold flex items-center gap-2">
+          <span data-i18n="next">បន្ទាប់</span>
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Quick Action: Jump to Next Unanswered -->
+      <div class="mt-4 text-center">
+        <button id="btnNextUnanswered" type="button" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1.5">
+          <i class="fa-solid fa-forward-step"></i>
+          <span data-i18n="nextUnanswered">លោតទៅលំហាត់មិនទាន់ឆ្លើយបន្ទាប់</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- Reset Section -->
+    <section class="max-w-2xl w-full mx-auto flex items-center justify-between px-2 pt-2">
+      <div class="text-xs text-slate-400">
+        1,000 Exercises • 0.1 pt each
+      </div>
+      <button id="btnOpenResetModal" type="button" class="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span data-i18n="resetProgress">កំណត់ឡើងវិញ</span>
+      </button>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p data-i18n="footerText">Mental Math 1000 • ហ្វឹកហាត់រាល់ថ្ងៃ គិតកាន់តែលឿន</p>
+      <p class="text-slate-400 dark:text-slate-600">Client-Side Mental Arithmetic Trainer</p>
+    </div>
+  </footer>
+
+  <!-- Custom Reset Confirmation Modal -->
+  <div id="resetModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-center animate-in fade-in zoom-in duration-150">
+      <div class="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2" data-i18n="resetConfirmTitle">
+        តើអ្នកប្រាកដជាចង់កំណត់ឡើងវិញមែនទេ?
+      </h3>
+      <p class="text-sm text-slate-600 dark:text-slate-300 mb-6" data-i18n="resetConfirmDesc">
+        រាល់ចម្លើយ និងពិន្ទុនៃលំហាត់ទាំង ១,០០០ នឹងត្រូវលុបចេញទាំងអស់។ ដំណើរការនេះមិនអាចត្រឡប់វិញបានទេ។
+      </p>
+      <div class="flex items-center gap-3">
+        <button id="btnCancelReset" type="button" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-i18n="cancel">
+          បោះបង់
+        </button>
+        <button id="btnConfirmReset" type="button" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20 transition-colors" data-i18n="confirmReset">
+          យល់ព្រមលុប
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Congratulations / Completion Screen Modal -->
+  <div id="completionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-10 shadow-2xl border border-slate-200 dark:border-slate-800 text-center animate-in fade-in zoom-in duration-200">
+      <div class="w-20 h-20 rounded-3xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-5 text-4xl shadow-inner">
+        <i class="fa-solid fa-award"></i>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-2" data-i18n="congratulations">
+        🎉 អបអរសាទរ!
+      </h2>
+      <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-6" data-i18n="completedDesc">
+        អ្នកបានបញ្ចប់លំហាត់គុណក្នុងចិត្តទាំង ១,០០០ ដោយជោគជ័យ!
+      </p>
+
+      <!-- Final Stats Summary Card -->
+      <div class="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 mb-6 text-left">
+        <div>
+          <span class="text-xs text-slate-500 dark:text-slate-400 block" data-i18n="finalScore">ពិន្ទុចុងក្រោយ:</span>
+          <span class="text-2xl font-black text-indigo-600 dark:text-indigo-400" id="finalModalScore">0.0 / 100</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 dark:text-slate-400 block" data-i18n="accuracy">ភាពសុក្រឹត:</span>
+          <span class="text-2xl font-black text-slate-900 dark:text-white" id="finalModalAccuracy">0.0%</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 dark:text-slate-400 block" data-i18n="correct">ត្រឹមត្រូវ:</span>
+          <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400" id="finalModalCorrect">0</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 dark:text-slate-400 block" data-i18n="wrong">ខុស:</span>
+          <span class="text-xl font-bold text-rose-600 dark:text-rose-400" id="finalModalWrong">0</span>
+        </div>
+      </div>
+
+      <!-- Performance Level Badge -->
+      <div class="mb-8">
+        <div class="text-xs font-semibold uppercase text-slate-400 mb-1">Performance Rating</div>
+        <div id="performanceBadge" class="text-lg font-black text-indigo-600 dark:text-indigo-400">
+          Excellent
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <button id="btnCloseCompletion" type="button" class="w-full py-3.5 px-6 rounded-2xl font-bold text-sm bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all" data-i18n="reviewExercises">
+          ពិនិត្យលំហាត់ឡើងវិញ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mandatory Theme Script Block (Verbatim Implementation) -->
+  <script>
+    const THEME_STORAGE_KEY = "app_theme";
+    const ALLOWED_THEMES = ["light", "dark"];
+    const DEFAULT_THEME = "light";
+
+    let currentTheme = getSavedTheme();
+
+    function getSavedTheme() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+      if (ALLOWED_THEMES.includes(savedTheme)) {
+        return savedTheme;
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, DEFAULT_THEME);
+      return DEFAULT_THEME;
+    }
+
+    function updateThemeButton() {
+      if (currentTheme === "dark") {
+        $("#btnToggleTheme").html("☀️ Light");
+      } else {
+        $("#btnToggleTheme").html("🌙 Dark");
+      }
+    }
+
+    function applyTheme() {
+      if (currentTheme === "dark") {
+        $("html").addClass("dark");
+      } else {
+        $("html").removeClass("dark");
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+      updateThemeButton();
+    }
+
+    $("#btnToggleTheme").on("click", function () {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme();
+    });
+  </script>
+
+  <!-- Application Logic -->
+  <script>
+    // ==========================================
+    // Constants
+    // ==========================================
+    const LANGUAGE_STORAGE_KEY = "app_language";
+    const ALLOWED_LANGUAGES = ["km", "en"];
+    const DEFAULT_LANGUAGE = "km";
+
+    const ANSWERS_STORAGE_KEY = "mental_math_answers";
+    const INDEX_STORAGE_KEY = "mental_math_current_index";
+    const VERSION_STORAGE_KEY = "mental_math_version";
+    const APP_VERSION = "1.0";
+
+    // ==========================================
+    // State
+    // ==========================================
+    let currentLanguage = DEFAULT_LANGUAGE;
+    let userAnswers = {};
+    let currentIndex = 1;
+    let exercises = [];
+
+    // ==========================================
+    // Translations
+    // ==========================================
+    const translations = {
+      km: {
+        appTitle: "Mental Math 1000",
+        subtitle: "កម្មវិធីហ្វឹកហាត់វិធីគុណរហ័ស",
+        back: "ត្រឡប់",
+        exercise: "លំហាត់",
+        of: "នៃ",
+        score: "ពិន្ទុ",
+        answered: "បានឆ្លើយ",
+        remaining: "នៅសល់",
+        correct: "ត្រឹមត្រូវ",
+        wrong: "ខុស",
+        accuracy: "ភាពសុក្រឹត",
+        progress: "វឌ្ឍនភាពសរុប",
+        yourAnswer: "ចម្លើយរបស់អ្នក",
+        correctAnswer: "ចម្លើយត្រឹមត្រូវ",
+        checkAnswer: "ផ្ទៀងផ្ទាត់ចម្លើយ",
+        alreadyAnswered: "បានឆ្លើយរួចហើយ",
+        next: "បន្ទាប់",
+        previous: "ថយក្រោយ",
+        jumpTo: "រំលងទៅ:",
+        nextUnanswered: "លោតទៅលំហាត់មិនទាន់ឆ្លើយបន្ទាប់",
+        resetProgress: "កំណត់ឡើងវិញ",
+        resetConfirmTitle: "តើអ្នកប្រាកដជាចង់កំណត់ឡើងវិញមែនទេ?",
+        resetConfirmDesc: "រាល់ចម្លើយ និងពិន្ទុនៃលំហាត់ទាំង ១,០០០ នឹងត្រូវលុបចេញទាំងអស់។ ដំណើរការនេះមិនអាចត្រឡប់វិញបានទេ។",
+        cancel: "បោះបង់",
+        confirmReset: "យល់ព្រមលុប",
+        emptyInputWarning: "សូមបញ្ចូលចម្លើយរបស់អ្នកជាមុនសិន!",
+        correctFeedback: "✓ ត្រឹមត្រូវល្អណាស់!",
+        incorrectFeedback: "✗ មិនទាន់ត្រឹមត្រូវទេ",
+        earnedPoints: "+0.1 ពិន្ទុ",
+        zeroPoints: "+0 ពិន្ទុ",
+        beginner: "កម្រិតដំបូង",
+        basic: "កម្រិតមូលដ្ឋាន",
+        intermediate: "កម្រិតមធ្យម",
+        advanced: "កម្រិតជឿនលឿន",
+        expert: "កម្រិតជំនាញ",
+        notAnswered: "មិនទាន់ឆ្លើយ",
+        answeredBadge: "បានឆ្លើយ",
+        congratulations: "🎉 អបអរសាទរ!",
+        completedDesc: "អ្នកបានបញ្ចប់លំហាត់គុណក្នុងចិត្តទាំង ១,០០០ ដោយជោគជ័យ!",
+        finalScore: "ពិន្ទុចុងក្រោយ:",
+        reviewExercises: "ពិនិត្យលំហាត់ឡើងវិញ",
+        perfExcellent: "ឆ្នើមណាស់! (Excellent)",
+        perfVeryGood: "ល្អណាស់! (Very Good)",
+        perfGood: "ល្អប្រសើរ! (Good)",
+        perfKeepPracticing: "បន្តព្យាយាម! (Keep Practicing)",
+        perfKeepTraining: "បន្តហ្វឹកហាត់បន្ថែម! (Keep Training)",
+        footerText: "Mental Math 1000 • ហ្វឹកហាត់រាល់ថ្ងៃ គិតកាន់តែលឿន",
+        patternPrefix: "គំរូគិតលឿន:"
+      },
+      en: {
+        appTitle: "Mental Math 1000",
+        subtitle: "Fast Multiplication Trainer",
+        back: "Back",
+        exercise: "Exercise",
+        of: "of",
+        score: "Score",
+        answered: "Answered",
+        remaining: "Remaining",
+        correct: "Correct",
+        wrong: "Incorrect",
+        accuracy: "Accuracy",
+        progress: "Overall Progress",
+        yourAnswer: "Your Answer",
+        correctAnswer: "Correct Answer",
+        checkAnswer: "Check Answer",
+        alreadyAnswered: "Already Answered",
+        next: "Next",
+        previous: "Previous",
+        jumpTo: "Jump to:",
+        nextUnanswered: "Jump to next unanswered exercise",
+        resetProgress: "Reset Progress",
+        resetConfirmTitle: "Are you sure you want to reset?",
+        resetConfirmDesc: "All answers and score progress from the 1,000 exercises will be permanently deleted. This cannot be undone.",
+        cancel: "Cancel",
+        confirmReset: "Reset All",
+        emptyInputWarning: "Please enter your answer first!",
+        correctFeedback: "✓ Correct!",
+        incorrectFeedback: "✗ Incorrect",
+        earnedPoints: "+0.1 point",
+        zeroPoints: "+0 point",
+        beginner: "Beginner",
+        basic: "Basic",
+        intermediate: "Intermediate",
+        advanced: "Advanced",
+        expert: "Expert",
+        notAnswered: "Not Answered",
+        answeredBadge: "Answered",
+        congratulations: "🎉 Congratulations!",
+        completedDesc: "You have successfully completed all 1,000 mental multiplication exercises!",
+        finalScore: "Final Score:",
+        reviewExercises: "Review Exercises",
+        perfExcellent: "Excellent (90–100)",
+        perfVeryGood: "Very Good (80–89.9)",
+        perfGood: "Good (70–79.9)",
+        perfKeepPracticing: "Keep Practicing (60–69.9)",
+        perfKeepTraining: "Keep Training (Below 60)",
+        footerText: "Mental Math 1000 • Practice daily. Think faster.",
+        patternPrefix: "Pattern:"
+      }
+    };
+
+    function t(key) {
+      return (translations[currentLanguage] && translations[currentLanguage][key]) || key;
+    }
+
+    // ==========================================
+    // Exercise Dataset Generation (Deterministic)
+    // Exactly 1,000 mental multiplication exercises
+    // ==========================================
+    function generateExercises() {
+      const list = [];
+      let id = 1;
+
+      function add(a, b, level, pattern) {
+        list.push({
+          id: id++,
+          a: a,
+          b: b,
+          answer: a * b,
+          level: level,
+          pattern: pattern || ""
+        });
+      }
+
+      // ------------------------------------------
+      // Level 1: Beginner (id 1..200) -> 200 items
+      // Focus: ×2, ×3, ×4, ×5, ×10 & 1-digit core tables
+      // ------------------------------------------
+      // 1..40: x2 patterns
+      for (let i = 2; i <= 21; i++) add(i, 2, "beginner", "×2 (Double)");
+      for (let i = 2; i <= 21; i++) add(2, i, "beginner", "×2 (Double)");
+      // 41..80: x3 and x4 patterns
+      for (let i = 2; i <= 21; i++) add(i, 3, "beginner", "×3 (Triple)");
+      for (let i = 2; i <= 21; i++) add(i, 4, "beginner", "×4 (Double twice)");
+      // 81..120: x5 patterns
+      for (let i = 2; i <= 21; i++) add(i, 5, "beginner", "×5 (×10 ÷ 2)");
+      for (let i = 2; i <= 21; i++) add(5, i, "beginner", "×5 (×10 ÷ 2)");
+      // 121..160: x10 patterns
+      for (let i = 2; i <= 21; i++) add(i, 10, "beginner", "×10 (Append zero)");
+      for (let i = 2; i <= 21; i++) add(10, i, "beginner", "×10 (Append zero)");
+      // 161..200: Core 1-digit pairs
+      const l1_singles = [
+        [6,6],[6,7],[6,8],[6,9],[7,6],[7,7],[7,8],[7,9],[8,6],[8,7],
+        [8,8],[8,9],[9,6],[9,7],[9,8],[9,9],[3,7],[4,7],[4,8],[4,9],
+        [3,9],[3,6],[3,8],[4,6],[6,4],[7,4],[8,4],[9,4],[7,3],[8,3],
+        [9,3],[6,3],[7,5],[8,5],[9,5],[6,5],[9,2],[8,2],[7,2],[6,2]
+      ];
+      for (let pair of l1_singles) add(pair[0], pair[1], "beginner", "Single-Digit Table");
+
+      // ------------------------------------------
+      // Level 2: Basic (id 201..400) -> 200 items
+      // Focus: 2-digit × 1-digit, ×2, ×5, ×10, ×20
+      // ------------------------------------------
+      // 201..240: 2-digit × 2 (Doubling)
+      for (let i = 11; i <= 50; i++) add(i, 2, "basic", "Doubling");
+      // 241..280: 2-digit × 3 and × 4
+      for (let i = 11; i <= 30; i++) add(i, 3, "basic", "×3 Decomposition");
+      for (let i = 11; i <= 30; i++) add(i, 4, "basic", "×4 (Double twice)");
+      // 281..320: 2-digit × 5
+      for (let i = 12; i <= 51; i++) add(i, 5, "basic", "×5 (Half & ×10)");
+      // 321..360: ×10 and ×20
+      for (let i = 22; i <= 41; i++) add(i, 10, "basic", "×10 (Shift decimal)");
+      for (let i = 11; i <= 30; i++) add(i, 20, "basic", "×20 (Double then ×10)");
+      // 361..400: Easy 2-digit × 1-digit decomposition
+      const l2_mix = [
+        [12,6],[13,4],[14,4],[15,6],[16,3],[17,3],[18,3],[19,2],[21,4],[22,3],
+        [23,3],[24,3],[25,4],[26,2],[27,3],[28,2],[31,3],[32,3],[33,3],[34,2],
+        [35,3],[36,3],[41,2],[42,3],[43,2],[44,2],[45,2],[46,2],[51,2],[52,2],
+        [53,2],[54,2],[55,2],[61,2],[62,2],[63,2],[71,2],[72,2],[81,2],[82,2]
+      ];
+      for (let pair of l2_mix) add(pair[0], pair[1], "basic", "Decomposition");
+
+      // ------------------------------------------
+      // Level 3: Intermediate (id 401..600) -> 200 items
+      // Focus: ×9, ×11, ×12, ×15, easy 2-digit × 2-digit
+      // ------------------------------------------
+      // 401..440: ×9 pattern (×10 - original)
+      for (let i = 12; i <= 51; i++) add(i, 9, "intermediate", "×9 (×10 - n)");
+      // 441..480: ×11 pattern (Insert sum & carry)
+      for (let i = 12; i <= 51; i++) add(i, 11, "intermediate", "×11 (Insert sum)");
+      // 481..520: ×12 pattern (×10 + ×2)
+      for (let i = 12; i <= 51; i++) add(i, 12, "intermediate", "×12 (×10 + ×2)");
+      // 521..560: ×15 pattern (×10 + half)
+      for (let i = 12; i <= 51; i++) add(i, 15, "intermediate", "×15 (×10 + half)");
+      // 561..600: Easy 2-digit × 2-digit & difference of squares around round numbers
+      const l3_pairs = [
+        [23,17],[21,19],[31,29],[41,39],[51,49],[61,59],[71,69],[81,79],[32,28],[42,38],
+        [52,48],[62,58],[72,68],[24,16],[33,27],[43,37],[53,47],[63,57],[73,67],[83,77],
+        [22,18],[34,26],[44,36],[54,46],[64,56],[74,66],[84,76],[25,15],[35,25],[45,35],
+        [16,14],[26,24],[36,34],[46,44],[56,54],[66,64],[76,74],[86,84],[18,12],[28,22]
+      ];
+      for (let pair of l3_pairs) add(pair[0], pair[1], "intermediate", "Difference of Squares");
+
+      // ------------------------------------------
+      // Level 4: Advanced (id 601..800) -> 200 items
+      // Focus: ×25, ×50, ×75, ×99, near 100, 2-digit × 2-digit
+      // ------------------------------------------
+      // 601..640: ×25 pattern (÷4 × 100)
+      for (let i = 12; i <= 51; i++) add(i * 2, 25, "advanced", "×25 (÷4 × 100)");
+      // 641..680: ×50 and ×75 patterns
+      for (let i = 12; i <= 31; i++) add(i * 2, 50, "advanced", "×50 (÷2 × 100)");
+      for (let i = 1; i <= 20; i++) add(i * 4, 75, "advanced", "×75 (×3/4 × 100)");
+      // 681..720: ×99 pattern (×100 - original)
+      for (let i = 21; i <= 60; i++) add(i, 99, "advanced", "×99 (×100 - n)");
+      // 721..760: Numbers close to 100 (below 100 base)
+      const l4_near100 = [
+        [97,96],[98,97],[99,98],[95,96],[94,97],[93,98],[92,99],[96,96],[97,97],[98,98],
+        [99,99],[94,95],[93,96],[92,97],[91,98],[95,98],[96,98],[94,98],[93,95],[91,96],
+        [92,95],[93,94],[91,95],[92,94],[91,94],[95,97],[96,97],[97,99],[96,99],[95,99],
+        [94,99],[93,99],[91,99],[92,98],[93,97],[98,96],[97,95],[98,94],[99,95],[98,93]
+      ];
+      for (let pair of l4_near100) add(pair[0], pair[1], "advanced", "Near-100 Base Method");
+      // 761..800: 2-digit × 2-digit mental decomposition
+      const l4_twodigit = [
+        [47,23],[36,24],[52,34],[43,26],[62,35],[48,35],[37,25],[46,32],[54,23],[63,24],
+        [72,31],[45,28],[56,25],[64,32],[73,22],[42,36],[53,28],[65,24],[74,25],[82,23],
+        [38,26],[49,24],[58,22],[67,21],[76,23],[85,22],[34,28],[44,35],[55,32],[66,25],
+        [75,32],[84,25],[39,25],[48,32],[57,26],[68,22],[77,24],[86,21],[45,36],[54,42]
+      ];
+      for (let pair of l4_twodigit) add(pair[0], pair[1], "advanced", "2-Digit Decomposition");
+
+      // ------------------------------------------
+      // Level 5: Expert (id 801..1000) -> 200 items
+      // Focus: Base 100 above/mixed, Difference of squares, Near 1000, 3-digit × 2-digit, ×125
+      // ------------------------------------------
+      // 801..840: Numbers above 100 and mixed base
+      const l5_base100 = [
+        [103,104],[105,106],[102,107],[108,103],[101,109],[104,105],[106,107],[107,108],[102,108],[103,109],
+        [105,108],[106,109],[104,107],[102,106],[101,108],[103,107],[105,107],[104,108],[102,109],[106,108],
+        [103,97],[104,96],[105,95],[106,94],[107,93],[108,92],[102,98],[101,99],[105,97],[104,98],
+        [106,96],[107,95],[108,94],[103,98],[102,97],[105,96],[106,98],[107,97],[104,97],[108,96]
+      ];
+      for (let pair of l5_base100) add(pair[0], pair[1], "expert", "Base-100 Extended");
+      // 841..880: Difference of squares around 50, 100, 500 & Squaring ending in 5
+      const l5_squares = [
+        [48,52],[47,53],[46,54],[45,55],[44,56],[43,57],[42,58],[41,59],[49,51],[98,102],
+        [97,103],[96,104],[95,105],[94,106],[93,107],[92,108],[91,109],[99,101],[198,202],[195,205],
+        [498,502],[495,505],[492,508],[490,510],[497,503],[496,504],[494,506],[493,507],[491,509],[499,501],
+        [35,35],[45,45],[55,55],[65,65],[75,75],[85,85],[95,95],[105,105],[115,115],[125,125]
+      ];
+      for (let pair of l5_squares) add(pair[0], pair[1], "expert", "Squares & Identities");
+      // 881..920: Numbers near 1000
+      const l5_near1000 = [
+        [997,996],[998,995],[994,998],[992,997],[995,996],[993,998],[991,999],[996,998],[997,997],[998,998],
+        [999,997],[995,995],[994,996],[993,995],[992,996],[998,999],[994,999],[993,999],[995,998],[996,999],
+        [1003,1004],[1005,1006],[1002,1007],[1008,1003],[1001,1009],[1005,1008],[1006,1007],[1004,1005],[1002,1008],[1003,1007],
+        [1005,995],[1004,996],[1003,997],[1002,998],[1001,999],[1006,994],[1007,993],[1008,992],[998,987],[996,994]
+      ];
+      for (let pair of l5_near1000) add(pair[0], pair[1], "expert", "Near-1000 Base Method");
+      // 921..960: 3-digit × 2-digit patterns
+      const l5_3dx2d = [
+        [124,25],[132,25],[148,25],[216,25],[312,25],[428,25],[524,25],[616,25],[142,50],[164,50],
+        [245,16],[235,14],[345,12],[125,16],[125,24],[125,32],[125,48],[125,64],[125,72],[125,88],
+        [123,12],[214,12],[312,12],[415,12],[135,15],[225,15],[315,15],[420,15],[123,104],[212,103],
+        [201,99],[302,99],[401,99],[502,99],[112,11],[234,11],[342,11],[425,11],[513,11],[621,11]
+      ];
+      for (let pair of l5_3dx2d) add(pair[0], pair[1], "expert", "3-Digit Mental Shortcuts");
+      // 961..1000: ×125, ×999, squares & high-level multiplication
+      const l5_final = [
+        [32,125],[48,125],[56,125],[64,125],[72,125],[80,125],[88,125],[96,125],[112,125],[128,125],
+        [999,123],[999,234],[999,347],[999,456],[999,567],[999,678],[999,789],[999,812],[999,945],[999,998],
+        [123,48],[245,32],[145,24],[235,18],[315,16],[425,18],[135,28],[215,36],[325,24],[415,22],
+        [97,97],[98,98],[99,99],[101,101],[102,102],[103,103],[104,104],[105,105],[998,998],[999,999]
+      ];
+      for (let pair of l5_final) add(pair[0], pair[1], "expert", "Expert Mental Master");
+
+      return list;
+    }
+
+    // ==========================================
+    // Local Storage Management
+    // ==========================================
+    // Safely load saved answers
+    function loadAnswers() {
+      try {
+        const raw = localStorage.getItem(ANSWERS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") {
+            return parsed;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load stored answers:", err);
+      }
+      return {};
+    }
+
+    // Safely save answers to storage
+    function saveAnswers() {
+      try {
+        localStorage.setItem(ANSWERS_STORAGE_KEY, JSON.stringify(userAnswers));
+      } catch (err) {
+        console.warn("Could not save answers:", err);
+      }
+    }
+
+    // Load current exercise index
+    function loadCurrentIndex() {
+      try {
+        const raw = localStorage.getItem(INDEX_STORAGE_KEY);
+        if (raw !== null) {
+          const idx = parseInt(raw, 10);
+          if (!isNaN(idx) && idx >= 1 && idx <= 1000) {
+            return idx;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load current index:", err);
+      }
+      return 1;
+    }
+
+    // Save current exercise index
+    function saveCurrentIndex() {
+      try {
+        localStorage.setItem(INDEX_STORAGE_KEY, currentIndex.toString());
+      } catch (err) {
+        console.warn("Could not save current index:", err);
+      }
+    }
+
+    // ==========================================
+    // Language Management
+    // ==========================================
+    function getSavedLanguage() {
+      try {
+        const savedLang = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+        if (ALLOWED_LANGUAGES.includes(savedLang)) {
+          return savedLang;
+        }
+      } catch (e) {
+        console.warn("Language storage error:", e);
+      }
+      return DEFAULT_LANGUAGE;
+    }
+
+    function updateLanguageButton() {
+      // The button must display the NEXT language to switch to
+      if (currentLanguage === "km") {
+        $("#btnToggleLanguage").html("🇺🇸 English");
+      } else {
+        $("#btnToggleLanguage").html("🇰🇭 ខ្មែរ");
+      }
+    }
+
+    function applyLanguage(lang) {
+      if (!ALLOWED_LANGUAGES.includes(lang)) {
+        lang = DEFAULT_LANGUAGE;
+      }
+      currentLanguage = lang;
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+      document.documentElement.lang = currentLanguage;
+      updateLanguageButton();
+      updateUITranslations();
+      renderStats();
+      renderExercise();
+    }
+
+    function updateUITranslations() {
+      $("[data-i18n]").each(function () {
+        const key = $(this).attr("data-i18n");
+        $(this).text(t(key));
+      });
+    }
+
+    $("#btnToggleLanguage").on("click", function () {
+      const nextLang = currentLanguage === "km" ? "en" : "km";
+      applyLanguage(nextLang);
+    });
+
+    // ==========================================
+    // Statistics & Score Calculations
+    // 0.1 point per correct answer, max 100
+    // ==========================================
+    // Calculate score, accuracy, and exercise statistics from saved answers.
+    function calculateStats() {
+      let answeredCount = 0;
+      let correctCount = 0;
+      let wrongCount = 0;
+
+      for (let i = 1; i <= 1000; i++) {
+        const rec = userAnswers[i];
+        if (rec && typeof rec === "object" && typeof rec.correct === "boolean") {
+          answeredCount++;
+          if (rec.correct) {
+            correctCount++;
+          } else {
+            wrongCount++;
+          }
+        }
+      }
+
+      const remainingCount = 1000 - answeredCount;
+      const score = Number((correctCount * 0.1).toFixed(1));
+      const accuracy = answeredCount === 0 ? 0 : Number(((correctCount / answeredCount) * 100).toFixed(1));
+      const progressPercent = Number(((answeredCount / 1000) * 100).toFixed(1));
+
+      return {
+        answeredCount,
+        correctCount,
+        wrongCount,
+        remainingCount,
+        score,
+        accuracy,
+        progressPercent
+      };
+    }
+
+    function renderStats() {
+      const stats = calculateStats();
+
+      $("#statScore").text(stats.score.toFixed(1));
+      $("#statAnswered").text(stats.answeredCount);
+      $("#statCorrect").text(stats.correctCount);
+      $("#statWrong").text(stats.wrongCount);
+      $("#statAccuracy").text(stats.accuracy.toFixed(1));
+      $("#statRemaining").text(stats.remainingCount);
+
+      $("#progressBar").css("width", stats.progressPercent + "%");
+      $("#progressPercentText").text(stats.progressPercent.toFixed(1) + "%");
+
+      // Check for completion
+      if (stats.answeredCount === 1000) {
+        $("#finalModalScore").text(stats.score.toFixed(1) + " / 100");
+        $("#finalModalAccuracy").text(stats.accuracy.toFixed(1) + "%");
+        $("#finalModalCorrect").text(stats.correctCount);
+        $("#finalModalWrong").text(stats.wrongCount);
+
+        let perfMsg = t("perfKeepTraining");
+        if (stats.score >= 90) perfMsg = t("perfExcellent");
+        else if (stats.score >= 80) perfMsg = t("perfVeryGood");
+        else if (stats.score >= 70) perfMsg = t("perfGood");
+        else if (stats.score >= 60) perfMsg = t("perfKeepPracticing");
+        $("#performanceBadge").text(perfMsg);
+      }
+    }
+
+    // ==========================================
+    // Exercise Rendering
+    // ==========================================
+    // Render the current exercise and restore its previous answer state if available.
+    function renderExercise() {
+      if (currentIndex < 1) currentIndex = 1;
+      if (currentIndex > 1000) currentIndex = 1000;
+
+      const exercise = exercises[currentIndex - 1];
+      if (!exercise) return;
+
+      $("#exerciseIdBadge").text(`${t("exercise")} ${exercise.id} / 1000`);
+      $("#difficultyBadge").text(t(exercise.level));
+      $("#patternTagText").text(`${t("patternPrefix")} ${exercise.pattern}`);
+      $("#questionText").text(`${exercise.a} × ${exercise.b}`);
+      $("#jumpInput").val(currentIndex);
+
+      // Navigation state
+      $("#btnPrev").prop("disabled", currentIndex === 1);
+      $("#btnNext").prop("disabled", currentIndex === 1000);
+
+      const record = userAnswers[exercise.id];
+      const isAnswered = record !== undefined && record !== null;
+
+      const $input = $("#answerInput");
+      const $checkBtn = $("#btnCheckAnswer");
+      const $statusBadge = $("#statusBadge");
+      const $statusBadgeText = $("#statusBadgeText");
+      const $feedback = $("#feedbackContainer");
+
+      $feedback.empty();
+
+      if (isAnswered) {
+        // Display previously submitted answer
+        $input.val(record.userAnswer).prop("disabled", true);
+        $checkBtn.prop("disabled", true).removeClass("bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20")
+          .addClass("bg-slate-300 dark:bg-slate-700 cursor-not-allowed opacity-80 text-slate-600 dark:text-slate-300");
+        $("#btnCheckAnswerText").text(t("alreadyAnswered"));
+
+        if (record.correct) {
+          $statusBadge.removeClass("bg-slate-100 dark:bg-slate-800 text-slate-500 bg-rose-100 dark:bg-rose-950/60 text-rose-600")
+            .addClass("bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300");
+          $statusBadge.html(`<i class="fa-solid fa-check"></i> <span>${t("correct")} (+0.1)</span>`);
+
+          $feedback.html(`
+            <div class="w-full p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 flex items-center justify-between text-sm">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                <span class="font-bold">${t("correctFeedback")}</span>
+              </div>
+              <span class="font-black text-xs px-2 py-0.5 rounded-full bg-emerald-200/60 dark:bg-emerald-800/60">+0.1 pt</span>
+            </div>
+          `);
+        } else {
+          $statusBadge.removeClass("bg-slate-100 dark:bg-slate-800 text-slate-500 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600")
+            .addClass("bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300");
+          $statusBadge.html(`<i class="fa-solid fa-xmark"></i> <span>${t("wrong")} (+0)</span>`);
+
+          $feedback.html(`
+            <div class="w-full p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-sm">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i>
+                <span class="font-bold">${t("incorrectFeedback")}</span>
+              </div>
+              <div class="text-xs">
+                <span>${t("correctAnswer")}: </span><span class="font-black underline">${exercise.answer}</span>
+              </div>
+            </div>
+          `);
+        }
+      } else {
+        // Exercise is pending answer
+        $input.val("").prop("disabled", false);
+        $checkBtn.prop("disabled", false).addClass("bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20")
+          .removeClass("bg-slate-300 dark:bg-slate-700 cursor-not-allowed opacity-80 text-slate-600 dark:text-slate-300");
+        $("#btnCheckAnswerText").text(t("checkAnswer"));
+
+        $statusBadge.removeClass("bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 bg-rose-100 dark:bg-rose-950/60 text-rose-700")
+          .addClass("bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400");
+        $statusBadge.html(`<i class="fa-regular fa-circle-dot"></i> <span>${t("notAnswered")}</span>`);
+
+        // Focus input for fast entry
+        setTimeout(() => {
+          $input.focus();
+        }, 50);
+      }
+    }
+
+    // ==========================================
+    // Answer Handling
+    // ==========================================
+    // Check the student's answer and save the result without allowing duplicate scoring.
+    function checkAnswer() {
+      const exercise = exercises[currentIndex - 1];
+      if (!exercise) return;
+
+      // Prevent duplicate scoring
+      if (userAnswers[exercise.id]) {
+        return;
+      }
+
+      const rawVal = $("#answerInput").val().trim();
+      if (rawVal === "") {
+        $("#feedbackContainer").html(`
+          <div class="w-full p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+            <span>${t("emptyInputWarning")}</span>
+          </div>
+        `);
+        $("#answerInput").focus();
+        return;
+      }
+
+      const userAnswer = Number(rawVal);
+      if (!Number.isInteger(userAnswer)) {
+        $("#feedbackContainer").html(`
+          <div class="w-full p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+            <span>${t("emptyInputWarning")}</span>
+          </div>
+        `);
+        return;
+      }
+
+      const isCorrect = userAnswer === exercise.answer;
+
+      // Save answer record
+      userAnswers[exercise.id] = {
+        userAnswer: userAnswer,
+        correct: isCorrect,
+        answeredAt: new Date().toISOString()
+      };
+
+      saveAnswers();
+      renderStats();
+      renderExercise();
+
+      // Show completion popup if all 1,000 exercises are answered
+      const stats = calculateStats();
+      if (stats.answeredCount === 1000) {
+        $("#completionModal").removeClass("hidden");
+      }
+    }
+
+    $("#btnCheckAnswer").on("click", function () {
+      checkAnswer();
+    });
+
+    $("#answerInput").on("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        checkAnswer();
+      }
+    });
+
+    // ==========================================
+    // Navigation
+    // ==========================================
+    function goToExercise(idx) {
+      if (idx < 1) idx = 1;
+      if (idx > 1000) idx = 1000;
+      currentIndex = idx;
+      saveCurrentIndex();
+      renderExercise();
+    }
+
+    function goToNextExercise() {
+      if (currentIndex < 1000) {
+        goToExercise(currentIndex + 1);
+      }
+    }
+
+    function goToPreviousExercise() {
+      if (currentIndex > 1) {
+        goToExercise(currentIndex - 1);
+      }
+    }
+
+    $("#btnNext").on("click", function () {
+      goToNextExercise();
+    });
+
+    $("#btnPrev").on("click", function () {
+      goToPreviousExercise();
+    });
+
+    $("#btnJump").on("click", function () {
+      const target = parseInt($("#jumpInput").val(), 10);
+      if (!isNaN(target)) {
+        goToExercise(target);
+      }
+    });
+
+    $("#jumpInput").on("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        $("#btnJump").click();
+      }
+    });
+
+    // Jump to the next unanswered question
+    $("#btnNextUnanswered").on("click", function () {
+      // Search from currentIndex + 1 forward
+      for (let i = currentIndex + 1; i <= 1000; i++) {
+        if (!userAnswers[i]) {
+          goToExercise(i);
+          return;
+        }
+      }
+      // Wrap around from 1 to currentIndex
+      for (let i = 1; i < currentIndex; i++) {
+        if (!userAnswers[i]) {
+          goToExercise(i);
+          return;
+        }
+      }
+    });
+
+    // Back button navigates to /
+    $("#btnBack").on("click", function () {
+      window.location.href = "/";
+    });
+
+    // ==========================================
+    // Reset Flow
+    // ==========================================
+    $("#btnOpenResetModal").on("click", function () {
+      $("#resetModal").removeClass("hidden");
+    });
+
+    $("#btnCancelReset").on("click", function () {
+      $("#resetModal").addClass("hidden");
+    });
+
+    $("#btnConfirmReset").on("click", function () {
+      try {
+        localStorage.removeItem(ANSWERS_STORAGE_KEY);
+        localStorage.removeItem(INDEX_STORAGE_KEY);
+        localStorage.removeItem(VERSION_STORAGE_KEY);
+      } catch (err) {
+        console.warn("Storage cleanup warning:", err);
+      }
+
+      userAnswers = {};
+      currentIndex = 1;
+      $("#resetModal").addClass("hidden");
+      $("#completionModal").addClass("hidden");
+
+      renderStats();
+      renderExercise();
+    });
+
+    $("#btnCloseCompletion").on("click", function () {
+      $("#completionModal").addClass("hidden");
+    });
+
+    // ==========================================
+    // Initialization
+    // ==========================================
+    function initApp() {
+      // 1. Generate dataset
+      exercises = generateExercises();
+      if (exercises.length !== 1000) {
+        console.error("Exercise dataset must contain exactly 1000 exercises. Current:", exercises.length);
+      }
+
+      // 2. Load stored preferences & state
+      currentLanguage = getSavedLanguage();
+      userAnswers = loadAnswers();
+      currentIndex = loadCurrentIndex();
+
+      // 3. Apply theme (mandatory requirement)
+      applyTheme();
+
+      // 4. Apply language and update UI
+      applyLanguage(currentLanguage);
+
+      // 5. Render stats and current exercise
+      renderStats();
+      renderExercise();
+    }
+
+    $(function () {
+      initApp();
+    });
+  </script>
+</body>
+</html>
